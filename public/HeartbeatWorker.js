@@ -1,8 +1,8 @@
-// Fake HeartbeatWorker to prevent Vercel build failure
-// This file is only used as a placeholder and will be removed in production
+// public/HeartbeatWorker.js
 
-self.addEventListener("message", (event) => {
-  if (event.data === "ping") {
-    self.postMessage("pong");
-  }
+self.addEventListener('beforeunload', () => {
+  stopHeartbeat();
 });
+
+// 不要加 export{}，否则构建失败
+
