@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-    // Silence warnings
+    // Silence warnings for production deployment
     // https://github.com/WalletConnect/walletconnect-monorepo/issues/1908
     webpack: (config, { webpack }) => {
       config.externals.push('pino-pretty', 'lokijs', 'encoding');
