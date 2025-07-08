@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import ConnectWallet from '@/components/Wallet/ConnectWallet';
 import { supabase } from '@/lib/supabase';
@@ -11,15 +11,7 @@ export default function LoginPage() {
   const [checking, setChecking] = useState(false);
   const { walletAddress } = useFoodyeWallet();
 
-  useEffect(() => {
-    if (walletAddress) {
-      // Already connected, proceed to check
-      localStorage.setItem('foodye_wallet', walletAddress);
-      checkRegistration(walletAddress);
-    }
-  }, [walletAddress]);
-
-  const checkRegistration = async (address: string) => {
+  const checkRegistration = useCallback(async (address: string) => {
     setChecking(true);
 
     try {
@@ -43,7 +35,15 @@ export default function LoginPage() {
     } finally {
       setChecking(false);
     }
-  };
+  }, [router]);
+
+  useEffect(() => {
+    if (walletAddress) {
+      // Already connected, proceed to check
+      localStorage.setItem('foodye_wallet', walletAddress);
+      checkRegistration(walletAddress);
+    }
+  }, [walletAddress, checkRegistration]);
 
   return (
     <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center px-4">

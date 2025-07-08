@@ -1,19 +1,15 @@
-let heartbeatInterval;
+// ✅ public/HeartbeatWorker.js
+self.addEventListener('message', (event) => {
+  const { type } = event.data;
 
-function startHeartbeat() {
-  heartbeatInterval = setInterval(() => {
-    console.log('💓 Heartbeat...');
-  }, 10000);
-}
-
-function stopHeartbeat() {
-  clearInterval(heartbeatInterval);
-}
-
-self.addEventListener('load', () => {
-  startHeartbeat();
-});
-
-self.addEventListener('beforeunload', () => {
-  stopHeartbeat();
+  switch (type) {
+    case 'start':
+      self.postMessage({ type: 'started' });
+      break;
+    case 'stop':
+      self.postMessage({ type: 'stopped' });
+      break;
+    default:
+      self.postMessage({ type: 'heartbeat' });
+  }
 });

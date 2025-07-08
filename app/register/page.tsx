@@ -90,6 +90,8 @@ await sendVerificationCodeEmail(email, code, walletAddress!);
     const isValid = validateVerificationCode(email, inputCode);
     if (!isValid) return alert('Invalid or expired verification code');
 
+    setVerifying(true);
+
     const payload =
       role === 'diner'
         ? {
@@ -113,11 +115,12 @@ await sendVerificationCodeEmail(email, code, walletAddress!);
       await supabase.from(role === 'diner' ? 'diners' : 'restaurants').insert([payload]);
       await sendWelcomeEmail(email, walletAddress);
       localStorage.setItem('foodye_wallet', walletAddress);
-router.push(`/register/yes/success?role=${role}`);
-
+      router.push(`/register/yes/success?role=${role}`);
     } catch (err) {
       console.error('Registration failed', err);
       alert('Registration error');
+    } finally {
+      setVerifying(false);
     }
   };
 
