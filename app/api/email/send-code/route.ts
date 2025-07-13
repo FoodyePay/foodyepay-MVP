@@ -30,11 +30,16 @@ export async function POST(req: Request) {
   }
 
   const transporter = nodemailer.createTransport({
-    service: 'gmail',
+    host: 'smtp.gmail.com',
+    port: 587,
+    secure: false, // true for 465, false for other ports
     auth: {
       user: emailUsername,
       pass: emailPassword,
     },
+    tls: {
+      rejectUnauthorized: false
+    }
   });
 
   console.log('[Email API] Transporter created, attempting to send email...');
@@ -77,12 +82,34 @@ export async function POST(req: Request) {
 
   try {
     console.log('[Email API] Sending email to:', email);
+    
+    // 首先测试传输器连接
+    console.log('[Email API] Testing transporter connection...');
+    await transporter.verify();
+    console.log('[Email API] ✅ Transporter connection verified');
+    
     await transporter.sendMail(mailOptions);
     console.log('[Email API] ✅ Email sent successfully');
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('[Email API] ❌ Failed to send email:', error);
-    return NextResponse.json({ success: false, error: 'Email send failed' }, { status: 500 });
+    
+    // 提供更详细的错误信息
+    let errorMessage = 'Email send failed';
+    if (error instanceof Error) {
+      errorMessage = error.message;
+      console.error('[Email API] Error details:', {
+        name: error.name,
+        message: error.message,
+        stack: error.stack
+      });
+    }
+    
+    return NextResponse.json({ 
+      success: false, 
+      error: errorMessage,
+      details: error instanceof Error ? error.message : 'Unknown error'
+    }, { status: 500 });
   }
 }
 
