@@ -18,12 +18,54 @@ export default function ConnectWallet({ onConnect, disabled }: Props) {
     disconnectWallet 
   } = useFoodyeWallet();
 
+  // 移动端检测和环境检查
+  useEffect(() => {
+    console.log("[ConnectWallet] Component mounted");
+    
+    if (typeof window !== 'undefined') {
+      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      const isInApp = /MicroMessenger|WeChat|QQ|TikTok|Snapchat/i.test(navigator.userAgent);
+      
+      console.log("[ConnectWallet] Environment check:", {
+        isMobile,
+        isInApp,
+        userAgent: navigator.userAgent,
+        location: window.location.href,
+        opener: !!window.opener,
+        parent: window.parent !== window
+      });
+
+      // 检查弹窗权限
+      if (isMobile) {
+        try {
+          const popup = window.open('', '_blank', 'width=1,height=1');
+          if (popup) {
+            popup.close();
+            console.log("[ConnectWallet] Popup permissions: ALLOWED");
+          } else {
+            console.warn("[ConnectWallet] Popup permissions: BLOCKED");
+          }
+        } catch (err) {
+          console.error("[ConnectWallet] Popup test failed:", err);
+        }
+      }
+    }
+  }, []);
+
   const handleConnect = async () => {
+    console.log("[ConnectWallet] handleConnect called:", {
+      isConnected,
+      walletAddress,
+      isConnecting
+    });
+    
     if (isConnected && walletAddress) {
       // 如果已连接，触发回调
+      console.log("[ConnectWallet] Already connected, calling onConnect");
       onConnect?.(walletAddress);
     } else {
       // 连接钱包
+      console.log("[ConnectWallet] Calling connectWallet...");
       await connectWallet();
       // 连接成功后，walletAddress 会通过 hook 更新
     }

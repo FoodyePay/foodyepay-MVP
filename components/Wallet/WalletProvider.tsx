@@ -31,6 +31,13 @@ export function WalletProvider({ children }: { children: ReactNode }) {
     disconnectWallet 
   } = useSmartWallet();
 
+  console.log("[WalletProvider] State update:", {
+    address,
+    isConnected,
+    isConnecting,
+    error
+  });
+
   // 向后兼容的 setWalletAddress 方法
   const setWalletAddress = (address: string | null) => {
     if (address) {
