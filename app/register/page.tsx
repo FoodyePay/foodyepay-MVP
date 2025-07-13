@@ -57,8 +57,14 @@ export default function RegisterPage() {
   }, [inputCode, codeSentAt]);
 
   const handleSendVerification = async () => {
-    if (!emailLocal || (role === 'diner' && (!firstName || !lastName || !area || !prefix || !line))) {
-      alert('Please complete required fields before sending code');
+    // 只验证邮箱字段，其他字段在最终注册时验证
+    if (!emailLocal.trim()) {
+      alert('Please enter your email address before sending code');
+      return;
+    }
+
+    if (!walletAddress) {
+      alert('Wallet not connected. Please connect your wallet first.');
       return;
     }
 
@@ -68,7 +74,7 @@ export default function RegisterPage() {
 
     setSending(true);
     try {
-await sendVerificationCodeEmail(email, code, walletAddress!);
+      await sendVerificationCodeEmail(email, code, walletAddress);
 
       setVerificationSent(true);
       setCountdown(60);
@@ -84,6 +90,31 @@ await sendVerificationCodeEmail(email, code, walletAddress!);
 
   const handleSubmit = async () => {
     if (!walletAddress) return alert('Wallet not ready');
+
+    // 验证所有必填字段
+    if (!emailLocal.trim()) {
+      return alert('Please enter your email address');
+    }
+
+    if (role === 'diner') {
+      if (!firstName.trim() || !lastName.trim()) {
+        return alert('Please enter your first and last name');
+      }
+      if (!area.trim() || !prefix.trim() || !line.trim()) {
+        return alert('Please enter your complete phone number');
+      }
+    } else if (role === 'restaurant') {
+      if (!restaurantName.trim()) {
+        return alert('Please enter your restaurant name');
+      }
+      if (!address.trim()) {
+        return alert('Please enter your restaurant address');
+      }
+    }
+
+    if (!inputCode.trim()) {
+      return alert('Please enter the verification code');
+    }
 
     const email = `${emailLocal}@gmail.com`;
     const phone = `1-${area}-${prefix}-${line}`;
@@ -128,6 +159,21 @@ await sendVerificationCodeEmail(email, code, walletAddress!);
     <div className="min-h-screen bg-black text-white flex items-center justify-center px-4">
       <div className="w-full max-w-md bg-zinc-900 p-6 rounded-xl shadow space-y-4">
         <h1 className="text-xl font-bold text-center">Register on FoodyePay</h1>
+        
+        {/* Wallet Connection Status */}
+        {walletAddress && (
+          <div className="bg-green-900/20 border border-green-500/30 rounded-lg p-3 text-center">
+            <div className="text-green-400 text-sm">✅ Wallet Connected</div>
+            <div className="text-xs text-gray-400 mt-1">
+              {walletAddress.slice(0, 6)}...{walletAddress.slice(-4)}
+            </div>
+          </div>
+        )}
+
+        {/* Step Indicator */}
+        <div className="text-center text-sm text-gray-400">
+          Step {verificationSent ? '2' : '1'} of 2: {verificationSent ? 'Complete Registration' : 'Verify Email'}
+        </div>
 
         {/* Role Switch */}
 {/* Role Switch */}
