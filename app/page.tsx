@@ -16,7 +16,7 @@ export default function LoginPage() {
 
     try {
       // 检查 diners 表
-      const { data: diner, error: dinerError } = await supabase
+      const { data: diner } = await supabase
         .from('diners')
         .select('role, created_at')
         .eq('wallet', address)
@@ -24,7 +24,7 @@ export default function LoginPage() {
         .single();
 
       // 检查 restaurants 表
-      const { data: restaurant, error: restaurantError } = await supabase
+      const { data: restaurant } = await supabase
         .from('restaurants')
         .select('role, created_at')
         .eq('wallet', address)
@@ -105,7 +105,7 @@ export default function LoginPage() {
             🔄 Checking your registration status...
           </p>
           <p className="text-gray-400 text-sm mt-2">
-            We're verifying your account and preparing your dashboard
+            We&apos;re verifying your account and preparing your dashboard
           </p>
         </div>
       )}
