@@ -163,9 +163,9 @@ export default function RegisterPage() {
         {/* Wallet Connection Status */}
         {walletAddress && (
           <div className="bg-green-900/20 border border-green-500/30 rounded-lg p-3 text-center">
-            <div className="text-green-400 text-sm">✅ Wallet Connected</div>
-            <div className="text-xs text-gray-400 mt-1">
-              {walletAddress.slice(0, 6)}...{walletAddress.slice(-4)}
+            <div className="text-green-400 text-sm font-medium">✅ Wallet Connected</div>
+            <div className="text-xs text-gray-300 mt-1 font-mono">
+              {walletAddress.slice(0, 8)}...{walletAddress.slice(-6)}
             </div>
           </div>
         )}
@@ -242,8 +242,6 @@ export default function RegisterPage() {
             </button>
           </>
         )}
-
-        <p className="text-sm text-center text-zinc-500">Wallet: {walletAddress || 'Not connected'}</p>
       </div>
     </div>
   );
