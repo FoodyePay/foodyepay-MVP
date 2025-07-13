@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import {
   ConnectWallet,
   Wallet,
@@ -19,9 +20,64 @@ import {
 import { Buy } from '@coinbase/onchainkit/buy';
 import { SwapDefault } from '@coinbase/onchainkit/swap';
 import type { Token } from '@coinbase/onchainkit/token';
+import { useAccount, useReadContract } from 'wagmi';
 
 export default function DinerDashboard() {
   const chainId = 8453;
+  const { address } = useAccount();
+  const [usdcBalance, setUsdcBalance] = useState('0.00');
+  const [foodyBalance, setFoodyBalance] = useState('0.00');
+
+  // ERC20 ABI for balanceOf function
+  const erc20Abi = [
+    {
+      constant: true,
+      inputs: [{ name: '_owner', type: 'address' }],
+      name: 'balanceOf',
+      outputs: [{ name: 'balance', type: 'uint256' }],
+      type: 'function',
+    },
+    {
+      constant: true,
+      inputs: [],
+      name: 'decimals',
+      outputs: [{ name: '', type: 'uint8' }],
+      type: 'function',
+    },
+  ] as const;
+
+  // Read USDC balance
+  const { data: usdcBalanceData } = useReadContract({
+    address: process.env.NEXT_PUBLIC_USDC_TOKEN_ADDRESS as `0x${string}`,
+    abi: erc20Abi,
+    functionName: 'balanceOf',
+    args: address ? [address] : undefined,
+    query: { enabled: !!address },
+  });
+
+  // Read FOODY balance
+  const { data: foodyBalanceData } = useReadContract({
+    address: process.env.NEXT_PUBLIC_FOODY_TOKEN_ADDRESS as `0x${string}`,
+    abi: erc20Abi,
+    functionName: 'balanceOf',
+    args: address ? [address] : undefined,
+    query: { enabled: !!address },
+  });
+
+  // Format balances
+  useEffect(() => {
+    if (usdcBalanceData) {
+      const balance = Number(usdcBalanceData) / Math.pow(10, 6); // USDC has 6 decimals
+      setUsdcBalance(balance.toFixed(6));
+    }
+  }, [usdcBalanceData]);
+
+  useEffect(() => {
+    if (foodyBalanceData) {
+      const balance = Number(foodyBalanceData) / Math.pow(10, 18); // FOODY has 18 decimals
+      setFoodyBalance(balance.toFixed(6));
+    }
+  }, [foodyBalanceData]);
 
   const ethToken: Token = {
     name: 'Ethereum',
@@ -92,13 +148,44 @@ export default function DinerDashboard() {
         {/* ✅ Swap ETH → USDC */}
         <div className="w-full max-w-md">
           <h2 className="font-semibold text-lg mb-2">Swap ETH to USDC</h2>
-          <SwapDefault from={[ethToken]} to={[usdcToken]} />
+          <SwapDefault 
+            from={[ethToken]} 
+            to={[usdcToken]}
+            experimental={{
+              useAggregator: true,
+            }}
+          />
         </div>
 
         {/* ✅ Swap USDC → FOODY */}
         <div className="w-full max-w-md">
           <h2 className="font-semibold text-lg mb-2">Swap USDC to FOODY</h2>
-          <SwapDefault from={[usdcToken]} to={[foodyToken]} />
+          <SwapDefault 
+            from={[usdcToken]} 
+            to={[foodyToken]}
+            experimental={{
+              useAggregator: true,
+            }}
+          />
+        </div>
+
+        {/* ✅ Token Balances Display */}
+        <div className="w-full max-w-md bg-zinc-900 p-4 rounded-lg">
+          <h3 className="font-semibold text-lg mb-3">Token Balances</h3>
+          <div className="space-y-2">
+            <div className="flex justify-between items-center">
+              <span className="text-sm">ETH:</span>
+              <EthBalance className="text-sm" />
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-sm">USDC:</span>
+              <span className="text-sm">{usdcBalance}</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-sm">FOODY:</span>
+              <span className="text-sm">{foodyBalance}</span>
+            </div>
+          </div>
         </div>
       </main>
     </div>
