@@ -15,18 +15,19 @@ export default function LoginPage() {
     setChecking(true);
 
     try {
-      const { data: diners, error } = await supabase
+      const { data: diners } = await supabase
         .from('diners')
         .select('role') // Optional: if you want to differentiate roles
         .eq('wallet', address)
         .limit(1)
         .single();
 
-      if (error || !diners) {
-        console.warn('⚠️ Wallet not registered:', address);
+      const isNewUser = !diners;
+      if (isNewUser) {
+        console.warn('⚠️ New user detected, redirecting to registration:', address);
         router.push('/register');
       } else {
-        console.log('✅ Wallet registered, redirecting to dashboard:', address);
+        console.log('✅ Existing user, redirecting to dashboard:', address);
         router.push('/dashboard-diner');
       }
     } catch (err) {
@@ -46,7 +47,7 @@ export default function LoginPage() {
   }, [walletAddress, checkRegistration]);
 
   return (
-    <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center px-4">
+    <div className="min-h-screen bg-black text-white px-4 py-6 flex flex-col items-center justify-center sm:px-6">
       <h1 className="text-3xl font-bold mb-6">Login with Wallet</h1>
 
       <ConnectWallet

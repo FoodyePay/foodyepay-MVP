@@ -35,7 +35,7 @@ export default function DinerDashboard() {
 
   const usdcToken: Token = {
     name: 'USDC',
-    address: '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913',
+    address: process.env.NEXT_PUBLIC_USDC_TOKEN_ADDRESS! as `0x${string}`,
     symbol: 'USDC',
     decimals: 6,
     chainId,
@@ -47,7 +47,7 @@ export default function DinerDashboard() {
     name: 'Foodye Coin',
     symbol: 'FOODY',
     decimals: 18,
-    address: '0x1022b1b028a2237c440dbac51dc6fc220d88c08f',
+    address: process.env.NEXT_PUBLIC_FOODY_TOKEN_ADDRESS! as `0x${string}`,
     chainId,
     image: '/foody.png',
   };

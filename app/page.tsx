@@ -17,7 +17,7 @@ export default function LoginPage() {
     try {
       const { data: diners, error } = await supabase
         .from('diners')
-        .select('role') // Optional: if you want to differentiate roles
+        .select('role')
         .eq('wallet', address)
         .limit(1)
         .single();
@@ -38,12 +38,12 @@ export default function LoginPage() {
   }, [router]);
 
   useEffect(() => {
-    if (walletAddress) {
-      // Already connected, proceed to check
-      localStorage.setItem('foodye_wallet', walletAddress);
-      checkRegistration(walletAddress);
-    }
-  }, [walletAddress, checkRegistration]);
+    if (!walletAddress || checking) return;
+
+    console.log('📦 Current walletAddress:', walletAddress);
+    localStorage.setItem('foodye_wallet', walletAddress);
+    checkRegistration(walletAddress);
+  }, [walletAddress, checkRegistration, checking]);
 
   return (
     <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center px-4">
@@ -55,6 +55,7 @@ export default function LoginPage() {
           localStorage.setItem('foodye_wallet', address);
           checkRegistration(address);
         }}
+        disabled={checking}
       />
 
       {checking && (
@@ -65,6 +66,7 @@ export default function LoginPage() {
     </div>
   );
 }
+
 
 
 
