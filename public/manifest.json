@@ -1,6 +1,6 @@
 {
   "name": "FoodyePay",
-  "short_name": "FoodyePay",
+  "short_name": "FoodyePay", 
   "description": "Web3 + Smart Wallet + QR 支付的餐饮支付 DApp",
   "start_url": "/",
   "display": "standalone",
@@ -14,12 +14,14 @@
     {
       "src": "/icons/icon-192x192.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     },
     {
       "src": "/icons/icon-512x512.png",
-      "sizes": "512x512", 
-      "type": "image/png"
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
     }
   ]
 }
