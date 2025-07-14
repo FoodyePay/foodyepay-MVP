@@ -38,7 +38,7 @@ function DashboardContent() {
           .from('restaurants')
           .select('*')
           .eq('wallet_address', walletAddress)
-          .single();
+          .maybeSingle();
 
         if (error) {
           console.error('Error fetching restaurant data:', error);

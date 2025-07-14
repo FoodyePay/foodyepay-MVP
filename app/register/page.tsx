@@ -58,7 +58,7 @@ export default function RegisterPage() {
           .from("diners")
           .select("first_name")
           .eq("wallet_address", walletAddress)
-          .single();
+          .maybeSingle();
         
         console.log('Diner query result:', { dinerData, dinerError });
         
@@ -74,7 +74,7 @@ export default function RegisterPage() {
           .from("restaurants")
           .select("name")
           .eq("wallet_address", walletAddress)
-          .single();
+          .maybeSingle();
         
         console.log('Restaurant query result:', { restaurantData, restaurantError });
         
