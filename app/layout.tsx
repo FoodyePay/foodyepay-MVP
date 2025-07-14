@@ -1,6 +1,6 @@
 // ✅ 此文件为服务器组件（不使用 "use client"）
 import '@coinbase/onchainkit/styles.css';
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { Providers } from './providers';
 import PWARegister from '@/components/PWARegister';
@@ -9,8 +9,6 @@ export const metadata: Metadata = {
   title: process.env.NEXT_PUBLIC_ONCHAINKIT_PROJECT_NAME || 'FoodyePay',
   description: 'Web3 + Smart Wallet + QR 支付的餐饮支付 DApp',
   manifest: '/manifest.json',
-  themeColor: '#1f1f1f',
-  viewport: 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no',
   icons: {
     icon: '/icons/icon-192x192.png',
     apple: '/icons/icon-192x192.png',
@@ -20,6 +18,14 @@ export const metadata: Metadata = {
     statusBarStyle: 'black-translucent',
     title: 'FoodyePay',
   },
+};
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  themeColor: '#1f1f1f',
 };
 
 export default function RootLayout({

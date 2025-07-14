@@ -52,11 +52,13 @@ export default function RegisterPage() {
       
       try {
         console.log('Checking user registration for wallet:', walletAddress);
+        console.log('Wallet address length:', walletAddress.length);
+        console.log('Wallet address type:', typeof walletAddress);
         
         // 首先检查 diners 表
         const { data: dinerData, error: dinerError } = await supabase
           .from("diners")
-          .select("first_name")
+          .select("first_name, wallet_address")
           .eq("wallet_address", walletAddress)
           .maybeSingle();
         
@@ -72,7 +74,7 @@ export default function RegisterPage() {
         // 检查 restaurants 表
         const { data: restaurantData, error: restaurantError } = await supabase
           .from("restaurants")
-          .select("name")
+          .select("name, wallet_address")
           .eq("wallet_address", walletAddress)
           .maybeSingle();
         
@@ -85,7 +87,15 @@ export default function RegisterPage() {
           return;
         }
         
-        console.log('User not registered, showing registration form');
+        // 让我们也检查所有 diners 记录来看看实际的地址格式
+        const { data: allDiners, error: allDinersError } = await supabase
+          .from("diners")
+          .select("wallet_address, first_name")
+          .limit(10);
+        
+        console.log('All diners for comparison:', { allDiners, allDinersError });
+        
+        console.log('⚠️ Wallet not registered:', walletAddress);
         // 用户未注册，显示注册表单
         setShowRegistrationForm(true);
       } catch (error) {
