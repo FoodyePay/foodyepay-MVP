@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useFoodyeWallet } from '@/components/Wallet/WalletProvider';
 import { supabase } from '@/lib/supabase';
@@ -14,7 +14,8 @@ interface RestaurantData {
   created_at: string;
 }
 
-export default function DashboardRestaurantPage() {
+// 将使用 useSearchParams 的组件分离出来
+function DashboardContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { walletAddress } = useFoodyeWallet();
@@ -217,5 +218,21 @@ export default function DashboardRestaurantPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+// 主组件，用 Suspense 包裹
+export default function DashboardRestaurantPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+          <p className="text-gray-400">Loading restaurant dashboard...</p>
+        </div>
+      </div>
+    }>
+      <DashboardContent />
+    </Suspense>
   );
 }
