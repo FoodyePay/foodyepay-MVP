@@ -34,10 +34,62 @@ export default function RegisterPage() {
   const [countdown, setCountdown] = useState(0);
   const [codeSentAt, setCodeSentAt] = useState<number | null>(null);
   const [successMessage, setSuccessMessage] = useState('');
+  
+  // 新增：自动识别用户状态
+  const [isCheckingUser, setIsCheckingUser] = useState(false);
+  const [showRegistrationForm, setShowRegistrationForm] = useState(false);
 
   const areaRef = useRef<HTMLInputElement>(null);
   const prefixRef = useRef<HTMLInputElement>(null);
   const lineRef = useRef<HTMLInputElement>(null);
+
+  // 新增：钱包连接后自动检查用户注册状态
+  useEffect(() => {
+    const checkUserRegistration = async () => {
+      if (!walletAddress) return;
+      
+      setIsCheckingUser(true);
+      
+      try {
+        // 首先检查 diners 表
+        const { data: dinerData } = await supabase
+          .from("diners")
+          .select("first_name")
+          .eq("wallet", walletAddress)
+          .single();
+        
+        if (dinerData) {
+          // 用户已注册为 diner，直接跳转到 dashboard
+          router.push(`/dashboard-diner?welcome=${dinerData.first_name}`);
+          return;
+        }
+        
+        // 检查 restaurants 表
+        const { data: restaurantData } = await supabase
+          .from("restaurants")
+          .select("restaurant_name")
+          .eq("wallet", walletAddress)
+          .single();
+        
+        if (restaurantData) {
+          // 用户已注册为 restaurant，跳转到 restaurant dashboard
+          router.push(`/dashboard-restaurant?welcome=${restaurantData.restaurant_name}`);
+          return;
+        }
+        
+        // 用户未注册，显示注册表单
+        setShowRegistrationForm(true);
+      } catch (error) {
+        console.error('Error checking user registration:', error);
+        // 出错时默认显示注册表单
+        setShowRegistrationForm(true);
+      } finally {
+        setIsCheckingUser(false);
+      }
+    };
+
+    checkUserRegistration();
+  }, [walletAddress, router]);
 
   useEffect(() => {
     if (countdown > 0) {
@@ -68,6 +120,11 @@ export default function RegisterPage() {
       return;
     }
 
+    // 防止重复提交
+    if (sending || countdown > 0) {
+      return;
+    }
+
     const email = `${emailLocal}@gmail.com`;
     const code = generateVerificationCode();
     saveVerificationCode(email, code);
@@ -90,6 +147,11 @@ export default function RegisterPage() {
 
   const handleSubmit = async () => {
     if (!walletAddress) return alert('Wallet not ready');
+
+    // 防止重复提交
+    if (verifying) {
+      return;
+    }
 
     // 验证所有必填字段
     if (!emailLocal.trim()) {
@@ -170,77 +232,100 @@ export default function RegisterPage() {
           </div>
         )}
 
-        {/* Step Indicator */}
-        <div className="text-center text-sm text-gray-400">
-          Step {verificationSent ? '2' : '1'} of 2: {verificationSent ? 'Complete Registration' : 'Verify Email'}
-        </div>
-
-        {/* Role Switch */}
-{/* Role Switch */}
-<div className="flex space-x-2">
-  <button
-    onClick={() => setRole('diner')}
-    className={`w-full py-2 rounded ${
-      role === 'diner' ? 'bg-[#4F46E5]' : 'bg-zinc-700'
-    }`}
-  >
-    Diner
-  </button>
-  <button
-    onClick={() => setRole('restaurant')}
-    className={`w-full py-2 rounded ${
-      role === 'restaurant' ? 'bg-[#4F46E5]' : 'bg-zinc-700'
-    }`}
-  >
-    Restaurant
-  </button>
-</div>
-
-
-        {role === 'diner' && (
-          <>
-            <input placeholder="First Name *" value={firstName} onChange={e => setFirstName(e.target.value)} className="input-base w-full" />
-            <input placeholder="Last Name *" value={lastName} onChange={e => setLastName(e.target.value)} className="input-base w-full" />
-          </>
-        )}
-
-        {role === 'restaurant' && (
-          <>
-            <input placeholder="Restaurant Name *" value={restaurantName} onChange={e => setRestaurantName(e.target.value)} className="input-base w-full" />
-            <input placeholder="Address *" value={address} onChange={e => setAddress(e.target.value)} className="input-base w-full" />
-          </>
-        )}
-
-        {/* Email */}
-        <div className="flex w-full">
-          <input placeholder="Gmail (no @)" value={emailLocal} onChange={e => setEmailLocal(e.target.value)} className="input-base w-7/10 rounded-r-none" />
-          <span className="input-base bg-zinc-700 rounded-l-none flex items-center justify-center w-3/10">@gmail.com</span>
-        </div>
-
-        {/* Phone */}
-        {role === 'diner' && (
-          <div className="flex gap-2">
-            <div className="flex items-center gap-1"><span className="font-bold">1</span><span>+</span></div>
-            <input maxLength={3} ref={areaRef} value={area} onChange={e => { setArea(e.target.value); if (e.target.value.length === 3) prefixRef.current?.focus(); }} className="input-base w-1/3" />
-            <input maxLength={3} ref={prefixRef} value={prefix} onChange={e => { setPrefix(e.target.value); if (e.target.value.length === 3) lineRef.current?.focus(); }} className="input-base w-1/3" />
-            <input maxLength={4} ref={lineRef} value={line} onChange={e => setLine(e.target.value)} className="input-base w-1/3" />
+        {/* Loading State - 检查用户注册状态 */}
+        {isCheckingUser && (
+          <div className="bg-blue-900/20 border border-blue-500/30 rounded-lg p-6 text-center">
+            <div className="text-blue-400 text-sm font-medium">🔍 Checking registration status...</div>
+            <div className="text-xs text-gray-300 mt-2">
+              Verifying if this wallet is already registered
+            </div>
           </div>
         )}
 
-        {successMessage && <p className="text-green-400 text-center text-sm">{successMessage}</p>}
-
-        {/* Verification + Submit */}
-        {!verificationSent ? (
-          <button onClick={handleSendVerification} className="w-full py-2 px-4 rounded bg-[#4F46E5] hover:bg-[#4338CA] text-white font-semibold mb-3" disabled={sending || countdown > 0}>
-            {sending ? 'Sending...' : countdown > 0 ? `Resend (${countdown}s)` : 'Send Verification Code'}
-          </button>
-        ) : (
+        {/* Registration Form - 只有当用户未注册时才显示 */}
+        {showRegistrationForm && (
           <>
-            <input placeholder="Enter Code" value={inputCode} onChange={e => setInputCode(e.target.value)} className="input-base w-full" />
-            <button onClick={handleSubmit} className="btn-primary bg-[#4F46E5] w-full" disabled={verifying}>
-              {verifying ? 'Verifying...' : 'Register'}
-            </button>
+            {/* Step Indicator */}
+            <div className="text-center text-sm text-gray-400">
+              Step {verificationSent ? '2' : '1'} of 2: {verificationSent ? 'Complete Registration' : 'Verify Email'}
+            </div>
+
+            {/* Role Switch */}
+            <div className="flex space-x-2">
+              <button
+                onClick={() => setRole('diner')}
+                className={`w-full py-2 rounded ${
+                  role === 'diner' ? 'bg-[#4F46E5]' : 'bg-zinc-700'
+                }`}
+              >
+                Diner
+              </button>
+              <button
+                onClick={() => setRole('restaurant')}
+                className={`w-full py-2 rounded ${
+                  role === 'restaurant' ? 'bg-[#4F46E5]' : 'bg-zinc-700'
+                }`}
+              >
+                Restaurant
+              </button>
+            </div>
+
+            {role === 'diner' && (
+              <>
+                <input placeholder="First Name *" value={firstName} onChange={e => setFirstName(e.target.value)} className="input-base w-full" />
+                <input placeholder="Last Name *" value={lastName} onChange={e => setLastName(e.target.value)} className="input-base w-full" />
+              </>
+            )}
+
+            {role === 'restaurant' && (
+              <>
+                <input placeholder="Restaurant Name *" value={restaurantName} onChange={e => setRestaurantName(e.target.value)} className="input-base w-full" />
+                <input placeholder="Address *" value={address} onChange={e => setAddress(e.target.value)} className="input-base w-full" />
+              </>
+            )}
+
+            {/* Email */}
+            <div className="flex w-full">
+              <input placeholder="Gmail (no @)" value={emailLocal} onChange={e => setEmailLocal(e.target.value)} className="input-base w-7/10 rounded-r-none" />
+              <span className="input-base bg-zinc-700 rounded-l-none flex items-center justify-center w-3/10">@gmail.com</span>
+            </div>
+
+            {/* Phone */}
+            {role === 'diner' && (
+              <div className="flex gap-2">
+                <div className="flex items-center gap-1"><span className="font-bold">1</span><span>+</span></div>
+                <input maxLength={3} ref={areaRef} value={area} onChange={e => { setArea(e.target.value); if (e.target.value.length === 3) prefixRef.current?.focus(); }} className="input-base w-1/3" />
+                <input maxLength={3} ref={prefixRef} value={prefix} onChange={e => { setPrefix(e.target.value); if (e.target.value.length === 3) lineRef.current?.focus(); }} className="input-base w-1/3" />
+                <input maxLength={4} ref={lineRef} value={line} onChange={e => setLine(e.target.value)} className="input-base w-1/3" />
+              </div>
+            )}
+
+            {successMessage && <p className="text-green-400 text-center text-sm">{successMessage}</p>}
+
+            {/* Verification + Submit */}
+            {!verificationSent ? (
+              <button onClick={handleSendVerification} className="w-full py-2 px-4 rounded bg-[#4F46E5] hover:bg-[#4338CA] text-white font-semibold mb-3" disabled={sending || countdown > 0}>
+                {sending ? 'Sending...' : countdown > 0 ? `Resend (${countdown}s)` : 'Send Verification Code'}
+              </button>
+            ) : (
+              <>
+                <input placeholder="Enter Code" value={inputCode} onChange={e => setInputCode(e.target.value)} className="input-base w-full" />
+                <button onClick={handleSubmit} className="btn-primary bg-[#4F46E5] w-full" disabled={verifying}>
+                  {verifying ? 'Verifying...' : 'Register'}
+                </button>
+              </>
+            )}
           </>
+        )}
+
+        {/* 如果没有钱包连接，显示提示 */}
+        {!walletAddress && !isCheckingUser && (
+          <div className="bg-yellow-900/20 border border-yellow-500/30 rounded-lg p-6 text-center">
+            <div className="text-yellow-400 text-sm font-medium">⚠️ Please connect your wallet first</div>
+            <div className="text-xs text-gray-300 mt-2">
+              You need to connect your wallet to register or check your account status
+            </div>
+          </div>
         )}
       </div>
     </div>
