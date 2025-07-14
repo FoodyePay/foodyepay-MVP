@@ -38,9 +38,6 @@ export default function RegisterPage() {
   // 新增：自动识别用户状态
   const [isCheckingUser, setIsCheckingUser] = useState(false);
   const [showRegistrationForm, setShowRegistrationForm] = useState(false);
-  
-  // 测试用状态
-  const [testResult, setTestResult] = useState<string>('');
 
   const areaRef = useRef<HTMLInputElement>(null);
   const prefixRef = useRef<HTMLInputElement>(null);
@@ -93,61 +90,6 @@ export default function RegisterPage() {
 
     checkUserRegistration();
   }, [walletAddress, router]);
-
-  // 测试 Supabase 写入功能
-  const testSupabaseWrite = async () => {
-    if (!walletAddress) {
-      setTestResult('❌ 请先连接钱包');
-      return;
-    }
-
-    setTestResult('🔄 正在测试数据库写入...');
-    
-    try {
-      // 测试数据
-      const testData = {
-        wallet_address: walletAddress,
-        email: 'test@gmail.com',
-        phone: '1-123-456-7890',
-        first_name: 'Test',
-        last_name: 'User',
-      };
-
-      console.log('Testing Supabase write with data:', testData);
-
-      // 尝试写入 diners 表
-      const { data, error } = await supabase
-        .from('diners')
-        .insert([testData]);
-
-      if (error) {
-        console.error('Supabase write error:', error);
-        setTestResult(`❌ 写入失败: ${error.message}`);
-        return;
-      }
-
-      console.log('Supabase write success:', data);
-      setTestResult('✅ 数据库写入成功！');
-
-      // 立即删除测试数据
-      setTimeout(async () => {
-        try {
-          await supabase
-            .from('diners')
-            .delete()
-            .eq('wallet_address', walletAddress)
-            .eq('email', 'test@gmail.com');
-          setTestResult('✅ 数据库写入成功！(测试数据已清理)');
-        } catch (cleanupError) {
-          console.error('Cleanup error:', cleanupError);
-        }
-      }, 2000);
-
-    } catch (error) {
-      console.error('Test error:', error);
-      setTestResult(`❌ 测试失败: ${error}`);
-    }
-  };
 
   useEffect(() => {
     if (countdown > 0) {
@@ -310,22 +252,6 @@ export default function RegisterPage() {
         {/* Registration Form - 只有当用户未注册时才显示 */}
         {showRegistrationForm && (
           <>
-            {/* 测试按钮 */}
-            <div className="bg-yellow-900/20 border border-yellow-500/30 rounded-lg p-4">
-              <div className="text-yellow-400 text-sm font-medium mb-2">🧪 数据库测试</div>
-              <button
-                onClick={testSupabaseWrite}
-                className="w-full bg-yellow-600 hover:bg-yellow-700 py-2 px-4 rounded text-white font-semibold mb-2"
-              >
-                测试 Supabase 写入
-              </button>
-              {testResult && (
-                <div className="text-sm text-gray-300 mt-2 p-2 bg-gray-800 rounded">
-                  {testResult}
-                </div>
-              )}
-            </div>
-
             {/* Step Indicator */}
             <div className="text-center text-sm text-gray-400">
               Step {verificationSent ? '2' : '1'} of 2: {verificationSent ? 'Complete Registration' : 'Verify Email'}
