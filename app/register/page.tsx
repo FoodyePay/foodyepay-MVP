@@ -38,6 +38,9 @@ export default function RegisterPage() {
   // 新增：自动识别用户状态
   const [isCheckingUser, setIsCheckingUser] = useState(false);
   const [showRegistrationForm, setShowRegistrationForm] = useState(false);
+  
+  // 测试用状态
+  const [testResult, setTestResult] = useState<string>('');
 
   const areaRef = useRef<HTMLInputElement>(null);
   const prefixRef = useRef<HTMLInputElement>(null);
@@ -55,7 +58,7 @@ export default function RegisterPage() {
         const { data: dinerData } = await supabase
           .from("diners")
           .select("first_name")
-          .eq("wallet", walletAddress)
+          .eq("wallet_address", walletAddress)
           .single();
         
         if (dinerData) {
@@ -67,13 +70,13 @@ export default function RegisterPage() {
         // 检查 restaurants 表
         const { data: restaurantData } = await supabase
           .from("restaurants")
-          .select("restaurant_name")
-          .eq("wallet", walletAddress)
+          .select("name")
+          .eq("wallet_address", walletAddress)
           .single();
         
         if (restaurantData) {
           // 用户已注册为 restaurant，跳转到 restaurant dashboard
-          router.push(`/dashboard-restaurant?welcome=${restaurantData.restaurant_name}`);
+          router.push(`/dashboard-restaurant?welcome=${restaurantData.name}`);
           return;
         }
         
@@ -90,6 +93,61 @@ export default function RegisterPage() {
 
     checkUserRegistration();
   }, [walletAddress, router]);
+
+  // 测试 Supabase 写入功能
+  const testSupabaseWrite = async () => {
+    if (!walletAddress) {
+      setTestResult('❌ 请先连接钱包');
+      return;
+    }
+
+    setTestResult('🔄 正在测试数据库写入...');
+    
+    try {
+      // 测试数据
+      const testData = {
+        wallet_address: walletAddress,
+        email: 'test@gmail.com',
+        phone: '1-123-456-7890',
+        first_name: 'Test',
+        last_name: 'User',
+      };
+
+      console.log('Testing Supabase write with data:', testData);
+
+      // 尝试写入 diners 表
+      const { data, error } = await supabase
+        .from('diners')
+        .insert([testData]);
+
+      if (error) {
+        console.error('Supabase write error:', error);
+        setTestResult(`❌ 写入失败: ${error.message}`);
+        return;
+      }
+
+      console.log('Supabase write success:', data);
+      setTestResult('✅ 数据库写入成功！');
+
+      // 立即删除测试数据
+      setTimeout(async () => {
+        try {
+          await supabase
+            .from('diners')
+            .delete()
+            .eq('wallet_address', walletAddress)
+            .eq('email', 'test@gmail.com');
+          setTestResult('✅ 数据库写入成功！(测试数据已清理)');
+        } catch (cleanupError) {
+          console.error('Cleanup error:', cleanupError);
+        }
+      }, 2000);
+
+    } catch (error) {
+      console.error('Test error:', error);
+      setTestResult(`❌ 测试失败: ${error}`);
+    }
+  };
 
   useEffect(() => {
     if (countdown > 0) {
@@ -162,9 +220,6 @@ export default function RegisterPage() {
       if (!firstName.trim() || !lastName.trim()) {
         return alert('Please enter your first and last name');
       }
-      if (!area.trim() || !prefix.trim() || !line.trim()) {
-        return alert('Please enter your complete phone number');
-      }
     } else if (role === 'restaurant') {
       if (!restaurantName.trim()) {
         return alert('Please enter your restaurant name');
@@ -174,12 +229,16 @@ export default function RegisterPage() {
       }
     }
 
+    // 验证电话号码（对所有用户都是必需的）
+    if (!area.trim() || !prefix.trim() || !line.trim()) {
+      return alert('Please enter your complete phone number');
+    }
+
     if (!inputCode.trim()) {
       return alert('Please enter the verification code');
     }
 
     const email = `${emailLocal}@gmail.com`;
-    const phone = `1-${area}-${prefix}-${line}`;
     const isValid = validateVerificationCode(email, inputCode);
     if (!isValid) return alert('Invalid or expired verification code');
 
@@ -188,24 +247,30 @@ export default function RegisterPage() {
     const payload =
       role === 'diner'
         ? {
-            wallet: walletAddress,
-            role,
+            wallet_address: walletAddress,
             email,
-            phone,
+            phone: `1-${area}-${prefix}-${line}`,
             first_name: firstName,
             last_name: lastName,
           }
         : {
-            wallet: walletAddress,
-            role,
-            email,
-            phone,
-            restaurant_name: restaurantName,
+            wallet_address: walletAddress,
+            name: restaurantName,
             address,
+            phone: `1-${area}-${prefix}-${line}`,
           };
 
     try {
-      await supabase.from(role === 'diner' ? 'diners' : 'restaurants').insert([payload]);
+      console.log('Inserting payload:', payload);
+      const { data, error } = await supabase.from(role === 'diner' ? 'diners' : 'restaurants').insert([payload]);
+      
+      if (error) {
+        console.error('Supabase insert error:', error);
+        alert(`Registration error: ${error.message}`);
+        return;
+      }
+      
+      console.log('Insert successful:', data);
       await sendWelcomeEmail(email, walletAddress);
       localStorage.setItem('foodye_wallet', walletAddress);
       router.push(`/register/yes/success?role=${role}`);
@@ -245,6 +310,22 @@ export default function RegisterPage() {
         {/* Registration Form - 只有当用户未注册时才显示 */}
         {showRegistrationForm && (
           <>
+            {/* 测试按钮 */}
+            <div className="bg-yellow-900/20 border border-yellow-500/30 rounded-lg p-4">
+              <div className="text-yellow-400 text-sm font-medium mb-2">🧪 数据库测试</div>
+              <button
+                onClick={testSupabaseWrite}
+                className="w-full bg-yellow-600 hover:bg-yellow-700 py-2 px-4 rounded text-white font-semibold mb-2"
+              >
+                测试 Supabase 写入
+              </button>
+              {testResult && (
+                <div className="text-sm text-gray-300 mt-2 p-2 bg-gray-800 rounded">
+                  {testResult}
+                </div>
+              )}
+            </div>
+
             {/* Step Indicator */}
             <div className="text-center text-sm text-gray-400">
               Step {verificationSent ? '2' : '1'} of 2: {verificationSent ? 'Complete Registration' : 'Verify Email'}
@@ -291,14 +372,12 @@ export default function RegisterPage() {
             </div>
 
             {/* Phone */}
-            {role === 'diner' && (
-              <div className="flex gap-2">
-                <div className="flex items-center gap-1"><span className="font-bold">1</span><span>+</span></div>
-                <input maxLength={3} ref={areaRef} value={area} onChange={e => { setArea(e.target.value); if (e.target.value.length === 3) prefixRef.current?.focus(); }} className="input-base w-1/3" />
-                <input maxLength={3} ref={prefixRef} value={prefix} onChange={e => { setPrefix(e.target.value); if (e.target.value.length === 3) lineRef.current?.focus(); }} className="input-base w-1/3" />
-                <input maxLength={4} ref={lineRef} value={line} onChange={e => setLine(e.target.value)} className="input-base w-1/3" />
-              </div>
-            )}
+            <div className="flex gap-2">
+              <div className="flex items-center gap-1"><span className="font-bold">1</span><span>+</span></div>
+              <input maxLength={3} ref={areaRef} value={area} onChange={e => { setArea(e.target.value); if (e.target.value.length === 3) prefixRef.current?.focus(); }} className="input-base w-1/3" />
+              <input maxLength={3} ref={prefixRef} value={prefix} onChange={e => { setPrefix(e.target.value); if (e.target.value.length === 3) lineRef.current?.focus(); }} className="input-base w-1/3" />
+              <input maxLength={4} ref={lineRef} value={line} onChange={e => setLine(e.target.value)} className="input-base w-1/3" />
+            </div>
 
             {successMessage && <p className="text-green-400 text-center text-sm">{successMessage}</p>}
 

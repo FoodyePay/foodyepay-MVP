@@ -6,11 +6,10 @@ import { useFoodyeWallet } from '@/components/Wallet/WalletProvider';
 import { supabase } from '@/lib/supabase';
 
 interface RestaurantData {
-  restaurant_name: string;
-  email: string;
-  phone: string;
+  name: string;
   address: string;
-  wallet: string;
+  phone: string;
+  wallet_address: string;
   created_at: string;
 }
 
@@ -38,7 +37,7 @@ function DashboardContent() {
         const { data, error } = await supabase
           .from('restaurants')
           .select('*')
-          .eq('wallet', walletAddress)
+          .eq('wallet_address', walletAddress)
           .single();
 
         if (error) {
@@ -124,11 +123,7 @@ function DashboardContent() {
               <div className="space-y-3">
                 <div>
                   <span className="text-gray-400">Name:</span>
-                  <div className="font-semibold">{restaurantData.restaurant_name}</div>
-                </div>
-                <div>
-                  <span className="text-gray-400">Email:</span>
-                  <div className="font-semibold">{restaurantData.email}</div>
+                  <div className="font-semibold">{restaurantData.name}</div>
                 </div>
                 <div>
                   <span className="text-gray-400">Phone:</span>
