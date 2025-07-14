@@ -51,32 +51,41 @@ export default function RegisterPage() {
       setIsCheckingUser(true);
       
       try {
+        console.log('Checking user registration for wallet:', walletAddress);
+        
         // 首先检查 diners 表
-        const { data: dinerData } = await supabase
+        const { data: dinerData, error: dinerError } = await supabase
           .from("diners")
           .select("first_name")
           .eq("wallet_address", walletAddress)
           .single();
         
+        console.log('Diner query result:', { dinerData, dinerError });
+        
         if (dinerData) {
+          console.log('User is registered as diner, redirecting...');
           // 用户已注册为 diner，直接跳转到 dashboard
           router.push(`/dashboard-diner?welcome=${dinerData.first_name}`);
           return;
         }
         
         // 检查 restaurants 表
-        const { data: restaurantData } = await supabase
+        const { data: restaurantData, error: restaurantError } = await supabase
           .from("restaurants")
           .select("name")
           .eq("wallet_address", walletAddress)
           .single();
         
+        console.log('Restaurant query result:', { restaurantData, restaurantError });
+        
         if (restaurantData) {
+          console.log('User is registered as restaurant, redirecting...');
           // 用户已注册为 restaurant，跳转到 restaurant dashboard
           router.push(`/dashboard-restaurant?welcome=${restaurantData.name}`);
           return;
         }
         
+        console.log('User not registered, showing registration form');
         // 用户未注册，显示注册表单
         setShowRegistrationForm(true);
       } catch (error) {
