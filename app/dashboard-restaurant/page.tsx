@@ -2,13 +2,13 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useFoodyeWallet } from '@/components/Wallet/WalletProvider';
+import { useAccount } from 'wagmi';
 import { supabase } from '@/lib/supabase';
 
 interface Restaurant {
   id: string;
-  wallet: string;
-  restaurant_name: string;
+  wallet_address: string;
+  name: string;
   email: string;
   phone: string;
   address: string;
@@ -17,13 +17,13 @@ interface Restaurant {
 
 export default function RestaurantDashboard() {
   const router = useRouter();
-  const { walletAddress } = useFoodyeWallet();
+  const { address } = useAccount();
   const [restaurant, setRestaurant] = useState<Restaurant | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const checkAuth = async () => {
-      if (!walletAddress) {
+      if (!address) {
         router.push('/');
         return;
       }
@@ -32,7 +32,7 @@ export default function RestaurantDashboard() {
         const { data, error } = await supabase
           .from('restaurants')
           .select('*')
-          .eq('wallet', walletAddress)
+          .eq('wallet_address', address)
           .single();
 
         if (error || !data) {
@@ -51,7 +51,7 @@ export default function RestaurantDashboard() {
     };
 
     checkAuth();
-  }, [walletAddress, router]);
+  }, [address, router]);
 
   if (loading) {
     return (
@@ -70,17 +70,28 @@ export default function RestaurantDashboard() {
 
   return (
     <div className="min-h-screen bg-black text-white">
+      {/* 🎉 Welcome Banner */}
+      <div className="bg-[#202541] text-white p-4 text-center border-b border-zinc-800">
+        <h1 className="text-2xl font-bold">
+          Welcome to FoodyePay, {restaurant.name.split(' ')[0]}!
+        </h1>
+        <p className="text-blue-100 mt-1">Your restaurant management dashboard</p>
+        <p className="text-xs text-blue-200 mt-2 font-mono">
+          Restaurant ID: {restaurant.id}
+        </p>
+      </div>
+
       {/* Header */}
       <header className="bg-zinc-900 border-b border-zinc-800 p-4">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <div>
-            <h1 className="text-2xl font-bold text-purple-400">🍽️ {restaurant.restaurant_name}</h1>
+            <h1 className="text-2xl font-bold text-purple-400">🍽️ {restaurant.name}</h1>
             <p className="text-sm text-gray-400">Restaurant Dashboard</p>
           </div>
           <div className="text-right">
             <p className="text-sm text-gray-400">Connected Wallet</p>
             <p className="font-mono text-xs text-green-400">
-              {walletAddress?.slice(0, 6)}...{walletAddress?.slice(-4)}
+              {address?.slice(0, 6)}...{address?.slice(-4)}
             </p>
           </div>
         </div>
@@ -98,7 +109,7 @@ export default function RestaurantDashboard() {
               <div className="space-y-3 text-sm">
                 <div>
                   <label className="text-gray-400">Name:</label>
-                  <p className="text-white font-medium">{restaurant.restaurant_name}</p>
+                  <p className="text-white font-medium">{restaurant.name}</p>
                 </div>
                 
                 <div>
@@ -195,7 +206,7 @@ export default function RestaurantDashboard() {
           
           <div className="bg-zinc-900 rounded-lg p-4 text-center">
             <div className="text-2xl font-bold text-blue-400">0 ETH</div>
-            <div className="text-sm text-gray-400">Today's Revenue</div>
+            <div className="text-sm text-gray-400">Today&apos;s Revenue</div>
           </div>
           
           <div className="bg-zinc-900 rounded-lg p-4 text-center">

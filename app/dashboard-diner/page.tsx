@@ -1,5 +1,7 @@
 'use client';
 
+import { useState, useEffect } from 'react';
+import { useAccount } from 'wagmi';
 import {
   ConnectWallet,
   Wallet,
@@ -19,8 +21,45 @@ import {
 import { Buy } from '@coinbase/onchainkit/buy';
 import { SwapDefault } from '@coinbase/onchainkit/swap';
 import type { Token } from '@coinbase/onchainkit/token';
+import { supabase } from '@/lib/supabase';
 
 export default function DinerDashboard() {
+  const { address } = useAccount();
+  const [userName, setUserName] = useState<string>('');
+  const [userId, setUserId] = useState<string>('');
+  const [loading, setLoading] = useState(true);
+
+  // 🔥 获取用户姓名和ID信息
+  useEffect(() => {
+    const fetchUserName = async () => {
+      if (!address) return;
+      
+      try {
+        const { data, error } = await supabase
+          .from('diners')
+          .select('id, first_name, last_name')
+          .eq('wallet_address', address)
+          .single();
+        
+        if (error) {
+          console.error('Error fetching user:', error);
+          return;
+        }
+        
+        if (data) {
+          setUserName(data.first_name); // 🔥 只使用 first_name
+          setUserId(data.id); // 🔥 获取 UUID
+        }
+      } catch (err) {
+        console.error('Failed to fetch user name:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUserName();
+  }, [address]);
+
   const chainId = 8453;
 
   const ethToken: Token = {
@@ -54,6 +93,25 @@ export default function DinerDashboard() {
 
   return (
     <div className="flex flex-col min-h-screen font-sans dark:bg-black dark:text-white bg-white text-black">
+      {/* 🎉 Welcome Banner */}
+      <div className="bg-[#222c4e] text-white p-4 text-center border-b border-zinc-800">
+        <h1 className="text-2xl font-bold">
+          {loading ? (
+            "Welcome to FoodyePay!"
+          ) : userName ? (
+            `Welcome to FoodyePay, ${userName}!`
+          ) : (
+            "Welcome to FoodyePay!"
+          )}
+        </h1>
+        <p className="text-blue-100 mt-1">Your Web3 food payment dashboard</p>
+        {userId && (
+          <p className="text-xs text-blue-200 mt-2 font-mono">
+            User ID: {userId}
+          </p>
+        )}
+      </div>
+
       {/* ✅ Wallet Header */}
       <header className="p-4 flex justify-end">
         <Wallet>

@@ -1,23 +1,15 @@
 'use client';
 
-import { useState } from 'react';
 import { useFoodyeWallet } from './WalletProvider';
 import { ConnectWallet as OnchainConnectWallet, Wallet, WalletDropdown, WalletDropdownLink, WalletDropdownDisconnect } from '@coinbase/onchainkit/wallet';
 import { Address, Avatar, Name, Identity, EthBalance } from '@coinbase/onchainkit/identity';
 
 type Props = {
-  onConnect?: (address: string) => void;
   disabled?: boolean;
 };
 
-export default function ConnectWallet({ onConnect, disabled }: Props) {
-  const { walletAddress, isConnected, isConnecting, connect, disconnect } = useFoodyeWallet();
-
-  // Handle connection success
-  const handleConnectSuccess = (address: string) => {
-    console.log('✅ Wallet connected:', address);
-    onConnect?.(address);
-  };
+export default function ConnectWallet({ disabled }: Props) {
+  const { walletAddress, isConnected, isConnecting } = useFoodyeWallet();
 
   if (isConnected && walletAddress) {
     return (

@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import { ConnectWallet, Wallet } from '@coinbase/onchainkit/wallet';
 import { Address, Avatar, Name, Identity, EthBalance } from '@coinbase/onchainkit/identity';
 import { useAccount } from 'wagmi';
-import { supabase } from '@/lib/supabase';
 import { useFoodyeWallet } from '@/components/Wallet/WalletProvider';
 import { checkUserExists, isDemoWalletAddress } from '@/lib/auth';
 import Image from 'next/image';
@@ -13,7 +12,7 @@ import Image from 'next/image';
 export default function WelcomePage() {
   const router = useRouter();
   const [showWelcome, setShowWelcome] = useState(true);
-  const [welcomeCountdown, setWelcomeCountdown] = useState(6);
+  const [welcomeCountdown, setWelcomeCountdown] = useState(3);
   const [checking, setChecking] = useState(false);
   const [autoChecking, setAutoChecking] = useState(false);
   
@@ -21,7 +20,7 @@ export default function WelcomePage() {
   const { address, isConnected } = useAccount();
   
   // Custom wallet provider for state
-  const { isConnecting } = useFoodyeWallet();
+  const { } = useFoodyeWallet();
 
   // 清理旧的模拟钱包缓存
   useEffect(() => {
@@ -103,8 +102,8 @@ export default function WelcomePage() {
   // 欢迎页面 - 显示6秒
   if (showWelcome) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-950 to-indigo-950 flex flex-col items-center justify-center px-4">
-        <div className="text-center space-y-8 animate-fade-in">
+      <div className="min-h-screen bg-black flex flex-col items-center justify-center px-4">
+        <div className="text-center space-y-8">
           {/* Logo */}
           <div className="relative">
             <Image
@@ -112,7 +111,7 @@ export default function WelcomePage() {
               alt="FoodyePay"
               width={200}
               height={200}
-              className="mx-auto mb-4 animate-bounce"
+              className="mx-auto mb-4"
             />
           </div>
           
@@ -128,9 +127,9 @@ export default function WelcomePage() {
 
           {/* Countdown */}
           <div className="flex items-center justify-center space-x-2 text-blue-300">
-            <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
+            <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
             <span>Starting in {welcomeCountdown}s</span>
-            <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
+            <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
           </div>
 
           {/* Skip Button */}
@@ -227,7 +226,7 @@ export default function WelcomePage() {
           </div>
 
           {/* Checking Status */}
-          <p className="text-yellow-400 animate-pulse text-sm">
+          <p className="text-yellow-400 text-sm">
             🔄 Checking registration status...
           </p>
         </div>

@@ -49,13 +49,7 @@ export default function LoginPage() {
     <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center px-4">
       <h1 className="text-3xl font-bold mb-6">Login with Wallet</h1>
 
-      <ConnectWallet
-        onConnect={(address) => {
-          if (!address) return;
-          localStorage.setItem('foodye_wallet', address);
-          checkRegistration(address);
-        }}
-      />
+      <ConnectWallet />
 
       {checking && (
         <p className="mt-4 text-yellow-400 animate-pulse">

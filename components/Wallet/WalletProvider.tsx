@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useEffect, ReactNode } from 'react';
 import { useAccount, useConnect, useDisconnect } from 'wagmi';
 
 type WalletContextType = {

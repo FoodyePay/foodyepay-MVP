@@ -1,9 +1,9 @@
 'use client';
 
 import { useSearchParams, useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, Suspense } from 'react';
 
-export default function RegisterSuccessPage() {
+function RegisterSuccessContent() {
   const params = useSearchParams();
   const role = params.get('role');
   const router = useRouter();
@@ -25,5 +25,20 @@ export default function RegisterSuccessPage() {
         <p className="text-sm text-zinc-500">Redirecting to your dashboard...</p>
       </div>
     </div>
+  );
+}
+
+export default function RegisterSuccessPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p>Loading...</p>
+        </div>
+      </div>
+    }>
+      <RegisterSuccessContent />
+    </Suspense>
   );
 }

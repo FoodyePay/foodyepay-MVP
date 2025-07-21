@@ -17,7 +17,7 @@ import { sendVerificationCodeEmail, sendWelcomeEmail } from '@/lib/emailService'
 export default function RegisterPage() {
   const router = useRouter();
   const { address } = useAccount();
-  const { isConnected } = useFoodyeWallet();
+  const { } = useFoodyeWallet();
 
   const [role, setRole] = useState<'diner' | 'restaurant'>('diner');
   const [firstName, setFirstName] = useState('');

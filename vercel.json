@@ -1,0 +1,17 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/next"
+    }
+  ],
+  "env": {
+    "NEXT_PUBLIC_SUPABASE_URL": "@supabase-url",
+    "NEXT_PUBLIC_SUPABASE_ANON_KEY": "@supabase-anon-key",
+    "NEXT_PUBLIC_COINBASE_WALLET_PROJECT_ID": "@coinbase-project-id",
+    "NEXT_PUBLIC_COINBASE_WALLET_APP_NAME": "FoodyePay",
+    "NEXT_PUBLIC_ONCHAINKIT_API_KEY": "@onchainkit-api-key",
+    "RESEND_API_KEY": "@resend-api-key"
+  }
+}

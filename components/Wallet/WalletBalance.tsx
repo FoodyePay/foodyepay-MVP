@@ -2,7 +2,6 @@
 
 import { EthBalance } from '@coinbase/onchainkit/identity';
 import { useAccount, useBalance } from 'wagmi';
-import { base } from 'viem/chains';
 
 interface WalletBalanceProps {
   address?: string;
@@ -34,7 +33,7 @@ function USDCBalance({ address }: { address: `0x${string}` }) {
 }
 
 export default function WalletBalance({ address: propAddress, className = '' }: WalletBalanceProps) {
-  const { address: connectedAddress, isConnected } = useAccount();
+  const { address: connectedAddress } = useAccount();
   
   // Use prop address or connected address
   const walletAddress = propAddress || connectedAddress;
