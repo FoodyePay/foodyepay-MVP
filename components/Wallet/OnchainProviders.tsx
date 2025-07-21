@@ -32,6 +32,7 @@ export function OnchainProviders({ children }: OnchainProvidersProps) {
         <OnchainKitProvider
           apiKey={process.env.NEXT_PUBLIC_ONCHAINKIT_API_KEY}
           chain={base}
+          projectId={process.env.NEXT_PUBLIC_COINBASE_PROJECT_ID}
           config={{
             appearance: {
               mode: 'dark',
