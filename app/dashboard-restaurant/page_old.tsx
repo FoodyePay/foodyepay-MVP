@@ -70,12 +70,12 @@ export default function RestaurantDashboard() {
 
   return (
     <div className="min-h-screen bg-black text-white">
-      {/* Welcome Banner */}
-      <div className="bg-[#1e40af] text-white p-4 text-center border-b border-zinc-800">
+      {/* 🎉 Welcome Banner */}
+      <div className="bg-[#202541] text-white p-4 text-center border-b border-zinc-800">
         <h1 className="text-2xl font-bold">
           Welcome to FoodyePay, {restaurant.name.split(' ')[0]}!
         </h1>
-        <p className="text-blue-100 mt-1">Manage your restaurant&apos;s Web3 payments</p>
+        <p className="text-blue-100 mt-1">Your restaurant management dashboard</p>
         <p className="text-xs text-blue-200 mt-2 font-mono">
           Restaurant ID: {restaurant.id}
         </p>
