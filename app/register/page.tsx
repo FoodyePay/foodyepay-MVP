@@ -1,11 +1,12 @@
 // app/register/page.tsx
-
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useAccount } from 'wagmi';
 import { useFoodyeWallet } from '@/components/Wallet/WalletProvider';
 import { supabase } from '@/lib/supabase';
+import { checkUserExists, isDemoWalletAddress } from '@/lib/auth';
 import {
   generateVerificationCode,
   saveVerificationCode,
@@ -15,7 +16,8 @@ import { sendVerificationCodeEmail, sendWelcomeEmail } from '@/lib/emailService'
 
 export default function RegisterPage() {
   const router = useRouter();
-  const { walletAddress } = useFoodyeWallet();
+  const { address } = useAccount();
+  const { isConnected } = useFoodyeWallet();
 
   const [role, setRole] = useState<'diner' | 'restaurant'>('diner');
   const [firstName, setFirstName] = useState('');
@@ -25,7 +27,7 @@ export default function RegisterPage() {
   const [prefix, setPrefix] = useState('');
   const [line, setLine] = useState('');
   const [restaurantName, setRestaurantName] = useState('');
-  const [address, setAddress] = useState('');
+  const [restaurantAddress, setRestaurantAddress] = useState('');
 
   const [sending, setSending] = useState(false);
   const [verifying, setVerifying] = useState(false);
@@ -34,10 +36,75 @@ export default function RegisterPage() {
   const [countdown, setCountdown] = useState(0);
   const [codeSentAt, setCodeSentAt] = useState<number | null>(null);
   const [successMessage, setSuccessMessage] = useState('');
+  const [checkingRegistration, setCheckingRegistration] = useState(true);
 
   const areaRef = useRef<HTMLInputElement>(null);
   const prefixRef = useRef<HTMLInputElement>(null);
   const lineRef = useRef<HTMLInputElement>(null);
+
+  // 🚨 强制清理模拟钱包并重定向
+  useEffect(() => {
+    const cachedWallet = localStorage.getItem('foodye_wallet');
+
+    if (cachedWallet && isDemoWalletAddress(cachedWallet)) {
+      console.log('🧹 FORCE CLEARING demo wallet cache:', cachedWallet);
+      localStorage.removeItem('foodye_wallet');
+      alert('⚠️ Demo wallet detected! Please connect a real Coinbase Smart Wallet.');
+      router.push('/');
+      return;
+    }
+
+    if (address && isDemoWalletAddress(address)) {
+      console.log('🚨 Detected demo wallet:', address);
+      localStorage.removeItem('foodye_wallet');
+      alert('⚠️ Demo wallet detected! Please connect a real Coinbase Smart Wallet.');
+      router.push('/');
+      return;
+    }
+  }, [address, router]);
+
+  // 🔥 自动检查注册状态并重定�?
+  useEffect(() => {
+    const checkExistingRegistration = async () => {
+      if (!address) {
+        console.log('�?No wallet connected, redirecting...');
+        router.push('/');
+        return;
+      }
+
+      if (isDemoWalletAddress(address)) {
+        console.log('🚨 Demo wallet detected in check, redirecting');
+        localStorage.removeItem('foodye_wallet');
+        router.push('/');
+        return;
+      }
+
+      try {
+        console.log('🔍 Checking registration for:', address);
+        const userRole = await checkUserExists(address);
+
+        if (userRole === 'diner') {
+          console.log('�?Found diner, redirecting...');
+          router.push('/dashboard-diner');
+          return;
+        }
+
+        if (userRole === 'restaurant') {
+          console.log('�?Found restaurant, redirecting...');
+          router.push('/dashboard-restaurant');
+          return;
+        }
+
+        console.log('📝 Not registered yet, show form');
+      } catch (error) {
+        console.error('�?Error in registration check:', error);
+      } finally {
+        setCheckingRegistration(false);
+      }
+    };
+
+    checkExistingRegistration();
+  }, [address, router]);
 
   useEffect(() => {
     if (countdown > 0) {
@@ -68,12 +135,11 @@ export default function RegisterPage() {
 
     setSending(true);
     try {
-await sendVerificationCodeEmail(email, code, walletAddress!);
-
+      await sendVerificationCodeEmail(email, code, address!);
       setVerificationSent(true);
       setCountdown(60);
       setCodeSentAt(Date.now());
-      setSuccessMessage('✅ Code sent to email!');
+      setSuccessMessage('�?Code sent to email!');
     } catch (err) {
       console.error('Email send error', err);
       alert('Failed to send code');
@@ -83,7 +149,7 @@ await sendVerificationCodeEmail(email, code, walletAddress!);
   };
 
   const handleSubmit = async () => {
-    if (!walletAddress) return alert('Wallet not ready');
+    if (!address) return alert('Wallet not ready');
 
     const email = `${emailLocal}@gmail.com`;
     const phone = `1-${area}-${prefix}-${line}`;
@@ -92,29 +158,46 @@ await sendVerificationCodeEmail(email, code, walletAddress!);
 
     setVerifying(true);
 
+    // 🔥 Create payload matching actual Supabase schema
     const payload =
       role === 'diner'
         ? {
-            wallet: walletAddress,
-            role,
             email,
             phone,
             first_name: firstName,
             last_name: lastName,
+            wallet_address: address,
+            role,
           }
         : {
-            wallet: walletAddress,
-            role,
             email,
             phone,
-            restaurant_name: restaurantName,
-            address,
+            name: restaurantName, // restaurants table uses 'name'
+            address: restaurantAddress, // restaurants table uses 'address'
+            wallet_address: address, // ✅ Now restaurants table has wallet_address!
+            role,
           };
 
     try {
-      await supabase.from(role === 'diner' ? 'diners' : 'restaurants').insert([payload]);
-      await sendWelcomeEmail(email, walletAddress);
-      localStorage.setItem('foodye_wallet', walletAddress);
+      console.log('🔥 Attempting to insert into Supabase...');
+      console.log('📝 Payload:', payload);
+      console.log('🏢 Table:', role === 'diner' ? 'diners' : 'restaurants');
+      
+      const { data, error } = await supabase
+        .from(role === 'diner' ? 'diners' : 'restaurants')
+        .insert([payload])
+        .select(); // 添加 select 来获取插入的数据
+      
+      if (error) {
+        console.error('❌ Supabase insertion error:', error);
+        alert(`Database error: ${error.message}`);
+        return;
+      }
+      
+      console.log('✅ Successfully inserted into Supabase:', data);
+      
+      await sendWelcomeEmail(email, address);
+      localStorage.setItem('foodye_wallet', address);
       router.push(`/register/yes/success?role=${role}`);
     } catch (err) {
       console.error('Registration failed', err);
@@ -124,32 +207,40 @@ await sendVerificationCodeEmail(email, code, walletAddress!);
     }
   };
 
+  if (checkingRegistration) {
+    return (
+      <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center px-4">
+        <div className="text-center space-y-6">
+          <div className="w-16 h-16 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
+          <h2 className="text-2xl font-bold">Checking Registration...</h2>
+          <p className="text-gray-400">
+            {address ? `Wallet: ${address.slice(0, 6)}...${address.slice(-4)}` : 'Verifying...'}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-black text-white flex items-center justify-center px-4">
       <div className="w-full max-w-md bg-zinc-900 p-6 rounded-xl shadow space-y-4">
         <h1 className="text-xl font-bold text-center">Register on FoodyePay</h1>
 
         {/* Role Switch */}
-{/* Role Switch */}
-<div className="flex space-x-2">
-  <button
-    onClick={() => setRole('diner')}
-    className={`w-full py-2 rounded ${
-      role === 'diner' ? 'bg-[#4F46E5]' : 'bg-zinc-700'
-    }`}
-  >
-    Diner
-  </button>
-  <button
-    onClick={() => setRole('restaurant')}
-    className={`w-full py-2 rounded ${
-      role === 'restaurant' ? 'bg-[#4F46E5]' : 'bg-zinc-700'
-    }`}
-  >
-    Restaurant
-  </button>
-</div>
-
+        <div className="flex space-x-2">
+          <button
+            onClick={() => setRole('diner')}
+            className={`w-full py-2 rounded ${role === 'diner' ? 'bg-[#4F46E5]' : 'bg-zinc-700'}`}
+          >
+            Diner
+          </button>
+          <button
+            onClick={() => setRole('restaurant')}
+            className={`w-full py-2 rounded ${role === 'restaurant' ? 'bg-[#4F46E5]' : 'bg-zinc-700'}`}
+          >
+            Restaurant
+          </button>
+        </div>
 
         {role === 'diner' && (
           <>
@@ -161,17 +252,15 @@ await sendVerificationCodeEmail(email, code, walletAddress!);
         {role === 'restaurant' && (
           <>
             <input placeholder="Restaurant Name *" value={restaurantName} onChange={e => setRestaurantName(e.target.value)} className="input-base w-full" />
-            <input placeholder="Address *" value={address} onChange={e => setAddress(e.target.value)} className="input-base w-full" />
+            <input placeholder="Address *" value={restaurantAddress} onChange={e => setRestaurantAddress(e.target.value)} className="input-base w-full" />
           </>
         )}
 
-        {/* Email */}
         <div className="flex w-full">
           <input placeholder="Gmail (no @)" value={emailLocal} onChange={e => setEmailLocal(e.target.value)} className="input-base w-7/10 rounded-r-none" />
           <span className="input-base bg-zinc-700 rounded-l-none flex items-center justify-center w-3/10">@gmail.com</span>
         </div>
 
-        {/* Phone */}
         {role === 'diner' && (
           <div className="flex gap-2">
             <div className="flex items-center gap-1"><span className="font-bold">1</span><span>+</span></div>
@@ -183,7 +272,6 @@ await sendVerificationCodeEmail(email, code, walletAddress!);
 
         {successMessage && <p className="text-green-400 text-center text-sm">{successMessage}</p>}
 
-        {/* Verification + Submit */}
         {!verificationSent ? (
           <button onClick={handleSendVerification} className="w-full py-2 px-4 rounded bg-[#4F46E5] hover:bg-[#4338CA] text-white font-semibold mb-3" disabled={sending || countdown > 0}>
             {sending ? 'Sending...' : countdown > 0 ? `Resend (${countdown}s)` : 'Send Verification Code'}
@@ -197,7 +285,7 @@ await sendVerificationCodeEmail(email, code, walletAddress!);
           </>
         )}
 
-        <p className="text-sm text-center text-zinc-500">Wallet: {walletAddress || 'Not connected'}</p>
+        <p className="text-sm text-center text-zinc-500">Wallet: {address || 'Not connected'}</p>
       </div>
     </div>
   );
