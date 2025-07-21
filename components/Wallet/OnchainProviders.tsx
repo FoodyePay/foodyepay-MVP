@@ -36,7 +36,7 @@ export function OnchainProviders({ children }: OnchainProvidersProps) {
           config={{
             appearance: {
               mode: 'dark',
-              theme: 'hacker',
+              theme: 'dark',
             },
           }}
         >
