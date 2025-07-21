@@ -107,7 +107,7 @@ export function QRScanner({ onScan, onError, isOpen, onClose }: QRScannerProps) 
         
         <div className="mt-4 text-center">
           <p className="text-sm text-gray-600 dark:text-gray-400">
-            Point your camera at the restaurant's payment QR code
+            Point your camera at the restaurant&apos;s payment QR code
           </p>
           {isScanning && (
             <p className="text-xs text-blue-500 mt-2">Scanning...</p>

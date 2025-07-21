@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useAccount, useReadContract } from 'wagmi';
 import { formatUnits } from 'viem';
+import Image from 'next/image';
 
 // FOODY Token ABI (只需要 balanceOf 函数)
 const FOODY_ABI = [
@@ -92,9 +93,11 @@ export function FoodyBalance({ className = '' }: FoodyBalanceProps) {
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center space-x-2">
           <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center p-1">
-            <img 
+            <Image 
               src="/foody.png" 
               alt="FOODY Token" 
+              width={32}
+              height={32}
               className="w-full h-full object-contain rounded-full"
             />
           </div>
