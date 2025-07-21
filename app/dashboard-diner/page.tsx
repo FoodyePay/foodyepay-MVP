@@ -22,12 +22,17 @@ import { Buy } from '@coinbase/onchainkit/buy';
 import { SwapDefault } from '@coinbase/onchainkit/swap';
 import type { Token } from '@coinbase/onchainkit/token';
 import { supabase } from '@/lib/supabase';
+import { QRScanner } from '@/components/QRScanner';
+import { TransactionHistory } from '@/components/TransactionHistory';
+import { FoodyBalance } from '@/components/FoodyBalance';
 
 export default function DinerDashboard() {
   const { address } = useAccount();
   const [userName, setUserName] = useState<string>('');
   const [userId, setUserId] = useState<string>('');
   const [loading, setLoading] = useState(true);
+  const [showQRScanner, setShowQRScanner] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
 
   // 🔥 获取用户姓名和ID信息
   useEffect(() => {
@@ -59,6 +64,25 @@ export default function DinerDashboard() {
 
     fetchUserName();
   }, [address]);
+
+  // 🔥 处理二维码扫描结果
+  const handleQRScan = async (qrData: string) => {
+    try {
+      // 解析二维码数据 (假设格式: restaurant_id:order_id:amount)
+      const [restaurantId, orderId, amount] = qrData.split(':');
+      
+      console.log('Scanned payment info:', { restaurantId, orderId, amount });
+      
+      // 这里可以跳转到支付页面或显示支付确认
+      alert(`Scan successful!\nRestaurant ID: ${restaurantId}\nOrder ID: ${orderId}\nAmount: ${amount} USDC`);
+      
+      // TODO: 实现实际的支付流程
+      
+    } catch (error) {
+      console.error('QR code processing failed:', error);
+      alert('Invalid QR code format, please scan again');
+    }
+  };
 
   const chainId = 8453;
 
@@ -140,7 +164,32 @@ export default function DinerDashboard() {
       </header>
 
       {/* ✅ Main UI */}
-      <main className="flex-grow flex flex-col items-center justify-start p-6 space-y-10">
+      <main className="flex-grow flex flex-col items-center justify-start p-6 space-y-8">
+        
+        {/* 🆕 FOODY 余额显示 */}
+        <div className="w-full max-w-md">
+          <FoodyBalance />
+        </div>
+        
+        {/* 🆕 扫描支付 & 交易历史 按钮 */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-md">
+          <button
+            onClick={() => setShowQRScanner(true)}
+            className="flex items-center justify-center space-x-2 bg-[#222c4e] hover:bg-[#454b80] text-white px-6 py-4 rounded-lg font-semibold transition-colors"
+          >
+            <span>📱</span>
+            <span>Scan To Pay</span>
+          </button>
+          
+          <button
+            onClick={() => setShowHistory(true)}
+            className="flex items-center justify-center space-x-2 bg-[#222c4e] hover:bg-[#454b80] text-white px-6 py-4 rounded-lg font-semibold transition-colors"
+          >
+            <span>📋</span>
+            <span>Transaction History</span>
+          </button>
+        </div>
+
         {/* ✅ Buy ETH */}
         <div className="flex items-center space-x-2">
           <span className="text-xl font-semibold">Buy</span>
@@ -159,6 +208,23 @@ export default function DinerDashboard() {
           <SwapDefault from={[usdcToken]} to={[foodyToken]} />
         </div>
       </main>
+
+      {/* 🆕 二维码扫描器 */}
+      <QRScanner
+        isOpen={showQRScanner}
+        onClose={() => setShowQRScanner(false)}
+        onScan={handleQRScan}
+        onError={(error) => {
+          console.error('QR Scanner Error:', error);
+          alert('Scan failed, please try again');
+        }}
+      />
+
+      {/* 🆕 交易历史 */}
+      <TransactionHistory
+        isOpen={showHistory}
+        onClose={() => setShowHistory(false)}
+      />
     </div>
   );
 }
