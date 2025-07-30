@@ -11,7 +11,8 @@ const config = createConfig({
   connectors: [
     coinbaseWallet({
       appName: 'FoodyePay',
-      preference: 'smartWalletOnly', // Use only Smart Wallet
+      preference: 'smartWalletOnly', // 强制使用智能钱包
+      version: '4', // 确保使用最新版本
     }),
   ],
   transports: {

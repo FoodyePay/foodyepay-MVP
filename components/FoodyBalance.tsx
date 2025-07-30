@@ -16,7 +16,8 @@ const FOODY_ABI = [
   },
 ] as const;
 
-const FOODY_TOKEN_ADDRESS = '0x1022b1b028a2237c440dbac51dc6fc220d88c08f' as const;
+// 使用环境变量中的 FOODYE 代币地址，如果没有则使用默认地址
+const FOODY_TOKEN_ADDRESS = (process.env.NEXT_PUBLIC_FOODYE_TOKEN_ADDRESS || '0x1022b1b028a2237c440dbac51dc6fc220d88c08f') as `0x${string}`;
 
 interface FoodyBalanceProps {
   className?: string;
@@ -39,20 +40,56 @@ export function FoodyBalance({ className = '' }: FoodyBalanceProps) {
     },
   });
 
-  // 获取 FOODY 真实价格
+  // 获取 FOODY 实时价格和24h变化 (仅使用 GeckoTerminal API)
   useEffect(() => {
     const fetchFoodyPrice = async () => {
       try {
-        // 使用 Swap 界面的真实汇率: $129.02 / 1252524.66570 FOODY
-        const realPrice = 129.02 / 1252524.66570; // ≈ $0.0001030 per FOODY (来自实际 Swap 数据)
-        const mockChange = -2.39; // 保持 -2.39% 变化
+        console.log('🦎 Fetching real-time price and 24h change from GeckoTerminal...');
         
-        setFoodyPrice(realPrice);
-        setPriceChange24h(mockChange);
+        // 获取过去2天的数据来计算24h变化
+        const response = await fetch(
+          'https://api.geckoterminal.com/api/v2/networks/base/pools/0xfd25915646ba7677de6079320b1a4975a450891d/ohlcv/day?aggregate=1&limit=2'
+        );
+        
+        if (!response.ok) {
+          throw new Error(`GeckoTerminal API error: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        if (data.data && data.data.attributes && data.data.attributes.ohlcv_list.length >= 2) {
+          const ohlcvList = data.data.attributes.ohlcv_list;
+          
+          // 最新价格 (今天的收盘价)
+          const latestPrice = parseFloat(ohlcvList[0][4]);
+          // 24小时前的价格 (昨天的收盘价)
+          const price24hAgo = parseFloat(ohlcvList[1][4]);
+          
+          // 计算24h价格变化百分比
+          const priceChange = ((latestPrice - price24hAgo) / price24hAgo) * 100;
+          
+          console.log('✅ GeckoTerminal data:', {
+            currentPrice: latestPrice,
+            price24hAgo: price24hAgo,
+            change24h: priceChange.toFixed(2) + '%'
+          });
+          
+          setFoodyPrice(latestPrice);
+          setPriceChange24h(priceChange);
+        } else if (data.data && data.data.attributes && data.data.attributes.ohlcv_list.length === 1) {
+          // 如果只有一天的数据，使用当前价格，变化设为0
+          const latestPrice = parseFloat(data.data.attributes.ohlcv_list[0][4]);
+          console.log('⚠️ Only 1 day of data available, using current price:', latestPrice);
+          
+          setFoodyPrice(latestPrice);
+          setPriceChange24h(0);
+        } else {
+          throw new Error('Insufficient data from GeckoTerminal');
+        }
       } catch (error) {
-        console.error('获取 FOODY 价格失败:', error);
-        // 使用基于实际 Swap 汇率的价格
-        setFoodyPrice(0.0001030);
+        console.error('❌ Failed to fetch GeckoTerminal data:', error);
+        // 如果 API 失败，使用最后已知的市场价格作为后备
+        setFoodyPrice(0.0001171);
         setPriceChange24h(0);
       }
     };
@@ -140,8 +177,12 @@ export function FoodyBalance({ className = '' }: FoodyBalanceProps) {
       
       <div className="mt-3 pt-3 border-t border-purple-400">
         <div className="flex justify-between text-xs text-purple-200">
-          <span>Token Price</span>
+          <span>Real-time Price</span>
           <span>${foodyPrice.toFixed(7)}</span>
+        </div>
+        <div className="flex justify-between text-xs text-purple-200 mt-1">
+          <span>Data Source</span>
+          <span>GeckoTerminal API</span>
         </div>
       </div>
     </div>

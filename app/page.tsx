@@ -7,6 +7,7 @@ import { Address, Avatar, Name, Identity, EthBalance } from '@coinbase/onchainki
 import { useAccount } from 'wagmi';
 import { useFoodyeWallet } from '@/components/Wallet/WalletProvider';
 import { checkUserExists, isDemoWalletAddress } from '@/lib/auth';
+import { WalletDebug } from '@/components/WalletDebug';
 import Image from 'next/image';
 
 export default function WelcomePage() {
@@ -229,6 +230,11 @@ export default function WelcomePage() {
           <p className="text-yellow-400 text-sm">
             🔄 Checking registration status...
           </p>
+          
+          {/* Debug Info */}
+          <div className="mt-4">
+            <WalletDebug />
+          </div>
         </div>
       </div>
     );

@@ -68,19 +68,39 @@ export default function DinerDashboard() {
   // 🔥 处理二维码扫描结果
   const handleQRScan = async (qrData: string) => {
     try {
-      // 解析二维码数据 (假设格式: restaurant_id:order_id:amount)
-      const [restaurantId, orderId, amount] = qrData.split(':');
+      // 解析二维码数据 (新格式: JSON)
+      const paymentData = JSON.parse(qrData);
       
-      console.log('Scanned payment info:', { restaurantId, orderId, amount });
+      console.log('Scanned payment info:', paymentData);
       
-      // 这里可以跳转到支付页面或显示支付确认
-      alert(`Scan successful!\nRestaurant ID: ${restaurantId}\nOrder ID: ${orderId}\nAmount: ${amount} USDC`);
+      // 格式化显示信息
+      const displayInfo = `Scan successful!
+Restaurant ID: ${paymentData.restaurantId}
+Order ID: ${paymentData.orderId}
+Table: ${paymentData.tableNumber || 'N/A'}
+
+Payment Details:
+• Subtotal: $${paymentData.amounts.subtotal.toFixed(2)} USDC
+• Tax: $${paymentData.amounts.tax.toFixed(2)} USDC  
+• Total: $${paymentData.amounts.usdc.toFixed(2)} USDC
+• FOODY: ${paymentData.amounts.foody.toLocaleString()} FOODY
+
+Tax Info: ${paymentData.taxInfo ? `${(paymentData.taxInfo.rate * 100).toFixed(2)}% (${paymentData.taxInfo.state})` : 'N/A'}`;
+      
+      alert(displayInfo);
       
       // TODO: 实现实际的支付流程
       
     } catch (error) {
       console.error('QR code processing failed:', error);
-      alert('Invalid QR code format, please scan again');
+      
+      // 尝试解析旧格式 (向后兼容)
+      try {
+        const [restaurantId, orderId, amount] = qrData.split(':');
+        alert(`Scan successful! (Legacy Format)\nRestaurant ID: ${restaurantId}\nOrder ID: ${orderId}\nAmount: ${amount} USDC`);
+      } catch (legacyError) {
+        alert('Invalid QR code format, please scan again');
+      }
     }
   };
 
@@ -196,16 +216,22 @@ export default function DinerDashboard() {
           <Buy toToken={ethToken} />
         </div>
 
-        {/* ✅ Swap ETH → USDC */}
-        <div className="w-full max-w-md">
-          <h2 className="font-semibold text-lg mb-2">Swap ETH to USDC</h2>
-          <SwapDefault from={[ethToken]} to={[usdcToken]} />
+        {/* 🔄 ETH → USDC Swap */}
+        <div className="flex items-center space-x-2">
+          {/* <span className="text-xl font-semibold">ETH → USDC</span> */}
+          <SwapDefault 
+            from={[ethToken]} 
+            to={[usdcToken]} 
+          />
         </div>
 
-        {/* ✅ Swap USDC → FOODY */}
-        <div className="w-full max-w-md">
-          <h2 className="font-semibold text-lg mb-2">Swap USDC to FOODY</h2>
-          <SwapDefault from={[usdcToken]} to={[foodyToken]} />
+        {/* 🍔 USDC → FOODY Swap */}
+        <div className="flex items-center space-x-2">
+          {/*<span className="text-xl font-semibold">USDC → FOODY</span>*/}
+          <SwapDefault 
+            from={[usdcToken]} 
+            to={[foodyToken]} 
+          />
         </div>
       </main>
 
