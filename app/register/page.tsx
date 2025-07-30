@@ -50,7 +50,7 @@ export default function RegisterPage() {
   const [codeSentAt, setCodeSentAt] = useState<number | null>(null);
   const [successMessage, setSuccessMessage] = useState('');
   const [checkingRegistration, setCheckingRegistration] = useState(true);
-  const [verificationResult, setVerificationResult] = useState<any>(null);
+  const [verificationResult, setVerificationResult] = useState(null);
   const [showVerificationDetails, setShowVerificationDetails] = useState(false);
   const [einVerified, setEinVerified] = useState(false);
   const [einVerificationError, setEinVerificationError] = useState('');
@@ -306,7 +306,9 @@ export default function RegisterPage() {
     }
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
     if (!address) return alert('Wallet not ready');
 
     const email = `${emailLocal}@gmail.com`;
