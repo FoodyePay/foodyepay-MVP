@@ -19,8 +19,17 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   const { connect, connectors, isPending } = useConnect();
   const { disconnect } = useDisconnect();
 
-  // Check if it's a Smart Wallet (Coinbase Wallet with Smart Wallet preference)
-  const isSmartWallet = connector?.id === 'coinbaseWalletSDK' && connector?.name?.includes('Coinbase') || false;
+  // Check if it's a Smart Wallet (更强的检测逻辑)
+  const isSmartWallet = (() => {
+    if (!connector) return false;
+    
+    // 检查连接器 ID 和名称
+    const isWalletSDK = connector.id === 'coinbaseWalletSDK';
+    const isCoinbase = connector.name?.toLowerCase().includes('coinbase');
+    
+    // 如果配置了 smartWalletOnly，应该总是返回智能钱包
+    return isWalletSDK && isCoinbase;
+  })();
 
   useEffect(() => {
     // 当Wagmi钱包连接时，保存到localStorage

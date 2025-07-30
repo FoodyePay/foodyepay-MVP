@@ -4,6 +4,10 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAccount } from 'wagmi';
 import { supabase } from '@/lib/supabase';
+import { QRGenerator } from '@/components/QRGenerator';
+import { OrderManagement } from '@/components/OrderManagement';
+import { MenuManagement } from '@/components/MenuManagement';
+import { FinancialAnalytics } from '@/components/FinancialAnalytics';
 
 interface Restaurant {
   id: string;
@@ -12,6 +16,9 @@ interface Restaurant {
   email: string;
   phone: string;
   address: string;
+  zip_code: string; // 新增邮政编码字段
+  city: string;
+  state: string;
   created_at: string;
 }
 
@@ -20,6 +27,20 @@ export default function RestaurantDashboard() {
   const { address } = useAccount();
   const [restaurant, setRestaurant] = useState<Restaurant | null>(null);
   const [loading, setLoading] = useState(true);
+  
+  // 🆕 Modal states
+  const [showQRGenerator, setShowQRGenerator] = useState(false);
+  const [showOrderManagement, setShowOrderManagement] = useState(false);
+  const [showMenuManagement, setShowMenuManagement] = useState(false);
+  const [showFinancialAnalytics, setShowFinancialAnalytics] = useState(false);
+  
+  // 🆕 Dashboard stats
+  const [dashboardStats, setDashboardStats] = useState({
+    menuItems: 0,
+    todayOrders: 0,
+    todayRevenue: 0,
+    rating: 0
+  });
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -42,6 +63,9 @@ export default function RestaurantDashboard() {
         }
 
         setRestaurant(data);
+        
+        // 🆕 Fetch dashboard statistics
+        await fetchDashboardStats(data.id);
       } catch (err) {
         console.error('Error fetching restaurant data:', err);
         router.push('/register');
@@ -52,6 +76,39 @@ export default function RestaurantDashboard() {
 
     checkAuth();
   }, [address, router]);
+
+  // 🆕 Fetch dashboard statistics
+  const fetchDashboardStats = async (restaurantId: string) => {
+    try {
+      // Fetch menu items count
+      const { count: menuCount } = await supabase
+        .from('menu_items')
+        .select('*', { count: 'exact', head: true })
+        .eq('restaurant_id', restaurantId);
+
+      // Fetch today's orders
+      const todayStart = new Date();
+      todayStart.setHours(0, 0, 0, 0);
+
+      const { data: todayOrdersData, count: todayOrdersCount } = await supabase
+        .from('orders')
+        .select('total_amount', { count: 'exact' })
+        .eq('restaurant_id', restaurantId)
+        .gte('created_at', todayStart.toISOString());
+
+      const todayRevenue = todayOrdersData?.reduce((sum, order) => sum + order.total_amount, 0) || 0;
+
+      setDashboardStats({
+        menuItems: menuCount || 0,
+        todayOrders: todayOrdersCount || 0,
+        todayRevenue: todayRevenue,
+        rating: 4.5 // TODO: Implement real rating system
+      });
+
+    } catch (error) {
+      console.error('Error fetching dashboard stats:', error);
+    }
+  };
 
   if (loading) {
     return (
@@ -99,6 +156,7 @@ export default function RestaurantDashboard() {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto p-6">
+        
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           
           {/* Restaurant Info Card */}
@@ -142,46 +200,58 @@ export default function RestaurantDashboard() {
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 
-                {/* Menu Management */}
-                <button className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 p-6 rounded-lg transition-all duration-200 text-left group">
+                {/* 🆕 Generate QR Code */}
+                <button 
+                  onClick={() => setShowQRGenerator(true)}
+                  className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 p-6 rounded-lg transition-all duration-200 text-left group"
+                >
                   <div className="flex items-center space-x-3">
-                    <span className="text-2xl">📝</span>
+                    <span className="text-2xl">�</span>
                     <div>
-                      <h3 className="font-semibold text-white group-hover:text-purple-100">Manage Menu</h3>
-                      <p className="text-sm text-purple-200">Add, edit, or remove menu items</p>
+                      <h3 className="font-semibold text-white group-hover:text-purple-100">Generate QR Code</h3>
+                      <p className="text-sm text-purple-200">Create payment QR codes for orders</p>
                     </div>
                   </div>
                 </button>
 
-                {/* Orders */}
-                <button className="bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 p-6 rounded-lg transition-all duration-200 text-left group">
+                {/* 🆕 Menu Management */}
+                <button 
+                  onClick={() => setShowMenuManagement(true)}
+                  className="bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 p-6 rounded-lg transition-all duration-200 text-left group"
+                >
                   <div className="flex items-center space-x-3">
-                    <span className="text-2xl">📋</span>
+                    <span className="text-2xl">�</span>
                     <div>
-                      <h3 className="font-semibold text-white group-hover:text-green-100">View Orders</h3>
-                      <p className="text-sm text-green-200">Check incoming orders and status</p>
+                      <h3 className="font-semibold text-white group-hover:text-green-100">Manage Menu</h3>
+                      <p className="text-sm text-green-200">Add, edit, or remove menu items</p>
                     </div>
                   </div>
                 </button>
 
-                {/* Payments */}
-                <button className="bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700 p-6 rounded-lg transition-all duration-200 text-left group">
+                {/* 🆕 Orders Management */}
+                <button 
+                  onClick={() => setShowOrderManagement(true)}
+                  className="bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700 p-6 rounded-lg transition-all duration-200 text-left group"
+                >
                   <div className="flex items-center space-x-3">
-                    <span className="text-2xl">💰</span>
+                    <span className="text-2xl">�</span>
                     <div>
-                      <h3 className="font-semibold text-white group-hover:text-yellow-100">Payment History</h3>
-                      <p className="text-sm text-yellow-200">View all cryptocurrency payments</p>
+                      <h3 className="font-semibold text-white group-hover:text-yellow-100">Manage Orders</h3>
+                      <p className="text-sm text-yellow-200">View and process incoming orders</p>
                     </div>
                   </div>
                 </button>
 
-                {/* Analytics */}
-                <button className="bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 p-6 rounded-lg transition-all duration-200 text-left group">
+                {/* 🆕 Financial Analytics */}
+                <button 
+                  onClick={() => setShowFinancialAnalytics(true)}
+                  className="bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 p-6 rounded-lg transition-all duration-200 text-left group"
+                >
                   <div className="flex items-center space-x-3">
                     <span className="text-2xl">📊</span>
                     <div>
-                      <h3 className="font-semibold text-white group-hover:text-pink-100">Analytics</h3>
-                      <p className="text-sm text-pink-200">Sales reports and insights</p>
+                      <h3 className="font-semibold text-white group-hover:text-pink-100">Financial Analytics</h3>
+                      <p className="text-sm text-pink-200">Revenue reports and insights</p>
                     </div>
                   </div>
                 </button>
@@ -195,22 +265,22 @@ export default function RestaurantDashboard() {
         <div className="mt-6 grid grid-cols-1 md:grid-cols-4 gap-4">
           
           <div className="bg-zinc-900 rounded-lg p-4 text-center">
-            <div className="text-2xl font-bold text-purple-400">0</div>
+            <div className="text-2xl font-bold text-purple-400">{dashboardStats.menuItems}</div>
             <div className="text-sm text-gray-400">Menu Items</div>
           </div>
           
           <div className="bg-zinc-900 rounded-lg p-4 text-center">
-            <div className="text-2xl font-bold text-green-400">0</div>
+            <div className="text-2xl font-bold text-green-400">{dashboardStats.todayOrders}</div>
             <div className="text-sm text-gray-400">Orders Today</div>
           </div>
           
           <div className="bg-zinc-900 rounded-lg p-4 text-center">
-            <div className="text-2xl font-bold text-blue-400">0 ETH</div>
+            <div className="text-2xl font-bold text-blue-400">${dashboardStats.todayRevenue.toFixed(2)}</div>
             <div className="text-sm text-gray-400">Today&apos;s Revenue</div>
           </div>
           
           <div className="bg-zinc-900 rounded-lg p-4 text-center">
-            <div className="text-2xl font-bold text-yellow-400">⭐ 0.0</div>
+            <div className="text-2xl font-bold text-yellow-400">⭐ {dashboardStats.rating.toFixed(1)}</div>
             <div className="text-sm text-gray-400">Rating</div>
           </div>
           
@@ -222,8 +292,8 @@ export default function RestaurantDashboard() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
             
             <div className="bg-zinc-800 rounded-lg p-4">
-              <div className="text-purple-400 font-semibold mb-2">🛒 Order Management</div>
-              <p className="text-gray-400">Real-time order tracking and kitchen dashboard</p>
+              <div className="text-purple-400 font-semibold mb-2">🍽️ Table Management</div>
+              <p className="text-gray-400">Manage table reservations and seating</p>
             </div>
             
             <div className="bg-zinc-800 rounded-lg p-4">
@@ -240,6 +310,41 @@ export default function RestaurantDashboard() {
         </div>
 
       </main>
+
+      {/* 🆕 Modals */}
+      {showQRGenerator && (
+        <QRGenerator
+          isOpen={showQRGenerator}
+          onClose={() => setShowQRGenerator(false)}
+          restaurantId={restaurant?.id || ''}
+          restaurantZipCode={restaurant?.zip_code || '10001'} // 传递邮政编码用于税率计算
+        />
+      )}
+
+      {showOrderManagement && (
+        <OrderManagement
+          isOpen={showOrderManagement}
+          onClose={() => setShowOrderManagement(false)}
+          restaurantId={restaurant?.id || ''}
+        />
+      )}
+
+      {showMenuManagement && (
+        <MenuManagement
+          isOpen={showMenuManagement}
+          onClose={() => setShowMenuManagement(false)}
+          restaurantId={restaurant?.id || ''}
+        />
+      )}
+
+      {showFinancialAnalytics && (
+        <FinancialAnalytics
+          isOpen={showFinancialAnalytics}
+          onClose={() => setShowFinancialAnalytics(false)}
+          restaurantId={restaurant?.id || ''}
+        />
+      )}
+
     </div>
   );
 }
