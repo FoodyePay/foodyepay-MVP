@@ -72,7 +72,8 @@ export async function POST(request: NextRequest) {
   }
 }
 
-export async function GET(request: NextRequest) {
+// 修复：移除未使用的 request 参数
+export async function GET() {
   try {
     const foodyPrice = await getFoodyPrice();
     

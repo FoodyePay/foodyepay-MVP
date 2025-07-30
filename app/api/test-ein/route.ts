@@ -1,39 +1,58 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 
-export async function GET(request: NextRequest) {
-  const useRealAPI = process.env.ABOUND_API_KEY && process.env.NODE_ENV === 'production';
-  
-  return NextResponse.json({
-    status: 'ok',
-    message: 'EIN API test endpoint',
-    mode: useRealAPI ? 'REAL_API' : 'MOCK_MODE',
-    apiKeyConfigured: !!process.env.ABOUND_API_KEY,
-    appIdConfigured: !!process.env.ABOUND_APP_ID,
-    nodeEnv: process.env.NODE_ENV,
-    availableTestEINs: [
-      '93-4482803 → FAN SZECHUAN CUISINE INC.',
-      '12-3456789 → McDonald\'s Corporation',
-      '23-4567890 → Subway Restaurants LLC'
-    ],
-    timestamp: new Date().toISOString()
-  });
-}
-
-export async function POST(request: NextRequest) {
+// 修复：移除未使用的 request 参数
+export async function GET() {
   try {
-    const { ein, restaurantName } = await request.json();
-    
+    // Test EIN validation
+    const testEins = [
+      '12-3456789',  // Valid format
+      '123456789',   // Valid format without dash
+      '12-34567',    // Invalid (too short)
+      'ABCD12345',   // Invalid (contains letters)
+      ''             // Invalid (empty)
+    ];
+
+    const results = testEins.map(ein => ({
+      ein,
+      isValid: validateEinFormat(ein),
+      formatted: formatEin(ein)
+    }));
+
     return NextResponse.json({
-      received: { ein, restaurantName },
-      apiKeyConfigured: !!process.env.ABOUND_API_KEY,
-      appIdConfigured: !!process.env.ABOUND_APP_ID,
-      formattedEin: ein?.replace(/\D/g, '').slice(0, 9),
-      timestamp: new Date().toISOString()
+      success: true,
+      test_results: results,
+      message: 'EIN validation test completed'
     });
+
   } catch (error) {
+    console.error('EIN test error:', error);
     return NextResponse.json(
-      { error: 'Invalid request body' },
-      { status: 400 }
+      { 
+        error: 'EIN test failed',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      },
+      { status: 500 }
     );
   }
+}
+
+function validateEinFormat(ein: string): boolean {
+  if (!ein) return false;
+  
+  // Remove any non-numeric characters except dash
+  const cleaned = ein.replace(/[^0-9-]/g, '');
+  
+  // Check if it matches XX-XXXXXXX or XXXXXXXXX format
+  const einRegex = /^(\d{2}-?\d{7})$/;
+  return einRegex.test(cleaned) && cleaned.length >= 9;
+}
+
+function formatEin(ein: string): string {
+  if (!ein) return '';
+  
+  const cleaned = ein.replace(/[^0-9]/g, '');
+  if (cleaned.length === 9) {
+    return `${cleaned.slice(0, 2)}-${cleaned.slice(2)}`;
+  }
+  return ein;
 }
