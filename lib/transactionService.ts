@@ -18,35 +18,42 @@ export interface TransactionRecord {
 }
 
 /**
- * 保存支付交易记录到数据库 - 匹配实际Supabase数据库结构
+ * 保存支付交易记录到数据库 - 匹配实际Supabase数据库结构（带调试）
  */
 export async function saveTransactionRecord(transaction: TransactionRecord): Promise<boolean> {
   try {
-    console.log('💾 Saving transaction record:', transaction);
+    console.log('💾 saveTransactionRecord called with:', JSON.stringify(transaction, null, 2));
 
     // 1. 插入到 orders 表 - 根据实际数据库结构
-    const { data: orderData, error: orderError } = await supabase
+    const orderData = {
+      id: transaction.order_id,
+      restaurant_id: transaction.restaurant_id,
+      diner_id: transaction.diner_wallet, // 使用diner_id字段
+      status: transaction.status,
+      order_number: transaction.order_id,
+      subtotal: transaction.usdc_equivalent / 1.08875, // 计算税前金额
+      tax: transaction.usdc_equivalent * 0.08875 / 1.08875, // 计算税额
+      total_amount: transaction.usdc_equivalent,
+      foody_amount: transaction.foody_amount,
+      restaurant_name: transaction.restaurant_name,
+      created_at: new Date().toISOString()
+    };
+
+    console.log('📝 Inserting to orders table:', JSON.stringify(orderData, null, 2));
+
+    const { data: orderResult, error: orderError } = await supabase
       .from('orders')
-      .insert({
-        id: transaction.order_id,
-        restaurant_id: transaction.restaurant_id,
-        diner_id: transaction.diner_wallet, // 使用diner_id字段
-        status: transaction.status,
-        order_number: transaction.order_id,
-        subtotal: transaction.usdc_equivalent / 1.08875, // 计算税前金额
-        tax: transaction.usdc_equivalent * 0.08875 / 1.08875, // 计算税额
-        total_amount: transaction.usdc_equivalent,
-        foody_amount: transaction.foody_amount,
-        restaurant_name: transaction.restaurant_name,
-        created_at: new Date().toISOString()
-      })
+      .insert(orderData)
       .select()
       .single();
+
+    console.log('📊 Orders insert result:', { data: orderResult, error: orderError });
 
     if (orderError) {
       console.error('❌ Error inserting order:', orderError);
       // 如果订单已存在，更新状态
       if (orderError.code === '23505') { // unique_violation
+        console.log('🔄 Order exists, updating...');
         const { error: updateError } = await supabase
           .from('orders')
           .update({
@@ -55,6 +62,8 @@ export async function saveTransactionRecord(transaction: TransactionRecord): Pro
             foody_amount: transaction.foody_amount
           })
           .eq('id', transaction.order_id);
+        
+        console.log('📊 Orders update result:', { error: updateError });
         
         if (updateError) {
           console.error('❌ Error updating order:', updateError);
@@ -66,14 +75,20 @@ export async function saveTransactionRecord(transaction: TransactionRecord): Pro
     }
 
     // 2. 插入到 payments 表 - 根据实际数据库结构
+    const paymentData = {
+      order_id: transaction.order_id,
+      tx_hash: transaction.tx_hash,
+      status: transaction.status,
+      confirmed_at: new Date().toISOString()
+    };
+
+    console.log('📝 Inserting to payments table:', JSON.stringify(paymentData, null, 2));
+
     const { error: paymentError } = await supabase
       .from('payments')
-      .insert({
-        order_id: transaction.order_id,
-        tx_hash: transaction.tx_hash,
-        status: transaction.status,
-        confirmed_at: new Date().toISOString()
-      });
+      .insert(paymentData);
+
+    console.log('📊 Payments insert result:', { error: paymentError });
 
     if (paymentError) {
       console.error('❌ Error inserting payment:', paymentError);
@@ -81,14 +96,20 @@ export async function saveTransactionRecord(transaction: TransactionRecord): Pro
     }
 
     // 3. 插入到 foody_orders 表 - 根据实际数据库结构
+    const foodyOrderData = {
+      wallet_address: transaction.diner_wallet,
+      amount_usdt: transaction.usdc_equivalent, // 使用amount_usdt字段
+      foody_amount: transaction.foody_amount,
+      created_at: new Date().toISOString()
+    };
+
+    console.log('📝 Inserting to foody_orders table:', JSON.stringify(foodyOrderData, null, 2));
+
     const { error: foodyError } = await supabase
       .from('foody_orders')
-      .insert({
-        wallet_address: transaction.diner_wallet,
-        amount_usdt: transaction.usdc_equivalent, // 使用amount_usdt字段
-        foody_amount: transaction.foody_amount,
-        created_at: new Date().toISOString()
-      });
+      .insert(foodyOrderData);
+
+    console.log('📊 Foody_orders insert result:', { error: foodyError });
 
     if (foodyError) {
       console.error('⚠️ Warning - Error inserting foody order:', foodyError);
@@ -105,10 +126,12 @@ export async function saveTransactionRecord(transaction: TransactionRecord): Pro
 }
 
 /**
- * 获取Diner的交易历史 - 根据实际数据库结构
+ * 获取Diner的交易历史 - 根据实际数据库结构（带调试）
  */
 export async function getDinerTransactions(walletAddress: string, limit = 20) {
   try {
+    console.log('🔍 getDinerTransactions called with:', { walletAddress, limit });
+    
     const { data, error } = await supabase
       .from('orders')
       .select(`
@@ -130,23 +153,28 @@ export async function getDinerTransactions(walletAddress: string, limit = 20) {
       .order('created_at', { ascending: false })
       .limit(limit);
 
+    console.log('📊 getDinerTransactions query result:', { data, error });
+
     if (error) {
-      console.error('Error fetching diner transactions:', error);
+      console.error('❌ Error fetching diner transactions:', error);
       return [];
     }
 
+    console.log('✅ getDinerTransactions returning:', data?.length || 0, 'records');
     return data || [];
   } catch (error) {
-    console.error('Error in getDinerTransactions:', error);
+    console.error('💥 Exception in getDinerTransactions:', error);
     return [];
   }
 }
 
 /**
- * 获取餐厅的交易历史 - 根据实际数据库结构
+ * 获取餐厅的交易历史 - 根据实际数据库结构（带调试）
  */
 export async function getRestaurantTransactions(restaurantId: string, limit = 20) {
   try {
+    console.log('🔍 getRestaurantTransactions called with:', { restaurantId, limit });
+    
     const { data, error } = await supabase
       .from('orders')
       .select(`
@@ -165,14 +193,17 @@ export async function getRestaurantTransactions(restaurantId: string, limit = 20
       .order('created_at', { ascending: false })
       .limit(limit);
 
+    console.log('📊 getRestaurantTransactions query result:', { data, error });
+
     if (error) {
-      console.error('Error fetching restaurant transactions:', error);
+      console.error('❌ Error fetching restaurant transactions:', error);
       return [];
     }
 
+    console.log('✅ getRestaurantTransactions returning:', data?.length || 0, 'records');
     return data || [];
   } catch (error) {
-    console.error('Error in getRestaurantTransactions:', error);
+    console.error('💥 Exception in getRestaurantTransactions:', error);
     return [];
   }
 }
