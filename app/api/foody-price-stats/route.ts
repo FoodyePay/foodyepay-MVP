@@ -1,5 +1,5 @@
 // app/api/foody-price-stats/route.ts
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { getPriceStats, resetPriceStats } from '@/lib/foodyTokenService';
 
 export async function GET() {

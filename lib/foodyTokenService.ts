@@ -1,5 +1,5 @@
 // lib/foodyTokenService.ts
-import { createPublicClient, http, formatUnits } from 'viem';
+import { createPublicClient, http } from 'viem';
 import { base } from 'viem/chains';
 
 interface FoodyPrice {
@@ -11,7 +11,6 @@ interface FoodyPrice {
 
 // 价格缓存配置
 const PRICE_CACHE_DURATION = 30 * 1000; // 30秒缓存
-const PRICE_TOLERANCE = 0.05; // 5%价格波动容忍度
 let cachedPrice: FoodyPrice | null = null;
 let lastFetchTime = 0;
 

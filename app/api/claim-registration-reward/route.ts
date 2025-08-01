@@ -82,7 +82,7 @@ export async function POST(request: NextRequest) {
     }
 
     let transactionHash = null;
-    let finalStatus = 'completed';
+      const finalStatus = 'unknown';
 
     try {
       // 尝试发放真实代币
