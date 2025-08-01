@@ -5,7 +5,7 @@
 
 import { useState, useEffect } from 'react';
 import { useAccount } from 'wagmi';
-import { getFoodyeTokenData, getWalletBalance } from '@/lib/baseAccountDataFetcher';
+import { getFoodyeTokenData } from '@/lib/baseAccountDataFetcher';
 
 interface TokenData {
   symbol: string;

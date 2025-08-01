@@ -117,7 +117,9 @@ export function WalletAnalyzer() {
     if (address && connector) {
       analyzeWallet();
     }
-  }, [address, connector]); // 移除 analyzeWallet 依赖以避免无限循环
+    // analyzeWallet 被包装在 useCallback 中，依赖于 address 和 connector
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [address, connector]);
 
   const getConfidenceColor = (confidence: string) => {
     switch (confidence) {

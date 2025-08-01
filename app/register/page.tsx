@@ -13,7 +13,7 @@ import {
   validateVerificationCode,
 } from '@/lib/verificationCode';
 import { sendVerificationCodeEmail, sendWelcomeEmail } from '@/lib/emailService';
-import { verifyRestaurantRegistration } from '@/lib/restaurantVerification';
+import { verifyRestaurantRegistration, VerificationResult } from '@/lib/restaurantVerification';
 import { verifyEIN, formatEIN, validateEINFormat } from '@/utils/verifyEIN';
 
 export default function RegisterPage() {
@@ -50,7 +50,7 @@ export default function RegisterPage() {
   const [codeSentAt, setCodeSentAt] = useState<number | null>(null);
   const [successMessage, setSuccessMessage] = useState('');
   const [checkingRegistration, setCheckingRegistration] = useState(true);
-  const [verificationResult, setVerificationResult] = useState(null);
+  const [verificationResult, setVerificationResult] = useState<VerificationResult | null>(null);
   const [showVerificationDetails, setShowVerificationDetails] = useState(false);
   const [einVerified, setEinVerified] = useState(false);
   const [einVerificationError, setEinVerificationError] = useState('');
@@ -306,7 +306,7 @@ export default function RegisterPage() {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement> | React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
 
     if (!address) return alert('Wallet not ready');
@@ -366,6 +366,33 @@ export default function RegisterPage() {
       console.log('✅ Successfully inserted into Supabase:', data);
       
       await sendWelcomeEmail(email, address);
+      
+      // 🎉 Diner 注册奖励逻辑
+      if (role === 'diner') {
+        try {
+          console.log('🎁 Triggering Diner registration reward...');
+          const rewardResponse = await fetch('/api/diner-reward', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              walletAddress: address,
+              email: email
+            })
+          });
+          
+          if (rewardResponse.ok) {
+            const rewardData = await rewardResponse.json();
+            console.log('🎉 Diner reward issued successfully:', rewardData);
+          } else {
+            const errorData = await rewardResponse.json();
+            console.warn('⚠️ Diner reward failed:', errorData.error);
+          }
+        } catch (rewardError) {
+          console.error('❌ Error issuing Diner reward:', rewardError);
+          // 不阻塞注册流程，只记录错误
+        }
+      }
+      
       localStorage.setItem('foodye_wallet', address);
       router.push(`/register/yes/success?role=${role}`);
     } catch (err) {
@@ -740,7 +767,7 @@ export default function RegisterPage() {
         {role === 'restaurant' && !einVerified && ein && restaurantName && (
           <div className="bg-yellow-900 border border-yellow-500 rounded-lg p-3 text-center">
             <p className="text-yellow-300 text-sm">
-              ⚠️ Please verify your EIN first by clicking the "Verify" button
+              ⚠️ Please verify your EIN first by clicking the &quot;Verify&quot; button
             </p>
           </div>
         )}

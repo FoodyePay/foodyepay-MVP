@@ -13,7 +13,7 @@ interface RestaurantVerificationData {
   email: string;
 }
 
-interface VerificationResult {
+export interface VerificationResult {
   isValid: boolean;
   score: number; // 0-100
   issues: string[];
@@ -27,7 +27,7 @@ export async function verifyAddressWithGooglePlaces(
   city: string, 
   state: string, 
   zipCode: string
-): Promise<{ isValid: boolean; details?: any }> {
+): Promise<{ isValid: boolean; details?: Record<string, unknown> }> {
   try {
     const address = `${streetNumber} ${streetName}, ${city}, ${state} ${zipCode}`;
     
@@ -157,7 +157,7 @@ export async function verifyWalletAddress(address: string): Promise<{ isValid: b
     
     // 检查是否为已知的智能钱包（通过合约代码）
     // 这里可以添加实际的区块链查询
-    const response = await fetch(`https://api.basescan.org/api?module=account&action=getcode&address=${address}&apikey=YourApiKeyToken`);
+    // const response = await fetch(`https://api.basescan.org/api?module=account&action=getcode&address=${address}&apikey=YourApiKeyToken`);
     
     // 暂时返回基本验证
     console.log('🔍 Wallet verification for:', address);
