@@ -3,7 +3,7 @@
 
 const sampleQRData = {
   restaurantId: "785e4179-5dc6-4d46-83d1-3c75c126fbf1",
-  restaurantWalletAddress: "0x742d35Cc6634C0532925a3b8D0b4C3b0a7f", // 🆕 餐厅钱包地址
+  restaurantWalletAddress: "0x674302f3714eA8981C98F7688865b02AEBF5E373", // 🔥 餐厅真实钱包地址
   restaurantInfo: {
     name: "Ken Canton CUISINE INC.",
     address: "150-30 71st Ave, Flushing, NY 11365",

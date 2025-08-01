@@ -3,11 +3,26 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAccount } from 'wagmi';
+import {
+  ConnectWallet,
+  Wallet,
+  WalletDropdown,
+  WalletDropdownLink,
+  WalletDropdownDisconnect,
+} from '@coinbase/onchainkit/wallet';
+import {
+  Address,
+  Avatar,
+  Name,
+  Identity,
+  EthBalance,
+} from '@coinbase/onchainkit/identity';
 import { supabase } from '@/lib/supabase';
 import { QRGenerator } from '@/components/QRGenerator';
 import { OrderManagement } from '@/components/OrderManagement';
 import { MenuManagement } from '@/components/MenuManagement';
 import { FinancialAnalytics } from '@/components/FinancialAnalytics';
+import { FoodyBalance } from '@/components/FoodyBalance';
 
 interface Restaurant {
   id: string;
@@ -145,17 +160,41 @@ export default function RestaurantDashboard() {
             <h1 className="text-2xl font-bold text-purple-400">🍽️ {restaurant.name}</h1>
             <p className="text-sm text-gray-400">Restaurant Dashboard</p>
           </div>
-          <div className="text-right">
-            <p className="text-sm text-gray-400">Connected Wallet</p>
-            <p className="font-mono text-xs text-green-400">
-              {address?.slice(0, 6)}...{address?.slice(-4)}
-            </p>
-          </div>
+          
+          {/* 🆕 Professional Wallet Component */}
+          <Wallet>
+            <ConnectWallet>
+              <Avatar className="h-6 w-6" />
+              <Name />
+            </ConnectWallet>
+            <WalletDropdown>
+              <Identity className="px-4 pt-3 pb-2" hasCopyAddressOnClick>
+                <Avatar />
+                <Name />
+                <Address />
+                <EthBalance />
+              </Identity>
+              <WalletDropdownLink
+                icon="wallet"
+                href="https://keys.coinbase.com"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Wallet
+              </WalletDropdownLink>
+              <WalletDropdownDisconnect />
+            </WalletDropdown>
+          </Wallet>
         </div>
       </header>
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto p-6">
+        
+        {/* 🆕 FOODY 余额显示 */}
+        <div className="w-full max-w-md mx-auto mb-8">
+          <FoodyBalance />
+        </div>
         
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           

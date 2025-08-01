@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useAccount } from 'wagmi';
+import { useAccount, useConfig } from 'wagmi';
 import {
   ConnectWallet,
   Wallet,
@@ -26,9 +26,11 @@ import { QRScanner } from '@/components/QRScanner';
 import { TransactionHistory } from '@/components/TransactionHistory';
 import { FoodyBalance } from '@/components/FoodyBalance';
 import DinerRewards from '@/components/DinerRewards';
+import { executeFoodyPayment, checkFoodyBalance, formatTransactionHash, getTransactionUrl, type PaymentRequest, type PaymentResult } from '@/lib/paymentService';
 
 export default function DinerDashboard() {
   const { address } = useAccount();
+  const config = useConfig(); // 🆕 获取wagmi config
   const [userName, setUserName] = useState<string>('');
   const [userId, setUserId] = useState<string>('');
   const [loading, setLoading] = useState(true);
@@ -98,39 +100,54 @@ export default function DinerDashboard() {
     }
   };
 
-  // 🆕 处理支付确认
+  // 🆕 处理FOODY支付确认 🔥
   const handleConfirmPayment = async () => {
     if (!paymentData || !address) return;
     
     setIsProcessingPayment(true);
     
     try {
-      // TODO: 实现实际的区块链支付逻辑
-      // 1. 检查USDC余额
-      // 2. 执行USDC转账到餐厅钱包地址
-      // 3. 记录交易历史
-      // 4. 更新支付状态
-      
-      console.log('Processing payment...', {
-        from: address,
-        to: paymentData.restaurantWalletAddress, // 🔥 使用餐厅钱包地址
-        amount: paymentData.amounts.usdc,
+      // 构建支付请求
+      const paymentRequest: PaymentRequest = {
+        fromAddress: address as `0x${string}`,
+        toAddress: paymentData.restaurantWalletAddress as `0x${string}`,
+        foodyAmount: paymentData.amounts.foody, // 🔥 使用FOODY数量
+        usdcEquivalent: paymentData.amounts.usdc, // USDC等值
         orderId: paymentData.orderId,
-        restaurantName: paymentData.restaurantInfo?.name
-      });
+        restaurantName: paymentData.restaurantInfo?.name || 'Unknown Restaurant'
+      };
       
-      // 模拟支付处理时间
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      console.log('🍕 Processing FOODY payment...', paymentRequest);
       
-      // 支付成功
-      alert(`Payment Successful! 🎉\n\nPaid: $${paymentData.amounts.usdc.toFixed(2)} USDC\nTo: ${paymentData.restaurantInfo?.name}\nWallet: ${paymentData.restaurantWalletAddress}\nOrder: ${paymentData.orderId}`);
+      // 执行真实的FOODY支付 🚀
+      const result = await executeFoodyPayment(paymentRequest, config);
       
-      setShowPaymentConfirm(false);
-      setPaymentData(null);
+      if (result.success) {
+        // 支付成功 🎉
+        const txUrl = getTransactionUrl(result.transactionHash!);
+        const shortHash = formatTransactionHash(result.transactionHash!);
+        
+        alert(`Payment Successful! 🎉
+
+Paid: ${paymentData.amounts.foody.toLocaleString()} FOODY (FOODYE COIN)
+     = ( $${paymentData.amounts.usdc.toFixed(2)} USDC )
+To: ${paymentData.restaurantInfo?.name}
+Wallet: ${paymentData.restaurantWalletAddress}
+Order: ${paymentData.orderId}
+
+Transaction: ${shortHash}
+View on BaseScan: ${txUrl}`);
+        
+        setShowPaymentConfirm(false);
+        setPaymentData(null);
+      } else {
+        // 支付失败 ❌
+        alert(`Payment Failed ❌\n\n${result.error}`);
+      }
       
     } catch (error) {
-      console.error('Payment failed:', error);
-      alert('Payment failed. Please try again.');
+      console.error('Payment error:', error);
+      alert('Payment failed due to unexpected error. Please try again.');
     } finally {
       setIsProcessingPayment(false);
     }
