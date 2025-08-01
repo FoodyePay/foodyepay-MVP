@@ -317,7 +317,15 @@ export default function RestaurantDashboard() {
           isOpen={showQRGenerator}
           onClose={() => setShowQRGenerator(false)}
           restaurantId={restaurant?.id || ''}
-          restaurantZipCode={restaurant?.zip_code || '10001'} // 传递邮政编码用于税率计算
+          restaurantZipCode={restaurant?.zip_code || '10001'} // 向后兼容：ZIP code备选方案
+          restaurantInfo={{
+            name: restaurant?.name || 'Restaurant',
+            address: restaurant?.address || 'Address not available',
+            email: restaurant?.email || 'Email not available',
+            phone: restaurant?.phone || 'Phone not available',
+            city: restaurant?.city || '',
+            state: restaurant?.state || 'NY' // 优先使用州代码进行税率计算
+          }}
         />
       )}
 

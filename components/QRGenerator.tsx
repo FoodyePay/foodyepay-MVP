@@ -10,6 +10,14 @@ interface QRGeneratorProps {
   onClose: () => void;
   restaurantId: string;
   restaurantZipCode?: string;
+  restaurantInfo?: {
+    name: string;
+    address: string;
+    email: string;
+    phone: string;
+    city?: string;
+    state?: string;
+  };
 }
 
 interface TaxCalculation {
@@ -31,7 +39,7 @@ interface FoodyConversion {
   exchange_rate: number;
 }
 
-export function QRGenerator({ isOpen, onClose, restaurantId, restaurantZipCode }: QRGeneratorProps) {
+export function QRGenerator({ isOpen, onClose, restaurantId, restaurantZipCode, restaurantInfo }: QRGeneratorProps) {
   const [qrUrl, setQrUrl] = useState<string>('');
   const [amount, setAmount] = useState<string>('');
   const [orderId, setOrderId] = useState<string>('');
@@ -43,17 +51,25 @@ export function QRGenerator({ isOpen, onClose, restaurantId, restaurantZipCode }
   // 自动计算税费和 FOODY 转换
   useEffect(() => {
     const calculateTaxAndFoody = async () => {
-      if (!amount || !restaurantZipCode) return;
+      if (!amount) return;
+      
+      // 优先使用州代码，否则回滚到ZIP code
+      const restaurantState = restaurantInfo?.state;
+      if (!restaurantState && !restaurantZipCode) return;
       
       const subtotal = parseFloat(amount);
       if (isNaN(subtotal) || subtotal <= 0) return;
 
       try {
-        // 1. 计算税费
+        // 1. 计算税费 - 优先使用州代码
+        const taxPayload = restaurantState 
+          ? { amount: subtotal, state: restaurantState }
+          : { amount: subtotal, zipCode: restaurantZipCode };
+          
         const taxResponse = await fetch('/api/calculate-tax', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ amount: subtotal, zipCode: restaurantZipCode })
+          body: JSON.stringify(taxPayload)
         });
 
         if (taxResponse.ok) {
@@ -97,11 +113,18 @@ export function QRGenerator({ isOpen, onClose, restaurantId, restaurantZipCode }
     // 延迟计算以避免频繁API调用
     const timer = setTimeout(calculateTaxAndFoody, 500);
     return () => clearTimeout(timer);
-  }, [amount, restaurantZipCode]);
+  }, [amount, restaurantInfo?.state, restaurantZipCode]);
 
   const generateQR = async () => {
-    if (!amount && !orderId) {
-      alert('Please enter amount or order ID');
+    // 验证必填字段
+    if (!amount || !orderId) {
+      alert('Please enter both amount and order ID - both are required');
+      return;
+    }
+
+    const parsedAmount = parseFloat(amount);
+    if (isNaN(parsedAmount) || parsedAmount <= 0) {
+      alert('Please enter a valid amount greater than 0');
       return;
     }
 
@@ -111,10 +134,18 @@ export function QRGenerator({ isOpen, onClose, restaurantId, restaurantZipCode }
       const finalAmount = taxCalculation ? taxCalculation.total_amount : parseFloat(amount) || 0;
       const foodyAmount = foodyConversion ? foodyConversion.total_foody : 0;
       
-      // QR码数据格式
+      // QR码数据格式（包含完整餐厅信息）
       const qrData = JSON.stringify({
         restaurantId,
-        orderId: orderId || 'general',
+        restaurantInfo: restaurantInfo || {
+          name: 'Restaurant',
+          address: 'Address not provided',
+          email: 'Email not provided',
+          phone: 'Phone not provided',
+          city: '',
+          state: ''
+        },
+        orderId: orderId, // 现在是必填，不需要默认值
         amounts: {
           usdc: finalAmount,
           foody: foodyAmount,
@@ -127,7 +158,8 @@ export function QRGenerator({ isOpen, onClose, restaurantId, restaurantZipCode }
           zipCode: taxCalculation.zip_code,
           state: taxCalculation.state
         } : null,
-        timestamp: Date.now()
+        timestamp: Date.now(),
+        paymentCreatedAt: new Date().toISOString()
       });
       
       const qrCodeUrl = await QRCode.toDataURL(qrData, {
@@ -207,7 +239,7 @@ export function QRGenerator({ isOpen, onClose, restaurantId, restaurantZipCode }
               {taxCalculation && (
                 <div>
                   <div className="text-sm font-medium text-blue-900 dark:text-blue-100 mb-2">
-                    Tax Calculation ({taxCalculation.state})
+                    Payment
                   </div>
                   
                   <div className="text-sm space-y-1">
@@ -216,7 +248,7 @@ export function QRGenerator({ isOpen, onClose, restaurantId, restaurantZipCode }
                       <span>${taxCalculation.subtotal.toFixed(2)} USDC</span>
                     </div>
                     <div className="flex justify-between">
-                      <span>Tax ({(taxCalculation.tax_rate * 100).toFixed(2)}%):</span>
+                      <span>Tax ({(taxCalculation.tax_rate * 100).toFixed(3)}%):</span>
                       <span>${taxCalculation.tax_amount.toFixed(2)} USDC</span>
                     </div>
                     <div className="flex justify-between font-semibold border-t pt-1">
@@ -263,13 +295,14 @@ export function QRGenerator({ isOpen, onClose, restaurantId, restaurantZipCode }
 
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Order ID (Optional)
+              Order ID *
             </label>
             <input
               type="text"
               value={orderId}
               onChange={(e) => setOrderId(e.target.value)}
               placeholder="ord-8888"
+              required
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#222c4e] focus:border-transparent dark:bg-zinc-800 dark:text-white"
             />
           </div>
@@ -289,7 +322,7 @@ export function QRGenerator({ isOpen, onClose, restaurantId, restaurantZipCode }
 
           <button
             onClick={generateQR}
-            disabled={loading || !amount}
+            disabled={loading || !amount || !orderId}
             className="w-full bg-[#222c4e] hover:bg-[#454b80] disabled:bg-gray-400 text-white px-4 py-2 rounded-lg font-semibold transition-colors"
           >
             {loading ? 'Generating...' : 'Generate QR Code'}

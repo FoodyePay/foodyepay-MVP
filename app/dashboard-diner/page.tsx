@@ -25,6 +25,7 @@ import { supabase } from '@/lib/supabase';
 import { QRScanner } from '@/components/QRScanner';
 import { TransactionHistory } from '@/components/TransactionHistory';
 import { FoodyBalance } from '@/components/FoodyBalance';
+import DinerRewards from '@/components/DinerRewards';
 
 export default function DinerDashboard() {
   const { address } = useAccount();
@@ -33,6 +34,7 @@ export default function DinerDashboard() {
   const [loading, setLoading] = useState(true);
   const [showQRScanner, setShowQRScanner] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
+  const [showRewards, setShowRewards] = useState(false);
 
   // 🔥 获取用户姓名和ID信息
   useEffect(() => {
@@ -73,21 +75,46 @@ export default function DinerDashboard() {
       
       console.log('Scanned payment info:', paymentData);
       
-      // 格式化显示信息
-      const displayInfo = `Scan successful!
-Restaurant ID: ${paymentData.restaurantId}
-Order ID: ${paymentData.orderId}
-Table: ${paymentData.tableNumber || 'N/A'}
+      // 格式化时间戳
+      const scanTime = new Date().toLocaleString();
+      const paymentCreatedTime = paymentData.paymentCreatedAt 
+        ? new Date(paymentData.paymentCreatedAt).toLocaleString()
+        : new Date(paymentData.timestamp).toLocaleString();
+      
+      // 格式化显示信息（移动端优化版本）
+      const restaurantInfo = `🏪 ${paymentData.restaurantInfo?.name || 'N/A'}
+📍 ${paymentData.restaurantInfo?.address || 'N/A'}
+📧 ${paymentData.restaurantInfo?.email || 'N/A'}
+📞 ${paymentData.restaurantInfo?.phone || 'N/A'}`;
 
-Payment Details:
+      const orderInfo = `📋 Order: ${paymentData.orderId}
+🪑 Table: ${paymentData.tableNumber || 'N/A'}`;
+
+      const paymentInfo = `💰 Payment Details:
 • Subtotal: $${paymentData.amounts.subtotal.toFixed(2)} USDC
 • Tax: $${paymentData.amounts.tax.toFixed(2)} USDC  
 • Total: $${paymentData.amounts.usdc.toFixed(2)} USDC
-• FOODY: ${paymentData.amounts.foody.toLocaleString()} FOODY
+• FOODY: ${paymentData.amounts.foody.toLocaleString()} FOODY`;
 
-Tax Info: ${paymentData.taxInfo ? `${(paymentData.taxInfo.rate * 100).toFixed(2)}% (${paymentData.taxInfo.state})` : 'N/A'}`;
+      const taxInfo = `📊 Tax: ${paymentData.taxInfo ? `${(paymentData.taxInfo.rate * 100).toFixed(3)}% (${paymentData.taxInfo.state})` : 'N/A'}`;
+
+      const timeInfo = `⏰ Created: ${paymentCreatedTime}
+🕐 Scanned: ${scanTime}`;
+
+      // 分段显示，确保所有信息都能看到
+      const fullDisplayInfo = `Scan successful!
+
+${restaurantInfo}
+
+${orderInfo}
+
+${paymentInfo}
+
+${taxInfo}
+
+${timeInfo}`;
       
-      alert(displayInfo);
+      alert(fullDisplayInfo);
       
       // TODO: 实现实际的支付流程
       
@@ -98,7 +125,7 @@ Tax Info: ${paymentData.taxInfo ? `${(paymentData.taxInfo.rate * 100).toFixed(2)
       try {
         const [restaurantId, orderId, amount] = qrData.split(':');
         alert(`Scan successful! (Legacy Format)\nRestaurant ID: ${restaurantId}\nOrder ID: ${orderId}\nAmount: ${amount} USDC`);
-      } catch (legacyError) {
+      } catch {
         alert('Invalid QR code format, please scan again');
       }
     }
@@ -191,8 +218,8 @@ Tax Info: ${paymentData.taxInfo ? `${(paymentData.taxInfo.rate * 100).toFixed(2)
           <FoodyBalance />
         </div>
         
-        {/* 🆕 扫描支付 & 交易历史 按钮 */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-md">
+        {/* � 主要功能按钮 */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full max-w-2xl">
           <button
             onClick={() => setShowQRScanner(true)}
             className="flex items-center justify-center space-x-2 bg-[#222c4e] hover:bg-[#454b80] text-white px-6 py-4 rounded-lg font-semibold transition-colors"
@@ -205,8 +232,16 @@ Tax Info: ${paymentData.taxInfo ? `${(paymentData.taxInfo.rate * 100).toFixed(2)
             onClick={() => setShowHistory(true)}
             className="flex items-center justify-center space-x-2 bg-[#222c4e] hover:bg-[#454b80] text-white px-6 py-4 rounded-lg font-semibold transition-colors"
           >
-            <span>📋</span>
+            <span>�</span>
             <span>Transaction History</span>
+          </button>
+          
+          <button
+            onClick={() => setShowRewards(true)}
+            className="flex items-center justify-center space-x-2 bg-[#222c4e] hover:bg-[#454b80] text-white px-6 py-4 rounded-lg font-semibold transition-colors"
+          >
+            <span>🎁</span>
+            <span>My Rewards</span>
           </button>
         </div>
 
@@ -251,6 +286,24 @@ Tax Info: ${paymentData.taxInfo ? `${(paymentData.taxInfo.rate * 100).toFixed(2)
         isOpen={showHistory}
         onClose={() => setShowHistory(false)}
       />
+
+      {/* 🎁 我的奖励弹窗 */}
+      {showRewards && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-zinc-900 rounded-xl p-6 w-full max-w-md relative">
+            <button
+              onClick={() => setShowRewards(false)}
+              className="absolute top-4 right-4 text-gray-400 hover:text-white text-xl"
+            >
+              ✕
+            </button>
+            
+            <h2 className="text-xl font-bold text-yellow-400 mb-4">🎁 My Rewards</h2>
+            
+            <DinerRewards className="w-full" />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
