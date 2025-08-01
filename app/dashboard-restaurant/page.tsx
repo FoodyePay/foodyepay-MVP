@@ -317,6 +317,7 @@ export default function RestaurantDashboard() {
           isOpen={showQRGenerator}
           onClose={() => setShowQRGenerator(false)}
           restaurantId={restaurant?.id || ''}
+          restaurantWalletAddress={restaurant?.wallet_address || ''} // 🆕 传递钱包地址
           restaurantZipCode={restaurant?.zip_code || '10001'} // 向后兼容：ZIP code备选方案
           restaurantInfo={{
             name: restaurant?.name || 'Restaurant',

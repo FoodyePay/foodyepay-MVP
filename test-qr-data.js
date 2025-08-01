@@ -3,6 +3,7 @@
 
 const sampleQRData = {
   restaurantId: "785e4179-5dc6-4d46-83d1-3c75c126fbf1",
+  restaurantWalletAddress: "0x742d35Cc6634C0532925a3b8D0b4C3b0a7f", // 🆕 餐厅钱包地址
   restaurantInfo: {
     name: "Ken Canton CUISINE INC.",
     address: "150-30 71st Ave, Flushing, NY 11365",
@@ -11,12 +12,12 @@ const sampleQRData = {
     city: "Flushing",
     state: "NY"
   },
-  orderId: "general",
+  orderId: "8888", // 更新: 使用真实订单ID而不是"general"
   amounts: {
-    usdc: 10.89,    // 更新: 使用正确的NY州税率计算
-    foody: 91472.3, // 对应更新FOODY数量
-    subtotal: 10.00,
-    tax: 0.89       // 更新: NY州实际税率 8.875%
+    usdc: 21.78,    // 更新: 使用正确的NY州税率计算
+    foody: 182963.366, // 对应更新FOODY数量
+    subtotal: 20.00,
+    tax: 1.78       // 更新: NY州实际税率 8.875%
   },
   tableNumber: "N/A",
   taxInfo: {

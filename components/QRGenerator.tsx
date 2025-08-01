@@ -9,6 +9,7 @@ interface QRGeneratorProps {
   isOpen: boolean;
   onClose: () => void;
   restaurantId: string;
+  restaurantWalletAddress: string; // 🆕 餐厅钱包地址
   restaurantZipCode?: string;
   restaurantInfo?: {
     name: string;
@@ -39,7 +40,7 @@ interface FoodyConversion {
   exchange_rate: number;
 }
 
-export function QRGenerator({ isOpen, onClose, restaurantId, restaurantZipCode, restaurantInfo }: QRGeneratorProps) {
+export function QRGenerator({ isOpen, onClose, restaurantId, restaurantWalletAddress, restaurantZipCode, restaurantInfo }: QRGeneratorProps) {
   const [qrUrl, setQrUrl] = useState<string>('');
   const [amount, setAmount] = useState<string>('');
   const [orderId, setOrderId] = useState<string>('');
@@ -134,9 +135,10 @@ export function QRGenerator({ isOpen, onClose, restaurantId, restaurantZipCode, 
       const finalAmount = taxCalculation ? taxCalculation.total_amount : parseFloat(amount) || 0;
       const foodyAmount = foodyConversion ? foodyConversion.total_foody : 0;
       
-      // QR码数据格式（包含完整餐厅信息）
+      // QR码数据格式（包含完整餐厅信息和钱包地址）
       const qrData = JSON.stringify({
         restaurantId,
+        restaurantWalletAddress, // 🆕 餐厅钱包地址用于支付
         restaurantInfo: restaurantInfo || {
           name: 'Restaurant',
           address: 'Address not provided',

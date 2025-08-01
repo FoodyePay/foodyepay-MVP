@@ -107,22 +107,23 @@ export default function DinerDashboard() {
     try {
       // TODO: 实现实际的区块链支付逻辑
       // 1. 检查USDC余额
-      // 2. 执行USDC转账到餐厅地址
+      // 2. 执行USDC转账到餐厅钱包地址
       // 3. 记录交易历史
       // 4. 更新支付状态
       
       console.log('Processing payment...', {
         from: address,
-        to: paymentData.restaurantId,
+        to: paymentData.restaurantWalletAddress, // 🔥 使用餐厅钱包地址
         amount: paymentData.amounts.usdc,
-        orderId: paymentData.orderId
+        orderId: paymentData.orderId,
+        restaurantName: paymentData.restaurantInfo?.name
       });
       
       // 模拟支付处理时间
       await new Promise(resolve => setTimeout(resolve, 2000));
       
       // 支付成功
-      alert(`Payment Successful! 🎉\n\nPaid: $${paymentData.amounts.usdc.toFixed(2)} USDC\nTo: ${paymentData.restaurantInfo?.name}\nOrder: ${paymentData.orderId}`);
+      alert(`Payment Successful! 🎉\n\nPaid: $${paymentData.amounts.usdc.toFixed(2)} USDC\nTo: ${paymentData.restaurantInfo?.name}\nWallet: ${paymentData.restaurantWalletAddress}\nOrder: ${paymentData.orderId}`);
       
       setShowPaymentConfirm(false);
       setPaymentData(null);
