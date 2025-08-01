@@ -179,6 +179,9 @@ export async function executeFoodyPayment(
       status: 'completed'
     };
 
+    console.log('🎯 About to save transaction record...');
+    console.log('📝 Transaction record data:', JSON.stringify(transactionRecord, null, 2));
+    
     const saveResult = await saveTransactionRecord(transactionRecord);
     if (saveResult) {
       console.log('💾 Transaction record saved to database');

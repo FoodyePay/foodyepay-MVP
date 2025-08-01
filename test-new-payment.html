@@ -1,0 +1,59 @@
+// test-new-payment.html
+// 创建测试支付的QR码
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Payment QR</title>
+</head>
+<body>
+    <h2>🧪 Test Payment QR Code</h2>
+    <div id="qr-data"></div>
+    
+    <script>
+        const testPayment = {
+            restaurantId: "785e4179-5dc6-4d46-83d1-3c75c126fbf1",
+            restaurantWalletAddress: "0x674302f3714eA8981C98F7688865b02AEBF5E373",
+            restaurantInfo: {
+                name: "Ken Canton CUISINE INC.",
+                address: "150-30 71st Ave, Flushing, NY 11365",
+                email: "foodyecoin01@gmail.com",
+                phone: "1-718-888-8888",
+                city: "Flushing",
+                state: "NY"
+            },
+            orderId: "DEBUG_" + Date.now(), // 使用唯一的DEBUG订单ID
+            amounts: {
+                usdc: 1.50,    // 小额测试
+                foody: 12000,  // 对应的FOODY数量
+                subtotal: 1.38,
+                tax: 0.12
+            },
+            tableNumber: "DEBUG",
+            taxInfo: {
+                rate: 0.08875,
+                zipCode: "11365",
+                state: "NY"
+            },
+            timestamp: Date.now(),
+            paymentCreatedAt: new Date().toISOString()
+        };
+
+        document.getElementById('qr-data').innerHTML = `
+            <h3>📱 Test Payment Data:</h3>
+            <pre>${JSON.stringify(testPayment, null, 2)}</pre>
+            
+            <h3>🎯 Instructions:</h3>
+            <ol>
+                <li>Copy the JSON data above</li>
+                <li>Use it in a QR payment test</li>
+                <li>Watch browser console for saveTransactionRecord logs</li>
+                <li>Check if order gets saved to database</li>
+            </ol>
+        `;
+
+        console.log('🧪 Test Payment QR Data:', testPayment);
+        console.log('📋 Order ID for tracking:', testPayment.orderId);
+    </script>
+</body>
+</html>
