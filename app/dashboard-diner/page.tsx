@@ -35,6 +35,11 @@ export default function DinerDashboard() {
   const [showQRScanner, setShowQRScanner] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [showRewards, setShowRewards] = useState(false);
+  
+  // 🆕 支付确认状态
+  const [showPaymentConfirm, setShowPaymentConfirm] = useState(false);
+  const [paymentData, setPaymentData] = useState<any>(null);
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
 
   // 🔥 获取用户姓名和ID信息
   useEffect(() => {
@@ -71,52 +76,14 @@ export default function DinerDashboard() {
   const handleQRScan = async (qrData: string) => {
     try {
       // 解析二维码数据 (新格式: JSON)
-      const paymentData = JSON.parse(qrData);
+      const scannedPaymentData = JSON.parse(qrData);
       
-      console.log('Scanned payment info:', paymentData);
+      console.log('Scanned payment info:', scannedPaymentData);
       
-      // 格式化时间戳
-      const scanTime = new Date().toLocaleString();
-      const paymentCreatedTime = paymentData.paymentCreatedAt 
-        ? new Date(paymentData.paymentCreatedAt).toLocaleString()
-        : new Date(paymentData.timestamp).toLocaleString();
-      
-      // 格式化显示信息（移动端优化版本）
-      const restaurantInfo = `🏪 ${paymentData.restaurantInfo?.name || 'N/A'}
-📍 ${paymentData.restaurantInfo?.address || 'N/A'}
-📧 ${paymentData.restaurantInfo?.email || 'N/A'}
-📞 ${paymentData.restaurantInfo?.phone || 'N/A'}`;
-
-      const orderInfo = `📋 Order: ${paymentData.orderId}
-🪑 Table: ${paymentData.tableNumber || 'N/A'}`;
-
-      const paymentInfo = `💰 Payment Details:
-• Subtotal: $${paymentData.amounts.subtotal.toFixed(2)} USDC
-• Tax: $${paymentData.amounts.tax.toFixed(2)} USDC  
-• Total: $${paymentData.amounts.usdc.toFixed(2)} USDC
-• FOODY: ${paymentData.amounts.foody.toLocaleString()} FOODY`;
-
-      const taxInfo = `📊 Tax: ${paymentData.taxInfo ? `${(paymentData.taxInfo.rate * 100).toFixed(3)}% (${paymentData.taxInfo.state})` : 'N/A'}`;
-
-      const timeInfo = `⏰ Created: ${paymentCreatedTime}
-🕐 Scanned: ${scanTime}`;
-
-      // 分段显示，确保所有信息都能看到
-      const fullDisplayInfo = `Scan successful!
-
-${restaurantInfo}
-
-${orderInfo}
-
-${paymentInfo}
-
-${taxInfo}
-
-${timeInfo}`;
-      
-      alert(fullDisplayInfo);
-      
-      // TODO: 实现实际的支付流程
+      // 设置支付数据和显示确认模态框
+      setPaymentData(scannedPaymentData);
+      setShowPaymentConfirm(true);
+      setShowQRScanner(false); // 关闭扫描器
       
     } catch (error) {
       console.error('QR code processing failed:', error);
@@ -128,6 +95,43 @@ ${timeInfo}`;
       } catch {
         alert('Invalid QR code format, please scan again');
       }
+    }
+  };
+
+  // 🆕 处理支付确认
+  const handleConfirmPayment = async () => {
+    if (!paymentData || !address) return;
+    
+    setIsProcessingPayment(true);
+    
+    try {
+      // TODO: 实现实际的区块链支付逻辑
+      // 1. 检查USDC余额
+      // 2. 执行USDC转账到餐厅地址
+      // 3. 记录交易历史
+      // 4. 更新支付状态
+      
+      console.log('Processing payment...', {
+        from: address,
+        to: paymentData.restaurantId,
+        amount: paymentData.amounts.usdc,
+        orderId: paymentData.orderId
+      });
+      
+      // 模拟支付处理时间
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // 支付成功
+      alert(`Payment Successful! 🎉\n\nPaid: $${paymentData.amounts.usdc.toFixed(2)} USDC\nTo: ${paymentData.restaurantInfo?.name}\nOrder: ${paymentData.orderId}`);
+      
+      setShowPaymentConfirm(false);
+      setPaymentData(null);
+      
+    } catch (error) {
+      console.error('Payment failed:', error);
+      alert('Payment failed. Please try again.');
+    } finally {
+      setIsProcessingPayment(false);
     }
   };
 
@@ -301,6 +305,99 @@ ${timeInfo}`;
             <h2 className="text-xl font-bold text-yellow-400 mb-4">🎁 My Rewards</h2>
             
             <DinerRewards className="w-full" />
+          </div>
+        </div>
+      )}
+
+      {/* 🆕 支付确认模态框 */}
+      {showPaymentConfirm && paymentData && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-zinc-900 rounded-xl p-6 w-full max-w-lg relative max-h-[90vh] overflow-y-auto">
+            <button
+              onClick={() => {
+                setShowPaymentConfirm(false);
+                setPaymentData(null);
+              }}
+              className="absolute top-4 right-4 text-gray-400 hover:text-white text-xl"
+            >
+              ✕
+            </button>
+            
+            <h2 className="text-xl font-bold text-green-400 mb-4">✅ Scan Successful!</h2>
+            
+            <div className="space-y-4 text-sm">
+              {/* 餐厅信息 */}
+              <div className="bg-zinc-800 rounded-lg p-4">
+                <h3 className="font-semibold text-purple-400 mb-2">🏪 Restaurant Info</h3>
+                <p className="text-white font-medium">{paymentData.restaurantInfo?.name || 'N/A'}</p>
+                <p className="text-gray-300">{paymentData.restaurantInfo?.address || 'N/A'}</p>
+                <p className="text-gray-300">{paymentData.restaurantInfo?.email || 'N/A'}</p>
+                <p className="text-gray-300">{paymentData.restaurantInfo?.phone || 'N/A'}</p>
+              </div>
+
+              {/* 订单信息 */}
+              <div className="bg-zinc-800 rounded-lg p-4">
+                <h3 className="font-semibold text-blue-400 mb-2">📋 Order Details</h3>
+                <p className="text-white">Order: <span className="font-mono">{paymentData.orderId}</span></p>
+                <p className="text-white">Table: {paymentData.tableNumber || 'N/A'}</p>
+              </div>
+
+              {/* 支付详情 */}
+              <div className="bg-zinc-800 rounded-lg p-4">
+                <h3 className="font-semibold text-green-400 mb-2">💰 Payment Details</h3>
+                <div className="space-y-1">
+                  <p className="text-white">Subtotal: <span className="font-mono">${paymentData.amounts.subtotal.toFixed(2)} USDC</span></p>
+                  <p className="text-white">Tax: <span className="font-mono">${paymentData.amounts.tax.toFixed(2)} USDC</span></p>
+                  <div className="border-t border-gray-600 pt-2 mt-2">
+                    <p className="text-white font-bold text-lg">Total: <span className="font-mono">${paymentData.amounts.usdc.toFixed(2)} USDC</span></p>
+                  </div>
+                  <p className="text-yellow-400">FOODY: <span className="font-mono">{paymentData.amounts.foody.toLocaleString()} FOODY</span></p>
+                </div>
+              </div>
+
+              {/* 税率信息 */}
+              {paymentData.taxInfo && (
+                <div className="bg-zinc-800 rounded-lg p-4">
+                  <h3 className="font-semibold text-yellow-400 mb-2">📊 Tax Info</h3>
+                  <p className="text-white">{(paymentData.taxInfo.rate * 100).toFixed(3)}% ({paymentData.taxInfo.state})</p>
+                </div>
+              )}
+
+              {/* 时间戳 */}
+              <div className="bg-zinc-800 rounded-lg p-4">
+                <h3 className="font-semibold text-gray-400 mb-2">⏰ Timestamps</h3>
+                <p className="text-white">Created: {paymentData.paymentCreatedAt ? new Date(paymentData.paymentCreatedAt).toLocaleString() : new Date(paymentData.timestamp).toLocaleString()}</p>
+                <p className="text-white">Scanned: {new Date().toLocaleString()}</p>
+              </div>
+            </div>
+
+            {/* 🔥 支付按钮 */}
+            <div className="flex space-x-3 mt-6">
+              <button
+                onClick={() => {
+                  setShowPaymentConfirm(false);
+                  setPaymentData(null);
+                }}
+                className="flex-1 bg-gray-600 hover:bg-gray-700 text-white py-3 px-4 rounded-lg font-semibold transition-colors"
+                disabled={isProcessingPayment}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleConfirmPayment}
+                disabled={isProcessingPayment}
+                className="flex-1 bg-green-600 hover:bg-green-700 disabled:bg-gray-500 text-white py-3 px-4 rounded-lg font-semibold transition-colors flex items-center justify-center"
+              >
+                {isProcessingPayment ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                    Processing...
+                  </>
+                ) : (
+                  'Confirm & Pay'
+                )}
+              </button>
+            </div>
           </div>
         </div>
       )}
