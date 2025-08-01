@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { X, TrendingUp, DollarSign } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
+import { getRestaurantTransactions } from '@/lib/transactionService';
 import Image from 'next/image';
 
 interface FinancialStats {
@@ -56,97 +56,89 @@ export function FinancialAnalytics({ isOpen, onClose, restaurantId }: FinancialA
   const fetchFinancialData = async () => {
     setLoading(true);
     try {
-      // Calculate date ranges
+      console.log('📊 Fetching financial data for restaurant:', restaurantId);
+      
+      // 使用新的交易服务获取餐厅交易
+      const transactionData = await getRestaurantTransactions(restaurantId, 50);
+      
+      console.log('💰 Fetched restaurant transactions:', transactionData);
+      
+      // 计算日期范围
       const now = new Date();
       const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
       const weekStart = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-      const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
 
-      // Fetch orders data
-      const { data: orders, error: ordersError } = await supabase
-        .from('orders')
-        .select('total_amount, created_at, status')
-        .eq('restaurant_id', restaurantId)
-        .eq('status', 'delivered')
-        .gte('created_at', monthStart.toISOString());
+      // 处理交易数据，明确类型 - 匹配实际数据库结构
+      const completedTransactions = transactionData.filter((item: {
+        status: string;
+        created_at: string;
+        total_amount: number;
+        foody_amount: number;
+        payments?: Array<{
+          tx_hash: string;
+          status: string;
+        }>;
+        id: string;
+      }) => 
+        item.status === 'completed' || item.status === 'delivered'
+      );
 
-      if (ordersError) {
-        console.error('Error fetching orders:', ordersError);
-        return;
-      }
+      // 计算统计数据
+      const todayTransactions = completedTransactions.filter((item) => 
+        new Date(item.created_at) >= todayStart
+      );
+      const weekTransactions = completedTransactions.filter((item) => 
+        new Date(item.created_at) >= weekStart
+      );
 
-      // Fetch payments data
-      const { data: payments, error: paymentsError } = await supabase
-        .from('payments')
-        .select('*')
-        .eq('restaurant_id', restaurantId)
-        .eq('status', 'completed')
-        .gte('created_at', monthStart.toISOString())
-        .order('created_at', { ascending: false })
-        .limit(50);
+      const todayRevenue = todayTransactions.reduce((sum: number, item) => 
+        sum + (item.total_amount || 0), 0
+      );
+      const weekRevenue = weekTransactions.reduce((sum: number, item) => 
+        sum + (item.total_amount || 0), 0
+      );
+      const monthRevenue = completedTransactions.reduce((sum: number, item) => 
+        sum + (item.total_amount || 0), 0
+      );
 
-      if (paymentsError) {
-        console.error('Error fetching payments:', paymentsError);
-        return;
-      }
+      const foodyEarned = completedTransactions.reduce((sum: number, item) => {
+        return sum + (item.foody_amount || 0);
+      }, 0);
 
-      // Calculate statistics
-      const ordersData = orders || [];
-      const paymentsData = payments || [];
+      const avgOrderValue = completedTransactions.length > 0 ? 
+        monthRevenue / completedTransactions.length : 0;
 
-      const todayRevenue = ordersData
-        .filter(order => new Date(order.created_at) >= todayStart)
-        .reduce((sum, order) => sum + order.total_amount, 0);
-
-      const weekRevenue = ordersData
-        .filter(order => new Date(order.created_at) >= weekStart)
-        .reduce((sum, order) => sum + order.total_amount, 0);
-
-      const monthRevenue = ordersData
-        .reduce((sum, order) => sum + order.total_amount, 0);
-
-      const todayOrders = ordersData
-        .filter(order => new Date(order.created_at) >= todayStart)
-        .length;
-
-      const weekOrders = ordersData
-        .filter(order => new Date(order.created_at) >= weekStart)
-        .length;
-
-      const totalOrders = ordersData.length;
-
-      const avgOrderValue = totalOrders > 0 ? monthRevenue / totalOrders : 0;
-
-      // Calculate FOODY earnings (assuming 2% cashback)
-      const foodyEarned = paymentsData
-        .filter(payment => payment.token_symbol === 'FOODY')
-        .reduce((sum, payment) => sum + payment.amount, 0);
-
+      // 更新统计数据
       setStats({
         today_revenue: todayRevenue,
         week_revenue: weekRevenue,
         month_revenue: monthRevenue,
-        total_orders: totalOrders,
-        today_orders: todayOrders,
-        week_orders: weekOrders,
+        total_orders: completedTransactions.length,
+        today_orders: todayTransactions.length,
+        week_orders: weekTransactions.length,
         avg_order_value: avgOrderValue,
         foody_earned: foodyEarned
       });
 
-      // Format transactions for display
-      const formattedTransactions = paymentsData.map(payment => ({
-        id: payment.id,
-        amount: payment.amount,
-        currency: payment.token_symbol || 'USDC',
-        status: payment.status,
-        created_at: payment.created_at,
-        order_id: payment.order_id
-      }));
+      // 格式化交易记录用于显示
+      const formattedTransactions: Transaction[] = completedTransactions
+        .slice(0, 10) // 只显示最近10笔
+        .map((item) => {
+          const payment = item.payments?.[0];
+          return {
+            id: item.id,
+            amount: item.total_amount || 0,
+            currency: 'FOODY',
+            status: item.status,
+            created_at: item.created_at,
+            order_id: item.id
+          };
+        });
 
       setTransactions(formattedTransactions);
 
     } catch (error) {
-      console.error('Failed to fetch financial data:', error);
+      console.error('❌ Error fetching financial data:', error);
     } finally {
       setLoading(false);
     }

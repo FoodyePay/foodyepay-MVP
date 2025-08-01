@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useAccount } from 'wagmi';
-import { supabase } from '@/lib/supabase';
+import { getDinerTransactions } from '@/lib/transactionService';
 
 interface Transaction {
   id: string;
@@ -12,6 +12,7 @@ interface Transaction {
   created_at: string;
   tx_hash?: string;
   payment_method: string;
+  foody_amount?: number; // 添加FOODY数量字段
 }
 
 interface TransactionHistoryProps {
@@ -36,76 +37,48 @@ export function TransactionHistory({ isOpen, onClose }: TransactionHistoryProps)
     
     setLoading(true);
     try {
-      // 从 orders 表获取交易数据，关联 restaurants 和 payments 表
-      const { data: ordersData, error: ordersError } = await supabase
-        .from('orders')
-        .select(`
-          id,
-          status,
-          total_amount,
-          created_at,
-          restaurants (
-            name
-          ),
-          payments (
-            tx_hash,
-            status
-          )
-        `)
-        .eq('diner_id', address)
-        .order('created_at', { ascending: false })
-        .limit(20);
-
-      if (ordersError) {
-        console.error('Error fetching orders:', ordersError);
-        return;
-      }
-
-      // 也获取 FOODY 购买记录
-      const { data: foodyData, error: foodyError } = await supabase
-        .from('foody_purchases')
-        .select('*')
-        .eq('wallet_address', address)
-        .order('created_at', { ascending: false })
-        .limit(10);
-
-      if (foodyError) {
-        console.error('Error fetching FOODY purchases:', foodyError);
-      }
-
-      // 合并和格式化数据
-      const formattedOrders: Transaction[] = (ordersData || []).map(order => {
-        const restaurant = order.restaurants as unknown as { name: string } | null;
-        const payments = order.payments as unknown as { tx_hash: string }[] | null;
+      console.log('🔍 Fetching transactions for:', address);
+      
+      // 使用新的交易服务
+      const transactionData = await getDinerTransactions(address, 20);
+      
+      console.log('📊 Fetched transaction data:', transactionData);
+      
+      // 格式化数据 - 匹配实际数据库结构
+      const formattedTransactions: Transaction[] = transactionData.map((item: {
+        id: any;
+        restaurant_id: any;
+        total_amount: any;
+        foody_amount: any;
+        status: any;
+        created_at: any;
+        restaurants: { name: any }[];
+        payments: {
+          tx_hash: any;
+          status: any;
+        }[];
+      }) => {
+        const restaurant = item.restaurants?.[0];
+        const payment = item.payments?.[0];
         
         return {
-          id: order.id,
+          id: item.id,
           restaurant_name: restaurant?.name || '未知餐厅',
-          amount: order.total_amount,
-          status: order.status,
-          created_at: order.created_at,
-          tx_hash: payments?.[0]?.tx_hash,
-          payment_method: 'USDC'
+          amount: item.total_amount || 0,
+          status: item.status,
+          created_at: item.created_at,
+          tx_hash: payment?.tx_hash,
+          payment_method: 'FOODY',
+          foody_amount: item.foody_amount || 0
         };
       });
 
-      const formattedFoody: Transaction[] = (foodyData || []).map(purchase => ({
-        id: purchase.id,
-        restaurant_name: 'FOODY 代币购买',
-        amount: purchase.foody_amount,
-        status: purchase.status,
-        created_at: purchase.created_at,
-        tx_hash: purchase.tx_hash,
-        payment_method: 'ETH'
-      }));
-
-      // 合并并按时间排序
-      const allTransactions = [...formattedOrders, ...formattedFoody]
-        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-
-      setTransactions(allTransactions);
-    } catch (err) {
-      console.error('Failed to fetch transactions:', err);
+      console.log('✅ Formatted transactions:', formattedTransactions);
+      setTransactions(formattedTransactions);
+      
+    } catch (error) {
+      console.error('❌ Error fetching transactions:', error);
+      setTransactions([]);
     } finally {
       setLoading(false);
     }

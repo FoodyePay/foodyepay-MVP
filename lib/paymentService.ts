@@ -4,6 +4,7 @@
 import { parseUnits, formatUnits } from 'viem';
 import { writeContract, readContract, waitForTransactionReceipt } from '@wagmi/core';
 import { base } from 'wagmi/chains';
+import { saveTransactionRecord, type TransactionRecord } from './transactionService';
 
 // Base网络上的FOODY合约地址
 export const FOODY_CONTRACT_ADDRESS = '0x1022b1b028a2237c440dbac51dc6fc220d88c08f' as `0x${string}`;
@@ -58,6 +59,7 @@ export interface PaymentRequest {
   foodyAmount: number;  // 🔥 改为FOODY数量
   usdcEquivalent: number; // 仅用于显示等值
   orderId: string;
+  restaurantId: string;  // 🆕 添加餐厅ID
   restaurantName: string;
 }
 
@@ -118,7 +120,7 @@ export async function executeFoodyPayment(
   config: any // wagmi config
 ): Promise<PaymentResult> {
   try {
-    const { fromAddress, toAddress, foodyAmount, usdcEquivalent, orderId, restaurantName } = paymentRequest;
+    const { fromAddress, toAddress, foodyAmount, usdcEquivalent, orderId, restaurantId, restaurantName } = paymentRequest;
 
     // 1. 检查FOODY余额
     const balance = await checkFoodyBalance(fromAddress, config);
@@ -139,6 +141,7 @@ export async function executeFoodyPayment(
       usdcEquivalent: `$${usdcEquivalent.toFixed(2)}`,
       amountInWei: amountInWei.toString(),
       orderId,
+      restaurantId,
       restaurantName
     });
 
@@ -160,6 +163,28 @@ export async function executeFoodyPayment(
     });
 
     console.log('✅ FOODY transaction confirmed:', receipt);
+
+    // 5. 🆕 保存交易记录到数据库
+    const transactionRecord: TransactionRecord = {
+      diner_wallet: fromAddress,
+      restaurant_id: restaurantId,
+      restaurant_wallet: toAddress,
+      restaurant_name: restaurantName,
+      order_id: orderId,
+      foody_amount: foodyAmount,
+      usdc_equivalent: usdcEquivalent,
+      tx_hash: hash,
+      gas_used: receipt.gasUsed.toString(),
+      payment_method: 'FOODY',
+      status: 'completed'
+    };
+
+    const saveResult = await saveTransactionRecord(transactionRecord);
+    if (saveResult) {
+      console.log('💾 Transaction record saved to database');
+    } else {
+      console.warn('⚠️ Failed to save transaction record, but payment succeeded');
+    }
 
     return {
       success: true,

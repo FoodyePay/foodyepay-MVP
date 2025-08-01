@@ -114,6 +114,7 @@ export default function DinerDashboard() {
         foodyAmount: paymentData.amounts.foody, // 🔥 使用FOODY数量
         usdcEquivalent: paymentData.amounts.usdc, // USDC等值
         orderId: paymentData.orderId,
+        restaurantId: paymentData.restaurantId, // 🆕 添加餐厅ID
         restaurantName: paymentData.restaurantInfo?.name || 'Unknown Restaurant'
       };
       
