@@ -124,7 +124,6 @@ export function FinancialAnalytics({ isOpen, onClose, restaurantId }: FinancialA
       const formattedTransactions: Transaction[] = completedTransactions
         .slice(0, 10) // 只显示最近10笔
         .map((item) => {
-          const payment = item.payments?.[0];
           return {
             id: item.id,
             amount: item.total_amount || 0,

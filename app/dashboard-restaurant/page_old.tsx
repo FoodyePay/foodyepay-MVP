@@ -222,8 +222,8 @@ export default function RestaurantDashboard() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
             
             <div className="bg-zinc-800 rounded-lg p-4">
-              <div className="text-purple-400 font-semibold mb-2">🛒 Order Management</div>
-              <p className="text-gray-400">Real-time order tracking and kitchen dashboard</p>
+              <div className="text-purple-400 font-semibold mb-2">� Payment Management</div>
+              <p className="text-gray-400">Real-time payment tracking and transaction dashboard</p>
             </div>
             
             <div className="bg-zinc-800 rounded-lg p-4">

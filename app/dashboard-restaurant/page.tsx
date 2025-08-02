@@ -267,7 +267,7 @@ export default function RestaurantDashboard() {
                   </div>
                 </button>
 
-                {/* 🆕 Orders Management */}
+                {/* 🆕 Payment Management */}
                 <button 
                   onClick={() => setShowOrderManagement(true)}
                   className="bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700 p-6 rounded-lg transition-all duration-200 text-left group"
@@ -275,8 +275,8 @@ export default function RestaurantDashboard() {
                   <div className="flex items-center space-x-3">
                     <span className="text-2xl">�</span>
                     <div>
-                      <h3 className="font-semibold text-white group-hover:text-yellow-100">Manage Orders</h3>
-                      <p className="text-sm text-yellow-200">View and process incoming orders</p>
+                      <h3 className="font-semibold text-white group-hover:text-yellow-100">Manage Payment</h3>
+                      <p className="text-sm text-yellow-200">View and process payment transactions</p>
                     </div>
                   </div>
                 </button>
