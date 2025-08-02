@@ -23,7 +23,7 @@ import { SwapDefault } from '@coinbase/onchainkit/swap';
 import type { Token } from '@coinbase/onchainkit/token';
 import { supabase } from '@/lib/supabase';
 import { QRScanner } from '@/components/QRScanner';
-import { TransactionHistory } from '@/components/TransactionHistory';
+import TransactionHistory from '@/components/TransactionHistory';
 import { FoodyBalance } from '@/components/FoodyBalance';
 import DinerRewards from '@/components/DinerRewards';
 import { executeFoodyPayment, checkFoodyBalance, formatTransactionHash, getTransactionUrl, type PaymentRequest, type PaymentResult } from '@/lib/paymentService';
@@ -42,6 +42,7 @@ export default function DinerDashboard() {
   const [showPaymentConfirm, setShowPaymentConfirm] = useState(false);
   const [paymentData, setPaymentData] = useState<any>(null);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+  const [paymentSuccessful, setPaymentSuccessful] = useState(false); // 🚨 新增支付成功状态
 
   // 🔥 获取用户姓名和ID信息
   useEffect(() => {
@@ -86,6 +87,7 @@ export default function DinerDashboard() {
       setPaymentData(scannedPaymentData);
       setShowPaymentConfirm(true);
       setShowQRScanner(false); // 关闭扫描器
+      setPaymentSuccessful(false); // 🚨 重置支付成功状态
       
     } catch (error) {
       console.error('QR code processing failed:', error);
@@ -124,6 +126,9 @@ export default function DinerDashboard() {
       const result = await executeFoodyPayment(paymentRequest, config);
       
       if (result.success) {
+        // 🚨 立即设置支付成功状态，禁用按钮
+        setPaymentSuccessful(true);
+        
         // 支付成功 🎉
         const txUrl = getTransactionUrl(result.transactionHash!);
         const shortHash = formatTransactionHash(result.transactionHash!);
@@ -139,8 +144,10 @@ Order: ${paymentData.orderId}
 Transaction: ${shortHash}
 View on BaseScan: ${txUrl}`);
         
+        // 🚨 用户点击 OK 后才关闭对话框并重置状态
         setShowPaymentConfirm(false);
         setPaymentData(null);
+        setPaymentSuccessful(false); // 重置支付成功状态
       } else {
         // 支付失败 ❌
         alert(`Payment Failed ❌\n\n${result.error}`);
@@ -308,6 +315,7 @@ View on BaseScan: ${txUrl}`);
       <TransactionHistory
         isOpen={showHistory}
         onClose={() => setShowHistory(false)}
+        dinerUuid={userId}
       />
 
       {/* 🎁 我的奖励弹窗 */}
@@ -396,6 +404,7 @@ View on BaseScan: ${txUrl}`);
                 onClick={() => {
                   setShowPaymentConfirm(false);
                   setPaymentData(null);
+                  setPaymentSuccessful(false); // 🚨 重置支付成功状态
                 }}
                 className="flex-1 bg-gray-600 hover:bg-gray-700 text-white py-3 px-4 rounded-lg font-semibold transition-colors"
                 disabled={isProcessingPayment}
@@ -404,10 +413,18 @@ View on BaseScan: ${txUrl}`);
               </button>
               <button
                 onClick={handleConfirmPayment}
-                disabled={isProcessingPayment}
-                className="flex-1 bg-green-600 hover:bg-green-700 disabled:bg-gray-500 text-white py-3 px-4 rounded-lg font-semibold transition-colors flex items-center justify-center"
+                disabled={isProcessingPayment || paymentSuccessful} // 🚨 添加支付成功后禁用
+                className={`flex-1 py-3 px-4 rounded-lg font-semibold transition-colors flex items-center justify-center ${
+                  paymentSuccessful 
+                    ? 'bg-green-800 text-green-200 cursor-not-allowed' // 🚨 支付成功后的样式
+                    : isProcessingPayment
+                    ? 'bg-gray-500 text-white cursor-not-allowed'
+                    : 'bg-green-600 hover:bg-green-700 text-white'
+                }`}
               >
-                {isProcessingPayment ? (
+                {paymentSuccessful ? (
+                  '✅ Payment Successful' // 🚨 支付成功后显示
+                ) : isProcessingPayment ? (
                   <>
                     <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
                     Processing...

@@ -4,7 +4,8 @@
 import { parseUnits, formatUnits } from 'viem';
 import { writeContract, readContract, waitForTransactionReceipt } from '@wagmi/core';
 import { base } from 'wagmi/chains';
-import { saveTransactionRecord, type TransactionRecord } from './transactionService';
+import { saveTransactionRecord, TransactionRecord } from './transactionService';
+import { saveConfirmPayRecord, ConfirmPayRecord } from './confirmPayService';
 
 // Base网络上的FOODY合约地址
 export const FOODY_CONTRACT_ADDRESS = '0x1022b1b028a2237c440dbac51dc6fc220d88c08f' as `0x${string}`;
@@ -164,7 +165,7 @@ export async function executeFoodyPayment(
 
     console.log('✅ FOODY transaction confirmed:', receipt);
 
-    // 5. 🆕 保存交易记录到数据库
+    // 5. 🆕 保存交易记录到数据库 - 双重保存
     const transactionRecord: TransactionRecord = {
       diner_wallet: fromAddress,
       restaurant_id: restaurantId,
@@ -179,14 +180,40 @@ export async function executeFoodyPayment(
       status: 'completed'
     };
 
-    console.log('🎯 About to save transaction record...');
+    // 创建食客支付确认记录
+    const confirmPayRecord: ConfirmPayRecord = {
+      diner_wallet: fromAddress,
+      restaurant_id: restaurantId,
+      restaurant_name: restaurantName,
+      order_id: orderId,
+      total_amount: usdcEquivalent,
+      foody_amount: foodyAmount,
+      tx_hash: hash,
+      gas_used: receipt.gasUsed.toString(),
+      usdc_equivalent: usdcEquivalent,
+      payment_method: 'FOODY'
+    };
+
+    console.log('🎯 About to save records to both tables...');
     console.log('📝 Transaction record data:', JSON.stringify(transactionRecord, null, 2));
+    console.log('💰 Confirm pay record data:', JSON.stringify(confirmPayRecord, null, 2));
     
-    const saveResult = await saveTransactionRecord(transactionRecord);
+    // 同时保存到两个表
+    const [saveResult, confirmResult] = await Promise.all([
+      saveTransactionRecord(transactionRecord),
+      saveConfirmPayRecord(confirmPayRecord)
+    ]);
+
     if (saveResult) {
-      console.log('💾 Transaction record saved to database');
+      console.log('💾 Transaction record saved to orders table');
     } else {
-      console.warn('⚠️ Failed to save transaction record, but payment succeeded');
+      console.warn('⚠️ Failed to save to orders table');
+    }
+
+    if (confirmResult) {
+      console.log('💰 Payment confirmation saved to confirm_and_pay table');
+    } else {
+      console.warn('⚠️ Failed to save to confirm_and_pay table');
     }
 
     return {
