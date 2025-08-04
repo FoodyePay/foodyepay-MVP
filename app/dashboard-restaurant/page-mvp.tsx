@@ -44,9 +44,6 @@ export default function RestaurantDashboard() {
   // MVP Modal states - 只保留核心功能
   const [showQRGenerator, setShowQRGenerator] = useState(false);
   const [showOrderManagement, setShowOrderManagement] = useState(false);
-  
-  // Portfolio display state - 美观简洁的展示控制
-  const [showPortfolio, setShowPortfolio] = useState(false);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -115,62 +112,9 @@ export default function RestaurantDashboard() {
             <h1 className="text-2xl font-bold text-purple-400">🍽️ {restaurant.name}</h1>
             <p className="text-sm text-gray-400">Restaurant Dashboard</p>
           </div>
-
-          {/* Portfolio Toggle Button */}
-          <div className="flex items-center gap-4">
-            <div className="relative">
-              <button
-                onClick={() => setShowPortfolio(!showPortfolio)}
-                className="text-purple-400 hover:text-purple-300 transition-colors duration-200 font-medium"
-              >
-                Portfolio
-              </button>
-              
-              {/* Portfolio Dropdown */}
-              {showPortfolio && (
-                <div className="absolute top-full right-0 mt-2 bg-zinc-900 rounded-xl p-6 shadow-2xl border border-zinc-700 min-w-[320px] z-50">
-                  <div className="flex justify-between items-center mb-4">
-                    <h2 className="text-lg font-semibold text-purple-400">Restaurant Info</h2>
-                    <button
-                      onClick={() => setShowPortfolio(false)}
-                      className="text-gray-400 hover:text-white transition-colors duration-200 text-lg"
-                    >
-                      ✕
-                    </button>
-                  </div>
-                  
-                  <div className="space-y-3 text-sm">
-                    <div>
-                      <label className="text-gray-400">Name:</label>
-                      <p className="text-white font-medium">{restaurant.name}</p>
-                    </div>
-                    
-                    <div>
-                      <label className="text-gray-400">Address:</label>
-                      <p className="text-white">{restaurant.address}</p>
-                    </div>
-                    
-                    <div>
-                      <label className="text-gray-400">Email:</label>
-                      <p className="text-white">{restaurant.email}</p>
-                    </div>
-                    
-                    <div>
-                      <label className="text-gray-400">Phone:</label>
-                      <p className="text-white">{restaurant.phone}</p>
-                    </div>
-                    
-                    <div>
-                      <label className="text-gray-400">Member Since:</label>
-                      <p className="text-white">{new Date(restaurant.created_at).toLocaleDateString()}</p>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-            
-            {/* Professional Wallet Component */}
-            <Wallet>
+          
+          {/* Professional Wallet Component */}
+          <Wallet>
             <ConnectWallet>
               <Avatar className="h-6 w-6" />
               <Name />
@@ -193,7 +137,6 @@ export default function RestaurantDashboard() {
               <WalletDropdownDisconnect />
             </WalletDropdown>
           </Wallet>
-          </div>
         </div>
       </header>
 
@@ -205,10 +148,44 @@ export default function RestaurantDashboard() {
           <FoodyBalance />
         </div>
         
-        <div className="grid grid-cols-1 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           
+          {/* Restaurant Info Card */}
+          <div className="lg:col-span-1">
+            <div className="bg-zinc-900 rounded-xl p-6 space-y-4">
+              <h2 className="text-xl font-semibold text-purple-400 mb-4">Restaurant Info</h2>
+              
+              <div className="space-y-3 text-sm">
+                <div>
+                  <label className="text-gray-400">Name:</label>
+                  <p className="text-white font-medium">{restaurant.name}</p>
+                </div>
+                
+                <div>
+                  <label className="text-gray-400">Address:</label>
+                  <p className="text-white">{restaurant.address}</p>
+                </div>
+                
+                <div>
+                  <label className="text-gray-400">Email:</label>
+                  <p className="text-white">{restaurant.email}</p>
+                </div>
+                
+                <div>
+                  <label className="text-gray-400">Phone:</label>
+                  <p className="text-white">{restaurant.phone}</p>
+                </div>
+                
+                <div>
+                  <label className="text-gray-400">Member Since:</label>
+                  <p className="text-white">{new Date(restaurant.created_at).toLocaleDateString()}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
           {/* Quick Actions - MVP 核心功能 */}
-          <div className="w-full">
+          <div className="lg:col-span-2">
             <div className="bg-zinc-900 rounded-xl p-6">
               <h2 className="text-xl font-semibold text-purple-400 mb-6">Quick Actions</h2>
               
