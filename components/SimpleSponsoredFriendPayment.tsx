@@ -157,7 +157,7 @@ export const SimpleSponsoredFriendPayment: React.FC<SimpleSponsoredFriendPayment
           ✕
         </button>
         
-        <h2 className="text-xl font-bold text-green-400 mb-4">🎉 Send FOODY to Friend (Smart Wallet)</h2>
+        <h2 className="text-xl font-bold text-green-400 mb-4">🎉 Send FOODY to Friend</h2>
         
         <div className="space-y-4">
           {/* 朋友地址输入 */}
@@ -224,7 +224,7 @@ export const SimpleSponsoredFriendPayment: React.FC<SimpleSponsoredFriendPayment
             ) : isSuccess ? (
               '✅ Transfer Successful!'
             ) : (
-              '🎉 Send FOODY (Smart Wallet)'
+              '🎉 Send FOODY'
             )}
           </button>
 
@@ -254,7 +254,7 @@ export const SimpleSponsoredFriendPayment: React.FC<SimpleSponsoredFriendPayment
               <span className="text-blue-400">🏦</span>
               <div>
                 <p className="text-blue-400 font-medium text-sm">Smart Wallet Transfer</p>
-                <p className="text-blue-300 text-xs">Optimized gas fees with Coinbase Smart Wallet</p>
+                <p className="text-blue-300 text-xs">Optimized with Coinbase Smart Wallet</p>
               </div>
             </div>
           </div>

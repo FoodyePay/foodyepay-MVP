@@ -326,13 +326,10 @@ View on BaseScan: ${txUrl}`);
           
           <button
             onClick={() => setShowFriendPayment(true)}
-            className="flex items-center justify-center space-x-2 bg-[#222c4e] hover:bg-[#454b80] text-white px-6 py-4 rounded-lg font-semibold transition-colors relative"
+            className="flex items-center justify-center space-x-2 bg-[#222c4e] hover:bg-[#454b80] text-white px-6 py-4 rounded-lg font-semibold transition-colors"
           >
             <span>🎉</span>
-            <span>Send to Friend (Gas-Free!)</span>
-            <div className="absolute -top-1 -right-1 bg-green-500 text-white text-xs px-1.5 py-0.5 rounded-full">
-              FREE
-            </div>
+            <span>Send to Friend</span>
           </button>
           
           <button
