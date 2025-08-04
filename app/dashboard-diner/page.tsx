@@ -26,6 +26,8 @@ import { QRScanner } from '@/components/QRScanner';
 import TransactionHistory from '@/components/TransactionHistory';
 import { FoodyBalance } from '@/components/FoodyBalance';
 import DinerRewards from '@/components/DinerRewards';
+import { WalletQRCode } from '@/components/WalletQRCode';
+import { FriendPayment } from '@/components/FriendPayment';
 import { executeFoodyPayment, checkFoodyBalance, formatTransactionHash, getTransactionUrl, type PaymentRequest, type PaymentResult } from '@/lib/paymentService';
 
 export default function DinerDashboard() {
@@ -33,10 +35,15 @@ export default function DinerDashboard() {
   const config = useConfig(); // 🆕 获取wagmi config
   const [userName, setUserName] = useState<string>('');
   const [userId, setUserId] = useState<string>('');
+  const [userEmail, setUserEmail] = useState<string>('');
+  const [userPhone, setUserPhone] = useState<string>('');
+  const [userCreatedAt, setUserCreatedAt] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [showQRScanner, setShowQRScanner] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [showRewards, setShowRewards] = useState(false);
+  const [showPortfolio, setShowPortfolio] = useState(false);
+  const [showFriendPayment, setShowFriendPayment] = useState(false);
   
   // 🆕 支付确认状态
   const [showPaymentConfirm, setShowPaymentConfirm] = useState(false);
@@ -52,7 +59,7 @@ export default function DinerDashboard() {
       try {
         const { data, error } = await supabase
           .from('diners')
-          .select('id, first_name, last_name')
+          .select('id, first_name, last_name, email, phone, created_at')
           .eq('wallet_address', address)
           .single();
         
@@ -64,6 +71,9 @@ export default function DinerDashboard() {
         if (data) {
           setUserName(data.first_name); // 🔥 只使用 first_name
           setUserId(data.id); // 🔥 获取 UUID
+          setUserEmail(data.email);
+          setUserPhone(data.phone);
+          setUserCreatedAt(data.created_at);
         }
       } catch (err) {
         console.error('Failed to fetch user name:', err);
@@ -214,30 +224,84 @@ View on BaseScan: ${txUrl}`);
       </div>
 
       {/* ✅ Wallet Header */}
-      <header className="p-4 flex justify-end">
-        <Wallet>
-          <ConnectWallet>
-            <Avatar className="h-6 w-6" />
-            <Name />
-          </ConnectWallet>
-          <WalletDropdown>
-            <Identity className="px-4 pt-3 pb-2" hasCopyAddressOnClick>
-              <Avatar />
-              <Name />
-              <Address />
-              <EthBalance />
-            </Identity>
-            <WalletDropdownLink
-              icon="wallet"
-              href="https://keys.coinbase.com"
-              target="_blank"
-              rel="noopener noreferrer"
+      <header className="p-4 flex justify-end items-center">
+        <div className="flex items-center gap-4">
+          <div className="relative">
+            <button
+              onClick={() => setShowPortfolio(!showPortfolio)}
+              className="text-purple-400 hover:text-purple-300 transition-colors duration-200 font-medium"
             >
-              Wallet
-            </WalletDropdownLink>
-            <WalletDropdownDisconnect />
-          </WalletDropdown>
-        </Wallet>
+              Portfolio
+            </button>
+            
+            {/* Portfolio Dropdown */}
+            {showPortfolio && (
+              <div className="absolute top-full right-0 mt-2 bg-zinc-900 rounded-xl p-6 shadow-2xl border border-zinc-700 min-w-[320px] z-50">
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-lg font-semibold text-purple-400">Diner Portfolio</h2>
+                  <button
+                    onClick={() => setShowPortfolio(false)}
+                    className="text-gray-400 hover:text-white transition-colors duration-200 text-lg"
+                  >
+                    ✕
+                  </button>
+                </div>
+                
+                <div className="space-y-4">
+                  {/* User Info */}
+                  <div className="space-y-3 text-sm">
+                    <div>
+                      <label className="text-gray-400">Email:</label>
+                      <p className="text-white font-medium">{userEmail || 'Not available'}</p>
+                    </div>
+                    
+                    <div>
+                      <label className="text-gray-400">Phone:</label>
+                      <p className="text-white">{userPhone || 'Not available'}</p>
+                    </div>
+                    
+                    <div>
+                      <label className="text-gray-400">Member Since:</label>
+                      <p className="text-white">{userCreatedAt ? new Date(userCreatedAt).toLocaleDateString() : 'Not available'}</p>
+                    </div>
+                  </div>
+                  
+                  {/* Wallet QR Code */}
+                  <div className="border-t border-zinc-700 pt-4">
+                    <h3 className="text-sm font-semibold text-purple-400 mb-3">Your Wallet QR Code</h3>
+                    {address && (
+                      <WalletQRCode walletAddress={address} size={150} />
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+          
+          <Wallet>
+            <ConnectWallet>
+              <Avatar className="h-6 w-6" />
+              <Name />
+            </ConnectWallet>
+            <WalletDropdown>
+              <Identity className="px-4 pt-3 pb-2" hasCopyAddressOnClick>
+                <Avatar />
+                <Name />
+                <Address />
+                <EthBalance />
+              </Identity>
+              <WalletDropdownLink
+                icon="wallet"
+                href="https://keys.coinbase.com"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Wallet
+              </WalletDropdownLink>
+              <WalletDropdownDisconnect />
+            </WalletDropdown>
+          </Wallet>
+        </div>
       </header>
 
       {/* ✅ Main UI */}
@@ -248,8 +312,8 @@ View on BaseScan: ${txUrl}`);
           <FoodyBalance />
         </div>
         
-        {/* � 主要功能按钮 */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full max-w-2xl">
+        {/* 🔥 主要功能按钮 */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 w-full max-w-4xl">
           <button
             onClick={() => setShowQRScanner(true)}
             className="flex items-center justify-center space-x-2 bg-[#222c4e] hover:bg-[#454b80] text-white px-6 py-4 rounded-lg font-semibold transition-colors"
@@ -259,10 +323,18 @@ View on BaseScan: ${txUrl}`);
           </button>
           
           <button
+            onClick={() => setShowFriendPayment(true)}
+            className="flex items-center justify-center space-x-2 bg-[#222c4e] hover:bg-[#454b80] text-white px-6 py-4 rounded-lg font-semibold transition-colors"
+          >
+            <span>💸</span>
+            <span>Send to Friend</span>
+          </button>
+          
+          <button
             onClick={() => setShowHistory(true)}
             className="flex items-center justify-center space-x-2 bg-[#222c4e] hover:bg-[#454b80] text-white px-6 py-4 rounded-lg font-semibold transition-colors"
           >
-            <span>�</span>
+            <span>📊</span>
             <span>Transaction History</span>
           </button>
           
@@ -437,6 +509,12 @@ View on BaseScan: ${txUrl}`);
           </div>
         </div>
       )}
+
+      {/* 💸 朋友转账功能 */}
+      <FriendPayment
+        isOpen={showFriendPayment}
+        onClose={() => setShowFriendPayment(false)}
+      />
     </div>
   );
 }
