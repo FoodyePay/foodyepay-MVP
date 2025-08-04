@@ -39,6 +39,8 @@ export function OnchainProviders({ children }: OnchainProvidersProps) {
               mode: 'dark',
               theme: 'dark',
             },
+            // 启用 Paymaster 来支持 gasless transactions
+            paymaster: process.env.NEXT_PUBLIC_COINBASE_PAYMASTER_URL || `https://api.developer.coinbase.com/rpc/v1/base/${process.env.NEXT_PUBLIC_COINBASE_PROJECT_ID}`,
           }}
         >
           {children}

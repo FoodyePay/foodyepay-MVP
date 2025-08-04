@@ -27,7 +27,7 @@ import TransactionHistory from '@/components/TransactionHistory';
 import { FoodyBalance } from '@/components/FoodyBalance';
 import DinerRewards from '@/components/DinerRewards';
 import { WalletQRCode } from '@/components/WalletQRCode';
-import { FriendPayment } from '@/components/FriendPayment';
+import { SponsoredFriendPayment } from '@/components/SponsoredFriendPayment';
 import { executeFoodyPayment, checkFoodyBalance, formatTransactionHash, getTransactionUrl, type PaymentRequest, type PaymentResult } from '@/lib/paymentService';
 
 export default function DinerDashboard() {
@@ -326,10 +326,13 @@ View on BaseScan: ${txUrl}`);
           
           <button
             onClick={() => setShowFriendPayment(true)}
-            className="flex items-center justify-center space-x-2 bg-[#222c4e] hover:bg-[#454b80] text-white px-6 py-4 rounded-lg font-semibold transition-colors"
+            className="flex items-center justify-center space-x-2 bg-[#222c4e] hover:bg-[#454b80] text-white px-6 py-4 rounded-lg font-semibold transition-colors relative"
           >
-            <span>💸</span>
-            <span>Send to Friend</span>
+            <span>🎉</span>
+            <span>Send to Friend (Gas-Free!)</span>
+            <div className="absolute -top-1 -right-1 bg-green-500 text-white text-xs px-1.5 py-0.5 rounded-full">
+              FREE
+            </div>
           </button>
           
           <button
@@ -513,7 +516,7 @@ View on BaseScan: ${txUrl}`);
       )}
 
       {/* 💸 朋友转账功能 */}
-      <FriendPayment
+      <SponsoredFriendPayment
         isOpen={showFriendPayment}
         onClose={() => setShowFriendPayment(false)}
       />
