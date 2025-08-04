@@ -236,42 +236,44 @@ View on BaseScan: ${txUrl}`);
             
             {/* Portfolio Dropdown */}
             {showPortfolio && (
-              <div className="absolute top-full right-0 mt-2 bg-zinc-900 rounded-xl p-6 shadow-2xl border border-zinc-700 min-w-[320px] z-50">
-                <div className="flex justify-between items-center mb-4">
-                  <h2 className="text-lg font-semibold text-purple-400">Diner Portfolio</h2>
-                  <button
-                    onClick={() => setShowPortfolio(false)}
-                    className="text-gray-400 hover:text-white transition-colors duration-200 text-lg"
-                  >
-                    ✕
-                  </button>
-                </div>
-                
-                <div className="space-y-4">
-                  {/* User Info */}
-                  <div className="space-y-3 text-sm">
-                    <div>
-                      <label className="text-gray-400">Email:</label>
-                      <p className="text-white font-medium">{userEmail || 'Not available'}</p>
-                    </div>
-                    
-                    <div>
-                      <label className="text-gray-400">Phone:</label>
-                      <p className="text-white">{userPhone || 'Not available'}</p>
-                    </div>
-                    
-                    <div>
-                      <label className="text-gray-400">Member Since:</label>
-                      <p className="text-white">{userCreatedAt ? new Date(userCreatedAt).toLocaleDateString() : 'Not available'}</p>
-                    </div>
+              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 md:absolute md:inset-auto md:top-full md:right-0 md:mt-2 md:bg-transparent md:p-0">
+                <div className="bg-zinc-900 rounded-xl p-6 shadow-2xl border border-zinc-700 w-full max-w-sm md:min-w-[320px] md:max-w-none md:w-auto">
+                  <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-lg font-semibold text-purple-400">Diner Portfolio</h2>
+                    <button
+                      onClick={() => setShowPortfolio(false)}
+                      className="text-gray-400 hover:text-white transition-colors duration-200 text-lg"
+                    >
+                      ✕
+                    </button>
                   </div>
                   
-                  {/* Wallet QR Code */}
-                  <div className="border-t border-zinc-700 pt-4">
-                    <h3 className="text-sm font-semibold text-purple-400 mb-3">Your Wallet QR Code</h3>
-                    {address && (
-                      <WalletQRCode walletAddress={address} size={150} />
-                    )}
+                  <div className="space-y-4">
+                    {/* User Info */}
+                    <div className="space-y-3 text-sm">
+                      <div>
+                        <label className="text-gray-400">Email:</label>
+                        <p className="text-white font-medium">{userEmail || 'Not available'}</p>
+                      </div>
+                      
+                      <div>
+                        <label className="text-gray-400">Phone:</label>
+                        <p className="text-white">{userPhone || 'Not available'}</p>
+                      </div>
+                      
+                      <div>
+                        <label className="text-gray-400">Member Since:</label>
+                        <p className="text-white">{userCreatedAt ? new Date(userCreatedAt).toLocaleDateString() : 'Not available'}</p>
+                      </div>
+                    </div>
+                    
+                    {/* Wallet QR Code */}
+                    <div className="border-t border-zinc-700 pt-4">
+                      <h3 className="text-sm font-semibold text-purple-400 mb-3">Your Wallet QR Code</h3>
+                      {address && (
+                        <WalletQRCode walletAddress={address} size={150} />
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
