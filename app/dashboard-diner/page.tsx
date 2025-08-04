@@ -27,7 +27,7 @@ import TransactionHistory from '@/components/TransactionHistory';
 import { FoodyBalance } from '@/components/FoodyBalance';
 import DinerRewards from '@/components/DinerRewards';
 import { WalletQRCode } from '@/components/WalletQRCode';
-import { SponsoredFriendPayment } from '@/components/SponsoredFriendPayment';
+import { SimpleSponsoredFriendPayment } from '@/components/SimpleSponsoredFriendPayment';
 import { executeFoodyPayment, checkFoodyBalance, formatTransactionHash, getTransactionUrl, type PaymentRequest, type PaymentResult } from '@/lib/paymentService';
 
 export default function DinerDashboard() {
@@ -516,7 +516,7 @@ View on BaseScan: ${txUrl}`);
       )}
 
       {/* 💸 朋友转账功能 */}
-      <SponsoredFriendPayment
+      <SimpleSponsoredFriendPayment
         isOpen={showFriendPayment}
         onClose={() => setShowFriendPayment(false)}
       />

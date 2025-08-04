@@ -195,7 +195,11 @@ export const SponsoredFriendPayment: React.FC<SponsoredFriendPaymentProps> = ({ 
             <Transaction
               calls={getTransferCalls()}
               chainId={base.id}
-              isSponsored={true} // 启用 sponsored transaction
+              capabilities={{
+                paymasterService: {
+                  url: process.env.NEXT_PUBLIC_COINBASE_PAYMASTER_URL || `https://api.developer.coinbase.com/rpc/v1/base/${process.env.NEXT_PUBLIC_COINBASE_PROJECT_ID}`,
+                },
+              }}
               onStatus={handleOnStatus}
             >
               <div className="space-y-3">
