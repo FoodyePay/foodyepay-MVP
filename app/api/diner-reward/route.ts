@@ -14,12 +14,13 @@ const REWARD_REASON = 'New Diner Registration Bonus';
 
 export async function POST(request: NextRequest) {
   try {
-    const { walletAddress, email, role }: DinerRewardRequest = await request.json();
+    const body = await request.json();
+    const { walletAddress, email, role, rewardType = 'registration', orderId, amount, txHash } = body;
 
     // 验证输入
     if (!walletAddress || !email || role !== 'diner') {
       return NextResponse.json(
-        { error: 'Invalid request. Only diners are eligible for registration rewards.' },
+        { error: 'Invalid request. Only diners are eligible for rewards.' },
         { status: 400 }
       );
     }
@@ -32,33 +33,44 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 检查是否已经领取过奖励
-    const { data: existingReward, error: checkError } = await supabase
-      .from('diner_rewards')
-      .select('*')
-      .eq('wallet_address', walletAddress.toLowerCase())
-      .single();
+    // 注册奖励防重复发放
+    if (rewardType === 'registration') {
+      const { data: existingReward, error: checkError } = await supabase
+        .from('diner_rewards')
+        .select('*')
+        .eq('wallet_address', walletAddress.toLowerCase())
+        .eq('reward_reason', 'New Diner Registration Bonus')
+        .single();
 
-    if (checkError && checkError.code !== 'PGRST116') {
-      console.error('Database check error:', checkError);
-      return NextResponse.json(
-        { error: 'Database error while checking existing rewards' },
-        { status: 500 }
-      );
+      if (checkError && checkError.code !== 'PGRST116') {
+        console.error('Database check error:', checkError);
+        return NextResponse.json(
+          { error: 'Database error while checking existing rewards' },
+          { status: 500 }
+        );
+      }
+
+      if (existingReward) {
+        return NextResponse.json(
+          { 
+            error: 'Reward already claimed',
+            message: 'This wallet has already received the registration reward',
+            previousReward: {
+              amount: existingReward.reward_amount,
+              claimedAt: existingReward.created_at
+            }
+          },
+          { status: 409 }
+        );
+      }
     }
 
-    if (existingReward) {
-      return NextResponse.json(
-        { 
-          error: 'Reward already claimed',
-          message: 'This wallet has already received the registration reward',
-          previousReward: {
-            amount: existingReward.reward_amount,
-            claimedAt: existingReward.created_at
-          }
-        },
-        { status: 409 }
-      );
+    // 奖励类型和金额
+    let rewardAmount = 1000;
+    let rewardReason = 'New Diner Registration Bonus';
+    if (rewardType === 'payment') {
+      rewardAmount = amount || 10; // 默认支付奖励 10 FOODY，可根据实际业务调整
+      rewardReason = orderId ? `Payment Reward for Order ${orderId}` : 'Payment Reward';
     }
 
     // 记录奖励发放
@@ -67,10 +79,12 @@ export async function POST(request: NextRequest) {
       .insert({
         wallet_address: walletAddress.toLowerCase(),
         email: email.toLowerCase(),
-        reward_amount: DINER_REWARD_AMOUNT,
-        reward_reason: REWARD_REASON,
+        reward_amount: rewardAmount,
+        reward_reason: rewardReason,
         status: 'pending',
-        created_at: new Date().toISOString()
+        created_at: new Date().toISOString(),
+        order_id: orderId || null,
+        tx_hash: txHash || null
       })
       .select()
       .single();
@@ -89,7 +103,7 @@ export async function POST(request: NextRequest) {
       .from('diner_rewards')
       .update({ 
         status: 'completed',
-        transaction_hash: `mock_tx_${Date.now()}`, // 在实际应用中使用真实的交易哈希
+        transaction_hash: txHash || `mock_tx_${Date.now()}`, // 在实际应用中使用真实的交易哈希
         completed_at: new Date().toISOString()
       })
       .eq('id', rewardRecord.id);
@@ -101,13 +115,15 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: `Congratulations! You've received ${DINER_REWARD_AMOUNT} FOODY tokens for joining as a new diner!`,
+      message: `Congratulations! You've received ${rewardAmount} FOODY tokens for ${rewardType === 'registration' ? 'joining as a new diner' : 'your payment!'}`,
       reward: {
-        amount: DINER_REWARD_AMOUNT,
-        reason: REWARD_REASON,
+        amount: rewardAmount,
+        reason: rewardReason,
         walletAddress: walletAddress,
         rewardId: rewardRecord.id,
-        status: 'completed'
+        status: 'completed',
+        orderId,
+        txHash
       }
     });
 

@@ -158,6 +158,26 @@ View on BaseScan: ${txUrl}`);
         setShowPaymentConfirm(false);
         setPaymentData(null);
         setPaymentSuccessful(false); // 重置支付成功状态
+
+        // 支付成功后自动发放奖励（支付奖励）
+        try {
+          await fetch('/api/diner-reward', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              walletAddress: address,
+              email: userEmail,
+              role: 'diner',
+              rewardType: 'payment', // 可用于后端区分奖励类型
+              orderId: paymentData.orderId,
+              amount: paymentData.amounts.foody,
+              txHash: result.transactionHash
+            })
+          });
+          console.log('🎁 Payment reward issued!');
+        } catch (rewardError) {
+          console.error('Failed to issue payment reward:', rewardError);
+        }
       } else {
         // 支付失败 ❌
         alert(`Payment Failed ❌\n\n${result.error}`);
@@ -349,24 +369,14 @@ View on BaseScan: ${txUrl}`);
           </button>
         </div>
 
-        {/* ✅ Buy ETH */}
+        {/* ✅ Buy USDC */}
         <div className="flex items-center space-x-2">
           <span className="text-xl font-semibold">Buy</span>
-          <Buy toToken={ethToken} />
-        </div>
-
-        {/* 🔄 ETH → USDC Swap */}
-        <div className="flex items-center space-x-2">
-          {/* <span className="text-xl font-semibold">ETH → USDC</span> */}
-          <SwapDefault 
-            from={[ethToken]} 
-            to={[usdcToken]} 
-          />
+          <Buy toToken={usdcToken} />
         </div>
 
         {/* 🍔 USDC → FOODY Swap */}
         <div className="flex items-center space-x-2">
-          {/*<span className="text-xl font-semibold">USDC → FOODY</span>*/}
           <SwapDefault 
             from={[usdcToken]} 
             to={[foodyToken]} 

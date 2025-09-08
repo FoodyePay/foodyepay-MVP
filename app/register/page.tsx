@@ -13,8 +13,20 @@ import {
   validateVerificationCode,
 } from '@/lib/verificationCode';
 import { sendVerificationCodeEmail, sendWelcomeEmail } from '@/lib/emailService';
-import { verifyRestaurantRegistration, VerificationResult } from '@/lib/restaurantVerification';
-import { verifyEIN, formatEIN, validateEINFormat } from '@/utils/verifyEIN';
+import { BusinessVerification } from '@/components/BusinessVerification';
+import { PhoneVerification } from '@/components/PhoneVerification';
+
+interface Business {
+  place_id: string;
+  name: string;
+  formatted_address: string;
+  rating: number;
+  user_ratings_total: number;
+  business_status?: string;
+  price_level?: number;
+  formatted_phone_number?: string | null;
+  international_phone_number?: string | null;
+}
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -28,19 +40,15 @@ export default function RegisterPage() {
   const [area, setArea] = useState('');
   const [prefix, setPrefix] = useState('');
   const [line, setLine] = useState('');
-  const [restaurantName, setRestaurantName] = useState('');
-  const [ein, setEin] = useState(''); // Employer Identification Number
-  // USPS Standard Address Fields
-  const [streetNumber, setStreetNumber] = useState('');
-  const [streetName, setStreetName] = useState('');
-  const [suiteApt, setSuiteApt] = useState(''); // Optional
-  const [city, setCity] = useState('');
-  const [state, setState] = useState('');
-  const [zipCode, setZipCode] = useState('');
-  // Business Phone for restaurants
-  const [businessArea, setBusinessArea] = useState('');
-  const [businessPrefix, setBusinessPrefix] = useState('');
-  const [businessLine, setBusinessLine] = useState('');
+  
+  // Restaurant-specific fields - simplified for MVP
+  const [restaurantEmail, setRestaurantEmail] = useState('');
+  
+  // New verification states
+  const [businessVerified, setBusinessVerified] = useState(false);
+  const [verifiedBusiness, setVerifiedBusiness] = useState<Business | null>(null);
+  const [phoneVerified, setPhoneVerified] = useState(false);
+  const [verifiedPhone, setVerifiedPhone] = useState('');
 
   const [sending, setSending] = useState(false);
   const [verifying, setVerifying] = useState(false);
@@ -50,76 +58,67 @@ export default function RegisterPage() {
   const [codeSentAt, setCodeSentAt] = useState<number | null>(null);
   const [successMessage, setSuccessMessage] = useState('');
   const [checkingRegistration, setCheckingRegistration] = useState(true);
-  const [verificationResult, setVerificationResult] = useState<VerificationResult | null>(null);
-  const [showVerificationDetails, setShowVerificationDetails] = useState(false);
-  const [einVerified, setEinVerified] = useState(false);
-  const [einVerificationError, setEinVerificationError] = useState('');
 
   const areaRef = useRef<HTMLInputElement>(null);
   const prefixRef = useRef<HTMLInputElement>(null);
   const lineRef = useRef<HTMLInputElement>(null);
-  const streetNameRef = useRef<HTMLInputElement>(null);
-  const cityRef = useRef<HTMLInputElement>(null);
-  const businessAreaRef = useRef<HTMLInputElement>(null);
-  const businessPrefixRef = useRef<HTMLInputElement>(null);
-  const businessLineRef = useRef<HTMLInputElement>(null);
 
-  // 🚨 强制清理模拟钱包并重定向
+  // Force clear demo wallet and redirect
   useEffect(() => {
     const cachedWallet = localStorage.getItem('foodye_wallet');
 
     if (cachedWallet && isDemoWalletAddress(cachedWallet)) {
-      console.log('🧹 FORCE CLEARING demo wallet cache:', cachedWallet);
+      console.log('FORCE CLEARING demo wallet cache:', cachedWallet);
       localStorage.removeItem('foodye_wallet');
-      alert('⚠️ Demo wallet detected! Please connect a real Coinbase Smart Wallet.');
+      alert('Demo wallet detected! Please connect a real Coinbase Smart Wallet.');
       router.push('/');
       return;
     }
 
     if (address && isDemoWalletAddress(address)) {
-      console.log('🚨 Detected demo wallet:', address);
+      console.log('Detected demo wallet:', address);
       localStorage.removeItem('foodye_wallet');
-      alert('⚠️ Demo wallet detected! Please connect a real Coinbase Smart Wallet.');
+      alert('Demo wallet detected! Please connect a real Coinbase Smart Wallet.');
       router.push('/');
       return;
     }
   }, [address, router]);
 
-  // 🔥 自动检查注册状态并重定�?
+  // Auto check registration status and redirect
   useEffect(() => {
     const checkExistingRegistration = async () => {
       if (!address) {
-        console.log('�?No wallet connected, redirecting...');
+        console.log('No wallet connected, redirecting...');
         router.push('/');
         return;
       }
 
       if (isDemoWalletAddress(address)) {
-        console.log('🚨 Demo wallet detected in check, redirecting');
+        console.log('Demo wallet detected in check, redirecting');
         localStorage.removeItem('foodye_wallet');
         router.push('/');
         return;
       }
 
       try {
-        console.log('🔍 Checking registration for:', address);
+        console.log('Checking registration for:', address);
         const userRole = await checkUserExists(address);
 
         if (userRole === 'diner') {
-          console.log('�?Found diner, redirecting...');
+          console.log('Found diner, redirecting...');
           router.push('/dashboard-diner');
           return;
         }
 
         if (userRole === 'restaurant') {
-          console.log('�?Found restaurant, redirecting...');
+          console.log('Found restaurant, redirecting...');
           router.push('/dashboard-restaurant');
           return;
         }
 
-        console.log('📝 Not registered yet, show form');
+        console.log('Not registered yet, show form');
       } catch (error) {
-        console.error('�?Error in registration check:', error);
+        console.error('Error in registration check:', error);
       } finally {
         setCheckingRegistration(false);
       }
@@ -145,149 +144,57 @@ export default function RegisterPage() {
     }
   }, [inputCode, codeSentAt]);
 
-  // 🔍 独立的 EIN 验证函数
-  const handleVerifyEIN = async () => {
-    if (!ein || !restaurantName) {
-      alert('Please enter both EIN and Restaurant Name before verifying');
-      return;
-    }
+  // Handle business verification completion
+  const handleBusinessVerificationComplete = (business: Business) => {
+    setVerifiedBusiness(business);
+    setBusinessVerified(true);
+  };
 
-    if (!validateEINFormat(ein)) {
-      setEinVerificationError('Invalid EIN format. Please use XX-XXXXXXX format.');
-      alert('❌ Invalid EIN format. Please use XX-XXXXXXX format (e.g., 12-3456789)');
-      return;
-    }
-
-    setSending(true);
-    setEinVerificationError('');
-
-    try {
-      console.log('🔍 Starting EIN verification...', { ein, restaurantName });
-      
-      const einResult = await verifyEIN(ein, restaurantName);
-      
-      if (!einResult.valid) {
-        setEinVerificationError(einResult.error || 'EIN verification failed');
-        const errorMessage = einResult.registeredName 
-          ? `❌ EIN 与餐厅名称不匹配\n\nIRS 记录显示:\nEIN: ${ein}\n注册名称: "${einResult.registeredName}"\n您输入的名称: "${restaurantName}"\n\n请检查信息是否正确。`
-          : `❌ EIN 验证失败\n\n${einResult.error}\n\n请检查您的 EIN 是否正确。`;
-        
-        alert(errorMessage);
-        setEinVerified(false);
-      } else {
-        console.log('✅ EIN verification successful:', einResult);
-        setEinVerified(true);
-        setEinVerificationError('');
-        alert(`✅ EIN 验证成功！\n\n注册名称: ${einResult.registeredName}\nEIN: ${einResult.ein}`);
-      }
-    } catch (error) {
-      console.error('💥 EIN verification error:', error);
-      setEinVerificationError('Network error during EIN verification');
-      alert('❌ 网络错误，请稍后重试');
-      setEinVerified(false);
-    } finally {
-      setSending(false);
-    }
+  // Handle phone verification completion
+  const handlePhoneVerificationComplete = (phoneNumber: string) => {
+    setVerifiedPhone(phoneNumber);
+    setPhoneVerified(true);
   };
 
   const handleSendVerification = async () => {
-    console.log('🔄 handleSendVerification called');
-    console.log('📋 Current form data:', {
+    console.log('handleSendVerification called');
+    console.log('Current form data:', {
       role,
-      emailLocal,
-      restaurantName,
-      ein,
-      streetNumber,
-      streetName,
-      city,
-      state,
-      zipCode,
-      businessArea,
-      businessPrefix,
-      businessLine
+      emailLocal: role === 'restaurant' ? restaurantEmail : emailLocal,
+      businessVerified,
+      phoneVerified
     });
 
     // Validation for diner
     if (role === 'diner' && (!emailLocal || !firstName || !lastName || !area || !prefix || !line)) {
-      console.log('❌ Diner validation failed');
+      console.log('Diner validation failed');
       alert('Please complete all required fields for diner registration');
       return;
     }
     
-    // Validation for restaurant
-    if (role === 'restaurant' && (!emailLocal || !restaurantName || !ein || !streetNumber || !streetName || !city || !state || !zipCode || !businessArea || !businessPrefix || !businessLine)) {
-      console.log('❌ Restaurant validation failed');
-      console.log('Missing fields:', {
-        emailLocal: !emailLocal,
-        restaurantName: !restaurantName,
-        ein: !ein,
-        streetNumber: !streetNumber,
-        streetName: !streetName,
-        city: !city,
-        state: !state,
-        zipCode: !zipCode,
-        businessArea: !businessArea,
-        businessPrefix: !businessPrefix,
-        businessLine: !businessLine
-      });
-      alert('Please complete all required fields for restaurant registration including EIN and business phone');
-      return;
-    }
-
-    // 🔍 餐厅必须先通过 EIN 验证
-    if (role === 'restaurant' && !einVerified) {
-      alert('❌ Please verify your EIN first by clicking the "Verify" button next to the EIN field.');
-      return;
-    }
-
-    console.log('✅ Validation passed, proceeding...');
-
-    // 🔍 餐厅的其他验证流程 (EIN 已经单独验证过了)
+    // Validation for restaurant - NEW MVP requirements
     if (role === 'restaurant') {
-      setSending(true);
-      
-      try {
-        const verificationData = {
-          name: restaurantName,
-          ein: ein,
-          address: `${streetNumber} ${streetName}${suiteApt ? `, ${suiteApt}` : ''}, ${city}, ${state} ${zipCode}`,
-          streetNumber,
-          streetName,
-          city,
-          state,
-          zipCode,
-          phone: `1-${businessArea}-${businessPrefix}-${businessLine}`,
-          email: `${emailLocal}@gmail.com`
-        };
-
-        console.log('🔍 Running restaurant verification...');
-        const result = await verifyRestaurantRegistration(verificationData);
-        setVerificationResult(result);
-
-        if (!result.isValid) {
-          setSending(false);
-          alert(`❌ Verification Failed (Score: ${result.score}/100)\n\nIssues:\n${result.issues.join('\n')}\n\nPlease correct the issues and try again.`);
-          return;
-        }
-
-        if (result.warnings.length > 0) {
-          const proceed = confirm(`⚠️ Verification Warnings (Score: ${result.score}/100)\n\n${result.warnings.join('\n')}\n\nDo you want to proceed anyway?`);
-          if (!proceed) {
-            setSending(false);
-            return;
-          }
-        }
-
-        console.log('✅ Restaurant verification passed:', result);
-      } catch (error) {
-        console.error('Verification error:', error);
-        setSending(false);
-        alert('Verification service unavailable. Please try again later.');
+      if (!restaurantEmail || !businessVerified || !phoneVerified) {
+        console.log('Restaurant validation failed');
+        console.log('Missing requirements:', {
+          restaurantEmail: !restaurantEmail,
+          businessVerified: !businessVerified,
+          phoneVerified: !phoneVerified
+        });
+        
+        const missingItems: string[] = [];
+        if (!restaurantEmail) missingItems.push('Restaurant Email');
+        if (!businessVerified) missingItems.push('Business Verification');
+        if (!phoneVerified) missingItems.push('Phone Verification');
+        
+        alert(`Please complete the following verification steps:\n\n${missingItems.join('\n')}`);
         return;
       }
     }
 
-    const email = `${emailLocal}@gmail.com`;
+    console.log('Validation passed, proceeding...');
+
+    const email = role === 'restaurant' ? `${restaurantEmail}@gmail.com` : `${emailLocal}@gmail.com`;
     const code = generateVerificationCode();
     saveVerificationCode(email, code);
 
@@ -297,7 +204,7 @@ export default function RegisterPage() {
       setVerificationSent(true);
       setCountdown(60);
       setCodeSentAt(Date.now());
-      setSuccessMessage('�?Code sent to email!');
+      setSuccessMessage('Code sent to email!');
     } catch (err) {
       console.error('Email send error', err);
       alert('Failed to send code');
@@ -311,14 +218,14 @@ export default function RegisterPage() {
 
     if (!address) return alert('Wallet not ready');
 
-    const email = `${emailLocal}@gmail.com`;
-    const phone = `1-${area}-${prefix}-${line}`;
+    const email = role === 'restaurant' ? `${restaurantEmail}@gmail.com` : `${emailLocal}@gmail.com`;
+    const phone = role === 'restaurant' ? verifiedPhone : `1-${area}-${prefix}-${line}`;
     const isValid = validateVerificationCode(email, inputCode);
     if (!isValid) return alert('Invalid or expired verification code');
 
     setVerifying(true);
 
-    // 🔥 Create payload matching actual Supabase schema
+    // Create payload matching actual Supabase schema
     const payload =
       role === 'diner'
         ? {
@@ -331,46 +238,41 @@ export default function RegisterPage() {
           }
         : {
             email,
-            phone: `1-${businessArea}-${businessPrefix}-${businessLine}`, // Business phone for restaurants
-            name: restaurantName,
-            ein: ein, // Store EIN for business verification
-            // Format address in USPS standard format
-            address: `${streetNumber} ${streetName}${suiteApt ? `, ${suiteApt}` : ''}, ${city}, ${state} ${zipCode}`.trim(),
-            // Store detailed address components for future use
-            street_number: streetNumber,
-            street_name: streetName,
-            suite_apt: suiteApt,
-            city: city,
-            state: state,
-            zip_code: zipCode,
+            phone,
+            name: verifiedBusiness?.name || 'Unknown Restaurant',
+            // Store Google Maps data for future reference
+            google_place_id: verifiedBusiness?.place_id,
+            address: verifiedBusiness?.formatted_address,
+            rating: verifiedBusiness?.rating || 0,
+            user_ratings_total: verifiedBusiness?.user_ratings_total || 0,
             wallet_address: address,
             role,
           };
 
     try {
-      console.log('🔥 Attempting to insert into Supabase...');
-      console.log('📝 Payload:', payload);
-      console.log('🏢 Table:', role === 'diner' ? 'diners' : 'restaurants');
+      console.log('Attempting to insert into Supabase...');
+      console.log('Payload:', payload);
+      console.log('Table:', role === 'diner' ? 'diners' : 'restaurants');
       
       const { data, error } = await supabase
         .from(role === 'diner' ? 'diners' : 'restaurants')
         .insert([payload])
-        .select(); // 添加 select 来获取插入的数据
+        .select();
       
       if (error) {
-        console.error('❌ Supabase insertion error:', error);
+        console.error('Supabase insertion error:', error);
         alert(`Database error: ${error.message}`);
         return;
       }
       
-      console.log('✅ Successfully inserted into Supabase:', data);
+      console.log('Successfully inserted into Supabase:', data);
       
       await sendWelcomeEmail(email, address);
       
-      // 🎉 Diner 注册奖励逻辑
+      // Diner registration reward logic
       if (role === 'diner') {
         try {
-          console.log('🎁 Triggering Diner registration reward...');
+          console.log('Triggering Diner registration reward...');
           const rewardResponse = await fetch('/api/diner-reward', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -382,14 +284,14 @@ export default function RegisterPage() {
           
           if (rewardResponse.ok) {
             const rewardData = await rewardResponse.json();
-            console.log('🎉 Diner reward issued successfully:', rewardData);
+            console.log('Diner reward issued successfully:', rewardData);
           } else {
             const errorData = await rewardResponse.json();
-            console.warn('⚠️ Diner reward failed:', errorData.error);
+            console.warn('Diner reward failed:', errorData.error);
           }
         } catch (rewardError) {
-          console.error('❌ Error issuing Diner reward:', rewardError);
-          // 不阻塞注册流程，只记录错误
+          console.error('Error issuing Diner reward:', rewardError);
+          // Don't block registration flow, just log error
         }
       }
       
@@ -455,6 +357,7 @@ export default function RegisterPage() {
           </div>
         </div>
 
+        {/* Diner Fields */}
         {role === 'diner' && (
           <>
             <input placeholder="First Name *" value={firstName} onChange={e => setFirstName(e.target.value)} className="input-base w-full" />
@@ -462,312 +365,64 @@ export default function RegisterPage() {
           </>
         )}
 
+        {/* Restaurant Fields - NEW MVP APPROACH */}
         {role === 'restaurant' && (
-          <>
-            <input 
-              placeholder="Restaurant Name *" 
-              value={restaurantName} 
-              onChange={e => setRestaurantName(e.target.value)} 
-              className="input-base w-full" 
+          <div className="space-y-4">
+            {/* Business Verification */}
+            <BusinessVerification 
+              onVerificationComplete={handleBusinessVerificationComplete}
+              isVerified={businessVerified}
+              verifiedBusiness={verifiedBusiness}
             />
             
-            {/* EIN Field with Verify Button */}
+            {/* Phone Verification */}
+            <PhoneVerification 
+              onVerificationComplete={handlePhoneVerificationComplete}
+              isVerified={phoneVerified}
+              verifiedPhone={verifiedPhone}
+              autoFilledPhone={verifiedBusiness?.formatted_phone_number || verifiedBusiness?.international_phone_number || undefined}
+            />
+
+            {/* Restaurant Email */}
             <div className="space-y-2">
-              <label htmlFor="ein" className="text-sm font-medium text-gray-400">
-                Employer Identification Number (EIN) *
-              </label>
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  id="ein"
-                  name="ein"
-                  required
-                  placeholder="xx-xxxxxxx"
-                  value={ein}
-                  onChange={e => {
-                    const formattedValue = formatEIN(e.target.value);
-                    setEin(formattedValue);
-                    // Reset verification status when EIN changes
-                    setEinVerified(false);
-                    setEinVerificationError('');
-                  }}
-                  pattern="\d{2}-\d{7}"
-                  maxLength={10}
-                  className={`input-base flex-1 ${einVerificationError ? 'border-red-500' : einVerified ? 'border-green-500' : ''}`}
+              <label className="text-sm font-medium text-gray-400">Restaurant Contact Email *</label>
+              <div className="flex w-full">
+                <input 
+                  placeholder="restaurant (no @)" 
+                  value={restaurantEmail} 
+                  onChange={e => setRestaurantEmail(e.target.value)} 
+                  className="input-base w-7/10 rounded-r-none" 
                 />
-                <button
-                  type="button"
-                  onClick={handleVerifyEIN}
-                  disabled={!ein || !restaurantName || sending}
-                  className={`px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200 ${
-                    einVerified 
-                      ? 'bg-green-600 text-white cursor-default' 
-                      : (!ein || !restaurantName)
-                        ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
-                        : 'bg-blue-600 hover:bg-blue-700 text-white'
-                  }`}
-                >
-                  {sending ? '...' : einVerified ? '✓' : 'Verify'}
-                </button>
+                <span className="input-base bg-zinc-700 rounded-l-none flex items-center justify-center w-3/10">@gmail.com</span>
               </div>
-              
-              {einVerificationError && (
-                <div className="p-3 bg-red-900 border border-red-500 rounded-lg">
-                  <p className="text-xs text-red-300">
-                    ❌ {einVerificationError}
-                  </p>
-                </div>
-              )}
-              
-              {einVerified && (
-                <div className="p-3 bg-green-900 border border-green-500 rounded-lg">
-                  <p className="text-xs text-green-300">
-                    ✅ EIN 已通过 IRS 验证
-                  </p>
-                </div>
-              )}
-              
-              <p className="text-xs text-gray-500">
-                🔒 我们将使用 IRS 注册信息验证您的餐厅身份
-              </p>
             </div>
-            
-            {/* USPS Standard Address Fields */}
-            <div className="space-y-3">
-              <h4 className="text-sm font-medium text-gray-400">Restaurant Address (USPS Format)</h4>
-              
-              {/* Street Number and Name */}
-              <div className="flex space-x-2">
-                <input 
-                  placeholder="Street # *" 
-                  value={streetNumber} 
-                  onChange={e => setStreetNumber(e.target.value)} 
-                  className="input-base w-1/3" 
-                  onKeyDown={(e) => e.key === 'Enter' && streetNameRef.current?.focus()}
-                />
-                <input 
-                  ref={streetNameRef}
-                  placeholder="Street Name *" 
-                  value={streetName} 
-                  onChange={e => setStreetName(e.target.value)} 
-                  className="input-base flex-1" 
-                />
-              </div>
-              
-              {/* Suite/Apt (Optional) */}
-              <input 
-                placeholder="Suite/Apt/Unit (Optional)" 
-                value={suiteApt} 
-                onChange={e => setSuiteApt(e.target.value)} 
-                className="input-base w-full" 
-                onKeyDown={(e) => e.key === 'Enter' && cityRef.current?.focus()}
-              />
-              
-              {/* City, State, ZIP */}
-              <div className="flex space-x-2">
-                <input 
-                  ref={cityRef}
-                  placeholder="City *" 
-                  value={city} 
-                  onChange={e => setCity(e.target.value)} 
-                  className="input-base flex-1" 
-                />
-                <select 
-                  value={state} 
-                  onChange={e => setState(e.target.value)} 
-                  className="input-base w-20"
-                >
-                  <option value="">State</option>
-                  <option value="AL">AL</option>
-                  <option value="AK">AK</option>
-                  <option value="AZ">AZ</option>
-                  <option value="AR">AR</option>
-                  <option value="CA">CA</option>
-                  <option value="CO">CO</option>
-                  <option value="CT">CT</option>
-                  <option value="DE">DE</option>
-                  <option value="FL">FL</option>
-                  <option value="GA">GA</option>
-                  <option value="HI">HI</option>
-                  <option value="ID">ID</option>
-                  <option value="IL">IL</option>
-                  <option value="IN">IN</option>
-                  <option value="IA">IA</option>
-                  <option value="KS">KS</option>
-                  <option value="KY">KY</option>
-                  <option value="LA">LA</option>
-                  <option value="ME">ME</option>
-                  <option value="MD">MD</option>
-                  <option value="MA">MA</option>
-                  <option value="MI">MI</option>
-                  <option value="MN">MN</option>
-                  <option value="MS">MS</option>
-                  <option value="MO">MO</option>
-                  <option value="MT">MT</option>
-                  <option value="NE">NE</option>
-                  <option value="NV">NV</option>
-                  <option value="NH">NH</option>
-                  <option value="NJ">NJ</option>
-                  <option value="NM">NM</option>
-                  <option value="NY">NY</option>
-                  <option value="NC">NC</option>
-                  <option value="ND">ND</option>
-                  <option value="OH">OH</option>
-                  <option value="OK">OK</option>
-                  <option value="OR">OR</option>
-                  <option value="PA">PA</option>
-                  <option value="RI">RI</option>
-                  <option value="SC">SC</option>
-                  <option value="SD">SD</option>
-                  <option value="TN">TN</option>
-                  <option value="TX">TX</option>
-                  <option value="UT">UT</option>
-                  <option value="VT">VT</option>
-                  <option value="VA">VA</option>
-                  <option value="WA">WA</option>
-                  <option value="WV">WV</option>
-                  <option value="WI">WI</option>
-                  <option value="WY">WY</option>
-                </select>
-                <input 
-                  placeholder="ZIP *" 
-                  value={zipCode} 
-                  onChange={e => setZipCode(e.target.value)} 
-                  className="input-base w-24" 
-                  pattern="[0-9]{5}(-[0-9]{4})?"
-                  maxLength={10}
-                />
-              </div>
-              
-              {/* Address Preview */}
-              {(streetNumber || streetName || city || state || zipCode) && (
-                <div className="text-xs text-gray-400 bg-zinc-800 p-2 rounded">
-                  <strong>Address Preview:</strong><br />
-                  {streetNumber} {streetName}{suiteApt ? `, ${suiteApt}` : ''}<br />
-                  {city}, {state} {zipCode}
-                </div>
-              )}
+          </div>
+        )}
+
+        {/* Diner Email and Phone */}
+        {role === 'diner' && (
+          <>
+            <div className="flex w-full">
+              <input placeholder="Gmail (no @)" value={emailLocal} onChange={e => setEmailLocal(e.target.value)} className="input-base w-7/10 rounded-r-none" />
+              <span className="input-base bg-zinc-700 rounded-l-none flex items-center justify-center w-3/10">@gmail.com</span>
             </div>
-            
-            {/* Business Phone */}
-            <div className="space-y-2">
-              <h4 className="text-sm font-medium text-gray-400">Business Phone *</h4>
-              <div className="flex gap-2">
-                <div className="flex items-center gap-1">
-                  <span className="font-bold">1</span>
-                  <span>+</span>
-                </div>
-                <input 
-                  maxLength={3} 
-                  ref={businessAreaRef} 
-                  placeholder="XXX"
-                  value={businessArea} 
-                  onChange={e => { 
-                    setBusinessArea(e.target.value); 
-                    if (e.target.value.length === 3) businessPrefixRef.current?.focus(); 
-                  }} 
-                  className="input-base w-1/3" 
-                />
-                <input 
-                  maxLength={3} 
-                  ref={businessPrefixRef} 
-                  placeholder="XXX"
-                  value={businessPrefix} 
-                  onChange={e => { 
-                    setBusinessPrefix(e.target.value); 
-                    if (e.target.value.length === 3) businessLineRef.current?.focus(); 
-                  }} 
-                  className="input-base w-1/3" 
-                />
-                <input 
-                  maxLength={4} 
-                  ref={businessLineRef} 
-                  placeholder="XXXX"
-                  value={businessLine} 
-                  onChange={e => setBusinessLine(e.target.value)} 
-                  className="input-base w-1/3" 
-                />
-              </div>
-              {(businessArea || businessPrefix || businessLine) && (
-                <div className="text-xs text-gray-400">
-                  Preview: +1-{businessArea}-{businessPrefix}-{businessLine}
-                </div>
-              )}
+
+            <div className="flex gap-2">
+              <div className="flex items-center gap-1"><span className="font-bold">1</span><span>+</span></div>
+              <input maxLength={3} ref={areaRef} value={area} onChange={e => { setArea(e.target.value); if (e.target.value.length === 3) prefixRef.current?.focus(); }} className="input-base w-1/3" />
+              <input maxLength={3} ref={prefixRef} value={prefix} onChange={e => { setPrefix(e.target.value); if (e.target.value.length === 3) lineRef.current?.focus(); }} className="input-base w-1/3" />
+              <input maxLength={4} ref={lineRef} value={line} onChange={e => setLine(e.target.value)} className="input-base w-1/3" />
             </div>
           </>
         )}
 
-        <div className="flex w-full">
-          <input placeholder="Gmail (no @)" value={emailLocal} onChange={e => setEmailLocal(e.target.value)} className="input-base w-7/10 rounded-r-none" />
-          <span className="input-base bg-zinc-700 rounded-l-none flex items-center justify-center w-3/10">@gmail.com</span>
-        </div>
-
-        {role === 'diner' && (
-          <div className="flex gap-2">
-            <div className="flex items-center gap-1"><span className="font-bold">1</span><span>+</span></div>
-            <input maxLength={3} ref={areaRef} value={area} onChange={e => { setArea(e.target.value); if (e.target.value.length === 3) prefixRef.current?.focus(); }} className="input-base w-1/3" />
-            <input maxLength={3} ref={prefixRef} value={prefix} onChange={e => { setPrefix(e.target.value); if (e.target.value.length === 3) lineRef.current?.focus(); }} className="input-base w-1/3" />
-            <input maxLength={4} ref={lineRef} value={line} onChange={e => setLine(e.target.value)} className="input-base w-1/3" />
-          </div>
-        )}
-
         {successMessage && <p className="text-green-400 text-center text-sm">{successMessage}</p>}
 
-        {/* 🔍 Verification Results for Restaurants */}
-        {role === 'restaurant' && verificationResult && (
-          <div className="space-y-2">
-            <button
-              onClick={() => setShowVerificationDetails(!showVerificationDetails)}
-              className="w-full text-left flex items-center justify-between p-3 bg-zinc-800 rounded-lg hover:bg-zinc-700 transition-colors"
-            >
-              <div className="flex items-center space-x-2">
-                <span className={`w-3 h-3 rounded-full ${verificationResult.isValid ? 'bg-green-500' : 'bg-red-500'}`}></span>
-                <span className="text-sm font-medium">
-                  Verification Score: {verificationResult.score}/100
-                </span>
-              </div>
-              <span className="text-xs text-gray-400">
-                {showVerificationDetails ? '▼' : '▶'}
-              </span>
-            </button>
-            
-            {showVerificationDetails && (
-              <div className="p-3 bg-zinc-800 rounded-lg text-xs space-y-2">
-                {verificationResult.issues.length > 0 && (
-                  <div>
-                    <h5 className="font-medium text-red-400 mb-1">Issues:</h5>
-                    <ul className="text-red-300 space-y-1">
-                      {verificationResult.issues.map((issue: string, index: number) => (
-                        <li key={index}>• {issue}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-                
-                {verificationResult.warnings.length > 0 && (
-                  <div>
-                    <h5 className="font-medium text-yellow-400 mb-1">Warnings:</h5>
-                    <ul className="text-yellow-300 space-y-1">
-                      {verificationResult.warnings.map((warning: string, index: number) => (
-                        <li key={index}>• {warning}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-                
-                {verificationResult.isValid && (
-                  <p className="text-green-400">✅ All verifications passed!</p>
-                )}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* 🔍 EIN 验证提示 */}
-        {role === 'restaurant' && !einVerified && ein && restaurantName && (
+        {/* Restaurant Verification Status */}
+        {role === 'restaurant' && (!businessVerified || !phoneVerified) && (
           <div className="bg-yellow-900 border border-yellow-500 rounded-lg p-3 text-center">
             <p className="text-yellow-300 text-sm">
-              ⚠️ Please verify your EIN first by clicking the &quot;Verify&quot; button
+              Please complete business verification and phone verification first
             </p>
           </div>
         )}
@@ -776,11 +431,11 @@ export default function RegisterPage() {
           <button 
             onClick={handleSendVerification} 
             className={`w-full py-2 px-4 rounded font-semibold mb-3 transition-all duration-200 ${
-              (role === 'restaurant' && !einVerified) || sending || countdown > 0
+              (role === 'restaurant' && (!businessVerified || !phoneVerified)) || sending || countdown > 0
                 ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
                 : 'bg-[#4F46E5] hover:bg-[#4338CA] text-white'
             }`}
-            disabled={(role === 'restaurant' && !einVerified) || sending || countdown > 0}
+            disabled={(role === 'restaurant' && (!businessVerified || !phoneVerified)) || sending || countdown > 0}
           >
             {sending ? 'Sending...' : countdown > 0 ? `Resend (${countdown}s)` : 'Send Verification Code'}
           </button>
