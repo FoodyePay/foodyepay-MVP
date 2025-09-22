@@ -29,7 +29,6 @@ export async function GET(request: NextRequest) {
       .from('diner_rewards')
       .select('*')
       .eq('wallet_address', walletAddress.toLowerCase())
-      .eq('reward_reason', 'New Diner Registration Bonus')
       .single();
 
     if (checkError && checkError.code !== 'PGRST116') {
@@ -64,9 +63,9 @@ export async function GET(request: NextRequest) {
       eligible: true,
       claimed: false,
       availableReward: {
-        amount: 1000,
-        reason: 'New Diner Registration Bonus',
-        description: 'Welcome bonus for new diner registration'
+        amount: 888,
+        reason: '平台奖励',
+        description: '新用户平台注册奖励'
       },
       message: 'Eligible for new member registration reward'
     });

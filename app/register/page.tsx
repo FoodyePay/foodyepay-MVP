@@ -200,11 +200,16 @@ export default function RegisterPage() {
 
     setSending(true);
     try {
-      await sendVerificationCodeEmail(email, code, address!);
+      const { echoedCode, echoMode } = await sendVerificationCodeEmail(email, code, address!);
       setVerificationSent(true);
       setCountdown(60);
       setCodeSentAt(Date.now());
-      setSuccessMessage('Code sent to email!');
+      if (echoMode && echoedCode) {
+        setInputCode(echoedCode);
+        setSuccessMessage('Code sent (dev mode). Prefilled for convenience.');
+      } else {
+        setSuccessMessage('Code sent to email!');
+      }
     } catch (err) {
       console.error('Email send error', err);
       alert('Failed to send code');
@@ -254,15 +259,41 @@ export default function RegisterPage() {
       console.log('Payload:', payload);
       console.log('Table:', role === 'diner' ? 'diners' : 'restaurants');
       
-      const { data, error } = await supabase
-        .from(role === 'diner' ? 'diners' : 'restaurants')
+      const tableName = role === 'diner' ? 'diners' : 'restaurants';
+      let { data, error } = await supabase
+        .from(tableName)
         .insert([payload])
         .select();
-      
+
       if (error) {
         console.error('Supabase insertion error:', error);
-        alert(`Database error: ${error.message}`);
-        return;
+        // Fallback: if schema is older (e.g., missing google_place_id), retry minimal insert for restaurants
+        const unknownColumn = typeof error.message === 'string' && /column|schema cache|relation|unknown/i.test(error.message);
+        const isRestaurant = tableName === 'restaurants';
+        if (isRestaurant && unknownColumn) {
+          console.warn('Attempting fallback insert with minimal columns (email, phone, name, wallet_address, role)');
+          const minimalPayload = {
+            email: (payload as any).email,
+            phone: (payload as any).phone,
+            name: (payload as any).name,
+            wallet_address: (payload as any).wallet_address,
+            role: (payload as any).role,
+          };
+          const retry = await supabase
+            .from('restaurants')
+            .insert([minimalPayload])
+            .select();
+          if (retry.error) {
+            console.error('Fallback insert failed:', retry.error);
+            alert(`Database error: ${retry.error.message}`);
+            return;
+          }
+          data = retry.data;
+          console.info('Fallback insert succeeded');
+        } else {
+          alert(`Database error: ${error.message}`);
+          return;
+        }
       }
       
       console.log('Successfully inserted into Supabase:', data);

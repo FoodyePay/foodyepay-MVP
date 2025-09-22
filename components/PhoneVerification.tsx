@@ -32,37 +32,50 @@ export function PhoneVerification({
   // Update phone number when autoFilledPhone changes
   useEffect(() => {
     if (autoFilledPhone && autoFilledPhone !== phoneNumber) {
-      setPhoneNumber(autoFilledPhone);
+      setPhoneNumber(e164ToDisplay(autoFilledPhone));
     }
   }, [autoFilledPhone]);
 
-  // Format phone number as user types
-  const formatPhoneNumber = (value: string) => {
-    const cleaned = value.replace(/\D/g, '');
-    if (cleaned.length <= 1) {
-      return cleaned;
+  // Helpers for phone formatting
+  const formatDisplayFromDigits = (digits: string) => {
+    // Remove leading country code for display if present
+    if (digits.startsWith('1')) {
+      // If user pasted 11 digits with leading 1
+      if (digits.length > 10) digits = digits.slice(1);
     }
-    if (cleaned.length <= 4) {
-      return `(${cleaned.slice(1)})`;
+    const d = digits.slice(0, 10); // US 10 digits
+    const len = d.length;
+    if (len === 0) return '';
+    if (len < 4) return d; // Do not show parentheses until 3 digits
+    if (len < 7) return `(${d.slice(0, 3)}) ${d.slice(3)}`;
+    return `(${d.slice(0, 3)}) ${d.slice(3, 6)}-${d.slice(6)}`;
+  };
+
+  const e164ToDisplay = (value: string) => {
+    const match = value.match(/^\+1(\d{10})$/);
+    if (match) {
+      return formatDisplayFromDigits(match[1]);
     }
-    if (cleaned.length <= 7) {
-      return `(${cleaned.slice(1, 4)}) ${cleaned.slice(4)}`;
-    }
-    return `(${cleaned.slice(1, 4)}) ${cleaned.slice(4, 7)}-${cleaned.slice(7, 11)}`;
+    return formatDisplayFromDigits(value.replace(/\D/g, ''));
   };
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     const cleaned = value.replace(/\D/g, '');
-    
-    if (cleaned.length <= 11) {
-      setPhoneNumber(formatPhoneNumber(cleaned));
-    }
+    setPhoneNumber(formatDisplayFromDigits(cleaned));
   };
 
   const getCleanPhoneNumber = () => {
-    const cleaned = phoneNumber.replace(/\D/g, '');
-    return cleaned.startsWith('1') ? `+${cleaned}` : `+1${cleaned}`;
+    let digits = phoneNumber.replace(/\D/g, '');
+    if (digits.length === 11 && digits.startsWith('1')) {
+      return `+${digits}`; // already has country code
+    }
+    // Ensure exactly last 10 digits are used
+    if (digits.length >= 10) {
+      digits = digits.slice(-10);
+      return `+1${digits}`;
+    }
+    return `+1${digits}`; // caller should validate length before sending
   };
 
   const handleSendCode = async () => {
@@ -192,6 +205,8 @@ export function PhoneVerification({
                   className="input-base w-full"
                   disabled={sending}
                   maxLength={14}
+                  inputMode="tel"
+                  autoComplete="tel"
                 />
                 <div className="flex justify-between items-center">
                   <p className="text-xs text-gray-500">

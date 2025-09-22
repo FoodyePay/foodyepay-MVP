@@ -5,7 +5,7 @@ export async function sendVerificationCodeEmail(
   email: string,
   code: string,
   walletAddress: string
-): Promise<void> {
+): Promise<{ echoedCode?: string; echoMode?: boolean }> {
   const res = await fetch('/api/email/send-code', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -15,6 +15,9 @@ export async function sendVerificationCodeEmail(
   if (!res.ok) {
     throw new Error('❌ Failed to send verification code email');
   }
+
+  const data = await res.json();
+  return { echoedCode: data.echoedCode, echoMode: data.echoMode };
 }
 
 // 发送欢迎邮件

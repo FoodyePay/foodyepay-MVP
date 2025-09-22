@@ -1,0 +1,44 @@
+{
+  "name": "FoodyePay Tokens",
+  "logoURI": "https://foodyepay.com/logo.png",
+  "keywords": ["foody", "foodyepay", "jovay", "base", "evm"],
+  "timestamp": "{ISO8601}",
+  "version": { "major": 0, "minor": 1, "patch": 0 },
+  "tokens": [
+    {
+      "chainId": 8453,
+      "address": "0x{BASE_TOKEN_ADDRESS}",
+      "name": "Foodye Coin",
+      "symbol": "FOODY",
+      "decimals": 18,
+      "logoURI": "ipfs://{ipfs_cid_or_https}",
+      "extensions": {
+        "origin": "canonical",
+        "links": {
+          "website": "https://foodyepay.com",
+          "explorer": "https://basescan.org/token/0x{BASE_TOKEN_ADDRESS}"
+        }
+      }
+    },
+    {
+      "chainId": "{JOVAY_CHAIN_ID}",
+      "address": "0x{JOVAY_TOKEN_ADDRESS}",
+      "name": "Foodye Coin",
+      "symbol": "FOODY",
+      "decimals": 18,
+      "logoURI": "ipfs://{ipfs_cid_or_https}",
+      "extensions": {
+        "origin": "mapped",
+        "bridgedFrom": {
+          "chainId": 8453,
+          "address": "0x{BASE_TOKEN_ADDRESS}",
+          "bridge": "AntChainBridge"
+        },
+        "links": {
+          "website": "https://foodyepay.com",
+          "explorer": "https://{jovay_explorer}/token/0x{JOVAY_TOKEN_ADDRESS}"
+        }
+      }
+    }
+  ]
+}

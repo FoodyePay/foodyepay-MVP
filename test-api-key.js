@@ -1,7 +1,11 @@
 // test-api-key.js - Google Maps API Key 测试脚本
 const https = require('https');
 
-const API_KEY = 'AIzaSyDWFF-Ve0TbwOx_dwnusEoKMqlmULgHXc0';
+const API_KEY = process.env.GOOGLE_MAPS_API_KEY;
+if (!API_KEY) {
+  console.error('Missing GOOGLE_MAPS_API_KEY in environment. Set it before running this script.');
+  process.exit(1);
+}
 
 // 测试 Places API
 function testPlacesAPI() {

@@ -25,64 +25,41 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (!accountSid || !authToken || !verifyServiceSid) {
-      console.error('❌ Twilio credentials not configured');
-      return NextResponse.json(
-        { 
-          success: false,
-          message: 'Phone verification service temporarily unavailable' 
-        },
-        { status: 500 }
-      );
-    }
-
-    const twilioClient = twilio(accountSid, authToken);
-
-    console.log('🔍 Verifying code for phone:', phoneNumber);
-
-    // Handle test phone numbers - keep old test number logic
     const isTestNumber = phoneNumber.includes('5550000000') || phoneNumber.includes('+15550000000');
     const isMyNumber = phoneNumber.includes('2016736206') || phoneNumber.includes('+12016736206');
-    
-    if (isTestNumber) {
-      console.log('🧪 Using test number verification');
-      if (code === '123456') {
+
+    // Determine test mode: missing creds, TEMP_DISABLED, or explicit env flag
+    const TEST_MODE = !accountSid || !authToken || !verifyServiceSid || verifyServiceSid === 'TEMP_DISABLED' || process.env.TWILIO_TEST_MODE === 'true';
+
+    console.log('🔍 Verifying code for phone:', phoneNumber, '| testMode =', TEST_MODE);
+
+    if (TEST_MODE) {
+      // Mirror send-phone-verification logic
+      let expectedCode = '999888';
+      if (isTestNumber) expectedCode = '123456';
+      else if (isMyNumber) expectedCode = '654321';
+
+      if (code === expectedCode) {
         return NextResponse.json({ 
           success: true, 
           verified: true,
           message: 'Test verification successful!',
           isTest: true
         });
-      } else {
-        return NextResponse.json({ 
-          success: false, 
-          verified: false,
-          message: 'Invalid test code. Use: 123456'
-        }, { status: 400 });
       }
+      return NextResponse.json({ 
+        success: false, 
+        verified: false,
+        message: '验证码已过期或无效，请重新获取',
+        isTest: true
+      }, { status: 400 });
     }
 
-    if (isMyNumber) {
-      console.log('🧪 Using your number verification - test mode');
-      if (code === '654321') {
-        return NextResponse.json({ 
-          success: true, 
-          verified: true,
-          message: 'Your number verification successful!',
-          isTest: true
-        });
-      } else {
-        return NextResponse.json({ 
-          success: false, 
-          verified: false,
-          message: 'Invalid code for your number. Use: 654321'
-        }, { status: 400 });
-      }
-    }
+    // Real Twilio flow when fully configured
+    const twilioClient = twilio(accountSid!, authToken!);
 
-    // For all other numbers, use actual Twilio verification
     const verificationCheck = await twilioClient.verify.v2
-      .services(verifyServiceSid)
+      .services(verifyServiceSid!)
       .verificationChecks.create({ 
         to: phoneNumber, 
         code: code 
@@ -95,14 +72,13 @@ export async function POST(request: NextRequest) {
         message: '电话号码验证成功！',
         verified: true
       });
-    } else {
-      console.log('❌ Phone verification failed:', verificationCheck.status);
-      return NextResponse.json({ 
-        success: false, 
-        message: '验证码错误或已过期，请重新获取',
-        verified: false
-      }, { status: 400 });
     }
+    console.log('❌ Phone verification failed:', verificationCheck.status);
+    return NextResponse.json({ 
+      success: false, 
+      message: '验证码错误或已过期，请重新获取',
+      verified: false
+    }, { status: 400 });
 
   } catch (error: any) {
     console.error('❌ Phone verification check error:', error);

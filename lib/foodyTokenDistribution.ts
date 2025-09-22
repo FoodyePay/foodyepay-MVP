@@ -101,8 +101,8 @@ export async function checkMainWalletBalance(): Promise<{
       args: [MAIN_WALLET_CONFIG.address]
     });
 
-    const formattedBalance = formatEther(balance);
-    const rewardAmount = 1000; // 每次奖励 1000 FOODY
+  const formattedBalance = formatEther(balance);
+  const rewardAmount = 888; // 每次奖励 888 FOODY（平台注册奖励）
     const maxRewards = Math.floor(Number(formattedBalance) / rewardAmount);
 
     return {
@@ -137,8 +137,8 @@ export async function checkDistributionWalletBalance(): Promise<{
       args: [DISTRIBUTION_WALLET_CONFIG.address]
     });
 
-    const formattedBalance = formatEther(balance);
-    const rewardAmount = 1000; // 每次奖励 1000 FOODY
+  const formattedBalance = formatEther(balance);
+  const rewardAmount = 888; // 每次奖励 888 FOODY（平台注册奖励）
     const maxRewards = Math.floor(Number(formattedBalance) / rewardAmount);
 
     return {
@@ -294,7 +294,7 @@ export async function distributeDinerRegistrationReward(
   error?: string;
   amount: number;
 }> {
-  const rewardAmount = 1000; // 1000 FOODY 奖励
+  const rewardAmount = 888; // 888 FOODY 奖励（平台奖励）
 
   console.log(`🎁 Distributing Diner registration reward: ${rewardAmount} FOODY to ${walletAddress}`);
 

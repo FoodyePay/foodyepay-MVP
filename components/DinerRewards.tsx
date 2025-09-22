@@ -3,7 +3,7 @@
 
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAccount } from 'wagmi';
 import { DinerReward, RewardStats } from '@/lib/dinerRewardService';
 
@@ -39,6 +39,26 @@ export default function DinerRewards({ className = '' }: DinerRewardsProps) {
   const [registrationRewardStatus, setRegistrationRewardStatus] = useState<RegistrationRewardStatus | null>(null);
   const [claimingReward, setClaimingReward] = useState(false);
 
+  // 当 eligibility 未返回但用户没有任何奖励记录时，启用安全兜底显示（服务端仍会防重复）
+  const shouldShowClaim = useMemo(() => {
+    if (registrationRewardStatus) {
+      return registrationRewardStatus.eligible && !registrationRewardStatus.claimed;
+    }
+    // 兜底：有地址且当前无任何奖励，提示可领取
+    return Boolean(lowerCaseAddress) && rewards.length === 0;
+  }, [registrationRewardStatus, lowerCaseAddress, rewards.length]);
+
+  useEffect(() => {
+    // 调试：打印是否显示领取按钮的判断
+    console.log('[Rewards] shouldShowClaim:', shouldShowClaim, {
+      address: lowerCaseAddress,
+      rewardsCount: rewards.length,
+      registrationRewardStatus
+    });
+  }, [shouldShowClaim, lowerCaseAddress, rewards.length, registrationRewardStatus]);
+
+  // 按用户要求：仅显示按钮，不自动触发领取
+
   const fetchRewardData = useCallback(async () => {
     try {
       setLoading(true);
@@ -48,6 +68,7 @@ export default function DinerRewards({ className = '' }: DinerRewardsProps) {
       const registrationResponse = await fetch(`/api/check-registration-reward?wallet=${lowerCaseAddress}`);
       if (registrationResponse.ok) {
         const registrationData = await registrationResponse.json();
+        console.log('[Rewards] registration status:', registrationData);
         setRegistrationRewardStatus(registrationData);
       }
 
@@ -164,17 +185,17 @@ export default function DinerRewards({ className = '' }: DinerRewardsProps) {
       </div>
 
       {/* 新注册奖励提示 */}
-      {registrationRewardStatus?.eligible && !registrationRewardStatus.claimed && (
+      {shouldShowClaim && (
         <div className="bg-gradient-to-r from-yellow-600/20 to-orange-600/20 border border-yellow-500/30 rounded-lg p-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
               <div className="text-2xl">🎉</div>
               <div>
                 <div className="font-medium text-yellow-300">
-                  Claim New Member Reward 1000 FOODY
+                  {`领取平台注册奖励 ${(registrationRewardStatus?.availableReward?.amount ?? 888).toLocaleString()} FOODY`}
                 </div>
                 <div className="text-sm text-yellow-400/80">
-                  Welcome bonus for new diner registration
+                  新用户平台注册奖励（My Reward）
                 </div>
               </div>
             </div>

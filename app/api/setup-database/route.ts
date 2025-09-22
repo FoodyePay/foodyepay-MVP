@@ -20,8 +20,8 @@ export async function POST() {
           id SERIAL PRIMARY KEY,
           wallet_address VARCHAR(42) NOT NULL UNIQUE,
           email VARCHAR(255) NOT NULL,
-          reward_amount INTEGER NOT NULL DEFAULT 1000,
-          reward_reason VARCHAR(500) DEFAULT 'New Diner Registration Bonus',
+          reward_amount INTEGER NOT NULL DEFAULT 888,
+          reward_reason VARCHAR(500) DEFAULT '平台奖励',
           status VARCHAR(20) DEFAULT 'pending' CHECK (status IN ('pending', 'completed', 'failed')),
           transaction_hash VARCHAR(66),
           created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
@@ -58,7 +58,7 @@ export async function POST() {
       {
         wallet_address: '0x958a16ada1b69db030e905aaa3f637c7bd4344a7',
         email: 'ken2@gmail.com',
-        reward_amount: 1000,
+  reward_amount: 888,
         status: 'completed',
         transaction_hash: 'mock_reward_ken2',
         completed_at: new Date().toISOString()
@@ -66,7 +66,7 @@ export async function POST() {
       {
         wallet_address: '0xb4ffaac40f4ca6ecb006ae6d739262f1458b64a3',
         email: 'foodyepay@gmail.com',
-        reward_amount: 1000,
+  reward_amount: 888,
         status: 'completed',
         transaction_hash: 'mock_reward_foodyepay',
         completed_at: new Date().toISOString()
@@ -104,8 +104,8 @@ export async function POST() {
             id SERIAL PRIMARY KEY,
             wallet_address VARCHAR(42) NOT NULL UNIQUE,
             email VARCHAR(255) NOT NULL,
-            reward_amount INTEGER NOT NULL DEFAULT 1000,
-            reward_reason VARCHAR(500) DEFAULT 'New Diner Registration Bonus',
+            reward_amount INTEGER NOT NULL DEFAULT 888,
+            reward_reason VARCHAR(500) DEFAULT '平台奖励',
             status VARCHAR(20) DEFAULT 'pending' CHECK (status IN ('pending', 'completed', 'failed')),
             transaction_hash VARCHAR(66),
             created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
@@ -119,8 +119,8 @@ export async function POST() {
           -- 插入测试奖励数据
           INSERT INTO diner_rewards (wallet_address, email, reward_amount, status, transaction_hash, completed_at) 
           VALUES 
-            ('0x958a16ada1b69db030e905aaa3f637c7bd4344a7', 'ken2@gmail.com', 1000, 'completed', 'mock_reward_ken2', NOW()),
-            ('0xb4ffaac40f4ca6ecb006ae6d739262f1458b64a3', 'foodyepay@gmail.com', 1000, 'completed', 'mock_reward_foodyepay', NOW())
+            ('0x958a16ada1b69db030e905aaa3f637c7bd4344a7', 'ken2@gmail.com', 888, 'completed', 'mock_reward_ken2', NOW()),
+            ('0xb4ffaac40f4ca6ecb006ae6d739262f1458b64a3', 'foodyepay@gmail.com', 888, 'completed', 'mock_reward_foodyepay', NOW())
           ON CONFLICT (wallet_address) DO NOTHING;
         `
       },

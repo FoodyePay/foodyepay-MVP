@@ -25,8 +25,8 @@ export interface RewardStats {
 }
 
 export const DINER_REWARD_CONFIG = {
-  AMOUNT: 1000, // 1000 FOODY tokens
-  REASON: 'New Diner Registration Bonus',
+  AMOUNT: 888, // 888 FOODY tokens
+  REASON: '平台奖励',
   ELIGIBLE_ROLE: 'diner'
 };
 
@@ -156,7 +156,7 @@ export async function issueDinerReward(
           console.error('Failed to update reward status:', updateError);
         }
 
-        console.log(`🎭 Mock reward distributed: 1000 FOODY to ${walletAddress}`);
+  console.log(`🎭 Mock reward distributed: ${DINER_REWARD_CONFIG.AMOUNT} FOODY to ${walletAddress}`);
       } else {
         // 更新为失败状态
         const { error: updateError } = await supabase

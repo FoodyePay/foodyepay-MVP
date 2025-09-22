@@ -18,7 +18,6 @@ import {
   EthBalance,
 } from '@coinbase/onchainkit/identity';
 
-import { Buy } from '@coinbase/onchainkit/buy';
 import { SwapDefault } from '@coinbase/onchainkit/swap';
 import type { Token } from '@coinbase/onchainkit/token';
 import { supabase } from '@/lib/supabase';
@@ -158,26 +157,6 @@ View on BaseScan: ${txUrl}`);
         setShowPaymentConfirm(false);
         setPaymentData(null);
         setPaymentSuccessful(false); // 重置支付成功状态
-
-        // 支付成功后自动发放奖励（支付奖励）
-        try {
-          await fetch('/api/diner-reward', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              walletAddress: address,
-              email: userEmail,
-              role: 'diner',
-              rewardType: 'payment', // 可用于后端区分奖励类型
-              orderId: paymentData.orderId,
-              amount: paymentData.amounts.foody,
-              txHash: result.transactionHash
-            })
-          });
-          console.log('🎁 Payment reward issued!');
-        } catch (rewardError) {
-          console.error('Failed to issue payment reward:', rewardError);
-        }
       } else {
         // 支付失败 ❌
         alert(`Payment Failed ❌\n\n${result.error}`);
@@ -192,16 +171,6 @@ View on BaseScan: ${txUrl}`);
   };
 
   const chainId = 8453;
-
-  const ethToken: Token = {
-    name: 'Ethereum',
-    symbol: 'ETH',
-    decimals: 18,
-    address: '', // Native ETH
-    chainId,
-    image:
-      'https://dynamic-assets.coinbase.com/dbb4b4983bde81309ddab83eb598358eb44375b930b94687ebe38bc22e52c3b2125258ffb8477a5ef22e33d6bd72e32a506c391caa13af64c00e46613c3e5806/asset_icons/4113b082d21cc5fab17fc8f2d19fb996165bcce635e6900f7fc2d57c4ef33ae9.png',
-  };
 
   const usdcToken: Token = {
     name: 'USDC',
@@ -220,6 +189,40 @@ View on BaseScan: ${txUrl}`);
     address: '0x1022b1b028a2237c440dbac51dc6fc220d88c08f',
     chainId,
     image: '/foody.png',
+  };
+
+  const openOnramp = async () => {
+    try {
+      if (!address) {
+        alert('Please connect your wallet first.');
+        return;
+      }
+      const res = await fetch('/api/coinbase-session-token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          address,
+          blockchains: ['base'],
+          assets: ['USDC'],
+          partnerUserId: userId || undefined,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        console.error('Failed to create session token:', data);
+        alert(`Onramp init failed: ${data?.error || 'Unknown error'}`);
+        return;
+      }
+
+      let url = data.onrampUrl as string;
+      // Optional defaults
+      url += '&defaultNetwork=base&defaultAsset=USDC';
+      window.open(url, '_blank');
+    } catch (err: any) {
+      console.error('Onramp error:', err);
+      alert('Failed to open Onramp.');
+    }
   };
 
   return (
@@ -369,14 +372,22 @@ View on BaseScan: ${txUrl}`);
           </button>
         </div>
 
-        {/* ✅ Buy USDC */}
-        <div className="flex items-center space-x-2">
+        {/* Removed Buy ETH and ETH → USDC Swap as requested */}
+
+        {/* ✅ Buy USDC with sessionToken flow */}
+        <div className="flex items-center space-x-3">
           <span className="text-xl font-semibold">Buy</span>
-          <Buy toToken={usdcToken} />
+          <button
+            onClick={openOnramp}
+            className="px-6 py-2 rounded-lg bg-[#222c4e] hover:bg-[#454b80] text-white font-semibold w-24 md:w-28 text-center"
+          >
+            USDC
+          </button>
         </div>
 
         {/* 🍔 USDC → FOODY Swap */}
         <div className="flex items-center space-x-2">
+          {/*<span className="text-xl font-semibold">USDC → FOODY</span>*/}
           <SwapDefault 
             from={[usdcToken]} 
             to={[foodyToken]} 

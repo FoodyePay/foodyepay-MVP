@@ -62,6 +62,21 @@ function getMockResults(businessName: string, city: string) {
   return matchedRestaurant ? [matchedRestaurant.data] : [];
 }
 
+// Lightweight diagnostics: GET /api/search-business -> reports env wiring without exposing secrets
+export async function GET() {
+  const apiKey = process.env.GOOGLE_MAPS_API_KEY;
+  return NextResponse.json(
+    {
+      ok: true,
+      hasApiKey: !!apiKey,
+      keyPrefix: apiKey ? apiKey.substring(0, 8) + '…' : null,
+      keyLength: apiKey?.length ?? 0,
+      nodeEnv: process.env.NODE_ENV,
+    },
+    { headers: { 'cache-control': 'no-store' } }
+  );
+}
+
 export async function POST(request: NextRequest) {
   try {
     const { businessName, city }: SearchBusinessRequest = await request.json();
@@ -86,7 +101,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { 
           success: false,
-          message: 'Google Maps API key not configured' 
+          message: 'Google Maps API key not configured',
+          debug_info: {
+            api_key_configured: false,
+            node_env: process.env.NODE_ENV,
+          }
         },
         { status: 500 }
       );
