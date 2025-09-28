@@ -81,3 +81,34 @@ Notes
 - If the REST schema cache lags, wait ~30–60 seconds or refresh it from Project Settings → API.
 - `google_place_id` unique constraint prevents duplicate restaurant claims by the same Google Place.
 - Existing minimal records (inserted before migration) can be backfilled later with Google data.
+
+## Legal & Compliance
+
+Deployed app includes dedicated legal pages (bilingual EN/中文):
+
+| Purpose | Route |
+|---------|-------|
+| Terms of Service | `/legal/terms` |
+| Privacy Policy | `/legal/privacy` |
+| Digital Asset Risk Disclaimer | `/legal/risk-disclaimer` |
+
+These pages are rendered server-side and can be updated without changing client bundles.
+
+App store readiness & compliance checklist: `docs/APP_STORE_CHECKLIST.md`.
+
+### Updating Legal Text
+Edit the corresponding file under `app/legal/*/page.tsx` and redeploy. Keep sensitive regulatory disclaimers accurate for your jurisdiction. If you add corporate domicile or supervisory authority info, update the Governing Law section in Terms.
+
+### Data Collected (Summary)
+- Wallet address (public)
+- Restaurant metadata (Google Maps verified)
+- Email (verification + notifications)
+- Phone number (verification status only)
+- Basic usage logs (performance & anti-fraud)
+
+No payment card data or private keys are stored by FoodyePay; onramp is handled via Coinbase.
+
+### Next Steps (Recommended)
+- Rotate any secrets that were ever stored locally in `.env.local` and move them to deployment environment variables only.
+- Add rate limiting & abuse monitoring for phone/email verification routes.
+- Add `/legal/updates` changelog if frequent policy revisions occur.
