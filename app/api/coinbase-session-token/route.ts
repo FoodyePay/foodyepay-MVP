@@ -13,6 +13,58 @@ import { randomBytes } from 'crypto';
 
 export const dynamic = 'force-dynamic';
 
+// ================= CORS + Security =================
+// Comma / space / newline separated origin allowlist. Examples:
+// ONRAMP_ALLOWED_ORIGINS=https://foodyepay.com,https://app.foodyepay.com
+// If empty => no browser origins allowed (mobile native fetch without Origin header still works).
+function parseAllowedOrigins(raw?: string): Set<string> {
+  if (!raw) return new Set();
+  return new Set(
+    raw
+      .split(/[\n,\s]+/)
+      .map(o => o.trim())
+      .filter(Boolean)
+  );
+}
+const ALLOWED_ORIGINS = parseAllowedOrigins(process.env.ONRAMP_ALLOWED_ORIGINS);
+
+function extractOrigin(req: Request): string | null {
+  const o = req.headers.get('origin');
+  if (!o) return null; // native mobile or curl typically has no origin
+  try { return new URL(o).origin; } catch { return null; }
+}
+
+function buildCorsHeaders(origin: string | null) {
+  if (!origin) return {}; // no-origin request (native app) => do not set ACAO
+  if (!ALLOWED_ORIGINS.size) return {}; // locked down until configured
+  if (!ALLOWED_ORIGINS.has(origin)) return {}; // not allowed => no CORS headers
+  return {
+    'Access-Control-Allow-Origin': origin,
+    'Vary': 'Origin',
+    'Access-Control-Allow-Methods': 'POST,OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type,Authorization',
+    'Access-Control-Max-Age': '600'
+  } as Record<string,string>;
+}
+
+function isOriginAllowed(origin: string | null): boolean {
+  if (!origin) return true; // treat non-browser requests as allowed
+  if (!ALLOWED_ORIGINS.size) return false;
+  return ALLOWED_ORIGINS.has(origin);
+}
+
+function extractClientIp(req: Request): string | undefined {
+  const h = req.headers;
+  const xff = h.get('x-forwarded-for');
+  if (xff) {
+    const first = xff.split(',')[0].trim();
+    if (first) return first;
+  }
+  const real = h.get('x-real-ip');
+  if (real) return real.trim();
+  return undefined; // Next.js runtime doesn't expose remoteAddress directly
+}
+
 type RequestBody = {
   address?: string;
   blockchains?: string[];
@@ -318,8 +370,13 @@ async function generateEd25519JwtWithTweetNacl(base64Key: string, apiKeyId: stri
 }
 
 export async function POST(req: Request) {
+  const origin = extractOrigin(req);
+  const corsHeaders = buildCorsHeaders(origin);
+  if (!isOriginAllowed(origin)) {
+    return new NextResponse(JSON.stringify({ error: 'Origin not allowed' }), { status: 403, headers: { 'Content-Type': 'application/json', ...corsHeaders } });
+  }
   try {
-  const { address, blockchains, assets, partnerUserId, forceNacl, forceRebuild } = (await req.json()) as RequestBody;
+    const { address, blockchains, assets, partnerUserId, forceNacl, forceRebuild } = (await req.json()) as RequestBody;
 
     if (!address || typeof address !== 'string') {
       return NextResponse.json({ error: 'Missing required field: address' }, { status: 400 });
@@ -349,6 +406,11 @@ export async function POST(req: Request) {
     }
 
     const projectId = getEnv('CDP_PROJECT_ID');
+    const clientIp = extractClientIp(req);
+    if (clientIp) {
+      // Coinbase Onramp new requirement: include clientIp (if available)
+      (payload as any).clientIp = clientIp;
+    }
 
     const resp = await fetch(`https://${host}${path}`, {
       method: 'POST',
@@ -380,17 +442,18 @@ export async function POST(req: Request) {
 
     const data = JSON.parse(text);
     // Expecting shape: { token: string, channel_id?: string }
-    return NextResponse.json({
+    return new NextResponse(JSON.stringify({
       token: data.token,
       channel_id: data.channel_id ?? '',
       onrampUrl: `https://pay.coinbase.com/buy/select-asset?sessionToken=${encodeURIComponent(data.token)}`,
-    });
+    }), { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders } });
   } catch (e: any) {
-    // Add minimal diagnostics without leaking secrets
-    return NextResponse.json({
+    const origin = extractOrigin(req);
+    const corsHeaders = buildCorsHeaders(origin);
+    return new NextResponse(JSON.stringify({
       error: e?.message ?? 'Unknown error',
       hint: 'Verify CDP_API_PRIVATE_KEY format (JSON from portal for Ed25519, or PEM for ECDSA).',
-    }, { status: 500 });
+    }), { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders } });
   }
 }
 
@@ -435,4 +498,15 @@ export async function GET(req: Request) {
     }
   }
   return NextResponse.json({ status: 'ok' });
+}
+
+// Preflight CORS handler
+export async function OPTIONS(req: Request) {
+  const origin = extractOrigin(req);
+  const allowed = isOriginAllowed(origin);
+  const corsHeaders = buildCorsHeaders(origin);
+  if (!allowed) {
+    return new NextResponse(null, { status: 204 }); // silently ignore for disallowed origins
+  }
+  return new NextResponse(null, { status: 204, headers: corsHeaders });
 }

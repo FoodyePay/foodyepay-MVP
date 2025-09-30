@@ -112,3 +112,4 @@ No payment card data or private keys are stored by FoodyePay; onramp is handled 
 - Rotate any secrets that were ever stored locally in `.env.local` and move them to deployment environment variables only.
 - Add rate limiting & abuse monitoring for phone/email verification routes.
 - Add `/legal/updates` changelog if frequent policy revisions occur.
+ - Review Onramp security hardening: see `docs/ONRAMP_SECURITY.md` (CORS allowlist + clientIp forwarding).

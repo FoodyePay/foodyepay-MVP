@@ -18,6 +18,7 @@ const OPTIONAL = [
   'GOOGLE_MAPS_API_KEY',
   'TWILIO_ACCOUNT_SID',
   'TWILIO_AUTH_TOKEN',
+  'ONRAMP_ALLOWED_ORIGINS',
 ];
 
 function has(name){
@@ -37,6 +38,12 @@ for(const k of REQUIRED){
 }
 for(const k of OPTIONAL){
   console.log(`${k}: ${has(k) ? 'OK (optional)' : 'NOT SET (optional)'}`);
+}
+
+if(has('ONRAMP_ALLOWED_ORIGINS')) {
+  const raw = process.env.ONRAMP_ALLOWED_ORIGINS || '';
+  const list = raw.split(/[\n,\s]+/).filter(Boolean);
+  console.log(`ONRAMP_ALLOWED_ORIGINS entries: ${list.length}`);
 }
 
 if(missing.length){
