@@ -13,6 +13,9 @@ import { randomBytes } from 'crypto';
 
 export const dynamic = 'force-dynamic';
 
+// Increment this when making deployment-relevant changes so diag endpoint can confirm version.
+const CODE_VERSION = '2025-09-30-v3';
+
 // ================= CORS + Security =================
 // Comma / space / newline separated origin allowlist. Examples:
 // ONRAMP_ALLOWED_ORIGINS=https://foodyepay.com,https://app.foodyepay.com
@@ -26,7 +29,35 @@ function parseAllowedOrigins(raw?: string): Set<string> {
       .filter(Boolean)
   );
 }
+// Build initial allowlist from env
 const ALLOWED_ORIGINS = parseAllowedOrigins(process.env.ONRAMP_ALLOWED_ORIGINS);
+// Fallback enhancement: if env not set or missing variants for NEXT_PUBLIC_APP_URL, derive them in-memory (does NOT leak to other routes).
+try {
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL;
+  if (appUrl) {
+    const u = new URL(appUrl);
+    const baseOrigin = u.origin;
+    if (!ALLOWED_ORIGINS.has(baseOrigin)) {
+      // If user forgot to set ONRAMP_ALLOWED_ORIGINS, add primary app origin
+      if (!process.env.ONRAMP_ALLOWED_ORIGINS) {
+        ALLOWED_ORIGINS.add(baseOrigin);
+      }
+    }
+    // Ensure www/apex pair both present for app domain to reduce accidental 403s
+    const host = u.host;
+    if (host.startsWith('www.')) {
+      const apexOrigin = `${u.protocol}//${host.slice(4)}`;
+      if (ALLOWED_ORIGINS.has(baseOrigin) && !ALLOWED_ORIGINS.has(apexOrigin)) {
+        ALLOWED_ORIGINS.add(apexOrigin);
+      }
+    } else {
+      const wwwOrigin = `${u.protocol}//www.${host}`;
+      if (ALLOWED_ORIGINS.has(baseOrigin) && !ALLOWED_ORIGINS.has(wwwOrigin)) {
+        ALLOWED_ORIGINS.add(wwwOrigin);
+      }
+    }
+  }
+} catch { /* ignore malformed NEXT_PUBLIC_APP_URL */ }
 
 function extractOrigin(req: Request): string | null {
   const o = req.headers.get('origin');
@@ -34,10 +65,29 @@ function extractOrigin(req: Request): string | null {
   try { return new URL(o).origin; } catch { return null; }
 }
 
+function isOriginAllowed(origin: string | null): boolean {
+  if (!origin) return true; // treat non-browser (no Origin header) requests as allowed
+  if (!ALLOWED_ORIGINS.size) return false;
+  if (ALLOWED_ORIGINS.has(origin)) return true;
+  // Allow implicit apex/www pairing: if "https://foo.com" is allowlisted, accept "https://www.foo.com" and vice versa.
+  try {
+    const u = new URL(origin);
+    const host = u.host; // includes port if any
+    if (host.startsWith('www.')) {
+      const apexHost = host.slice(4);
+      const apexOrigin = `${u.protocol}//${apexHost}`;
+      if (ALLOWED_ORIGINS.has(apexOrigin)) return true;
+    } else {
+      const wwwOrigin = `${u.protocol}//www.${host}`;
+      if (ALLOWED_ORIGINS.has(wwwOrigin)) return true;
+    }
+  } catch { /* ignore malformed origin */ }
+  return false;
+}
+
 function buildCorsHeaders(origin: string | null) {
   if (!origin) return {}; // no-origin request (native app) => do not set ACAO
-  if (!ALLOWED_ORIGINS.size) return {}; // locked down until configured
-  if (!ALLOWED_ORIGINS.has(origin)) return {}; // not allowed => no CORS headers
+  if (!isOriginAllowed(origin)) return {}; // not allowed => no CORS headers
   return {
     'Access-Control-Allow-Origin': origin,
     'Vary': 'Origin',
@@ -45,12 +95,6 @@ function buildCorsHeaders(origin: string | null) {
     'Access-Control-Allow-Headers': 'Content-Type,Authorization',
     'Access-Control-Max-Age': '600'
   } as Record<string,string>;
-}
-
-function isOriginAllowed(origin: string | null): boolean {
-  if (!origin) return true; // treat non-browser requests as allowed
-  if (!ALLOWED_ORIGINS.size) return false;
-  return ALLOWED_ORIGINS.has(origin);
 }
 
 function extractClientIp(req: Request): string | undefined {
@@ -376,7 +420,21 @@ export async function POST(req: Request) {
     return new NextResponse(JSON.stringify({ error: 'Origin not allowed' }), { status: 403, headers: { 'Content-Type': 'application/json', ...corsHeaders } });
   }
   try {
-    const { address, blockchains, assets, partnerUserId, forceNacl, forceRebuild } = (await req.json()) as RequestBody;
+    // Support debug diagnostics via ?debug=1
+    const url = new URL(req.url);
+    const debug = url.searchParams.get('debug') === '1';
+
+    let parsedBody: RequestBody | undefined;
+    try {
+      parsedBody = (await req.json()) as RequestBody;
+    } catch (parseErr: any) {
+      return new NextResponse(JSON.stringify({
+        error: 'Invalid JSON body',
+        details: parseErr?.message || String(parseErr),
+      }), { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders } });
+    }
+
+    const { address, blockchains, assets, partnerUserId, forceNacl, forceRebuild } = parsedBody || {};
 
     if (!address || typeof address !== 'string') {
       return NextResponse.json({ error: 'Missing required field: address' }, { status: 400 });
@@ -406,9 +464,12 @@ export async function POST(req: Request) {
     }
 
     const projectId = getEnv('CDP_PROJECT_ID');
-    const clientIp = extractClientIp(req);
+    let clientIp = extractClientIp(req);
+    // Ensure we always send something in development (Coinbase may require clientIp)
+    if (!clientIp && process.env.NODE_ENV !== 'production') {
+      clientIp = '127.0.0.1';
+    }
     if (clientIp) {
-      // Coinbase Onramp new requirement: include clientIp (if available)
       (payload as any).clientIp = clientIp;
     }
 
@@ -435,6 +496,11 @@ export async function POST(req: Request) {
           status: resp.status,
           statusText: resp.statusText,
           response: err ?? text,
+          upstreamRaw: debug ? text : undefined,
+          debug: debug ? {
+            clientIp,
+            projectIdSuffix: projectId ? projectId.slice(-6) : null,
+          } : undefined,
         },
         { status: 502 },
       );
@@ -446,6 +512,7 @@ export async function POST(req: Request) {
       token: data.token,
       channel_id: data.channel_id ?? '',
       onrampUrl: `https://pay.coinbase.com/buy/select-asset?sessionToken=${encodeURIComponent(data.token)}`,
+      debug: debug ? { clientIp } : undefined,
     }), { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders } });
   } catch (e: any) {
     const origin = extractOrigin(req);
@@ -464,8 +531,10 @@ export async function GET(req: Request) {
     const kid = getEnv('CDP_API_KEY_ID');
     const raw = getEnv('CDP_API_PRIVATE_KEY');
     const a = analyzeKey(raw);
+    const allowed = Array.from(ALLOWED_ORIGINS.values());
     return NextResponse.json({
       status: 'ok',
+      codeVersion: CODE_VERSION,
       keyDiagnostics: {
         source: a.source,
         isBase64: a.isBase64,
@@ -473,6 +542,13 @@ export async function GET(req: Request) {
         length: a.length,
         kidSuffix: kid ? kid.slice(-6) : null,
       },
+      cors: {
+        configuredAllowedOrigins: allowed,
+        sampleCheck: {
+          apexAllowed: isOriginAllowed('https://foodyepay.com'),
+          wwwAllowed: isOriginAllowed('https://www.foodyepay.com'),
+        }
+      }
     });
   }
   if (url.searchParams.get('verify') === 'ed25519') {

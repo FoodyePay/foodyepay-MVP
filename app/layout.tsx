@@ -51,6 +51,7 @@ export default function RootLayout({
           </div>
           <footer className="mt-8 border-t border-neutral-800 text-sm text-neutral-400 px-4 py-6 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
             <div className="flex flex-wrap gap-4">
+              <a href="/about" className="hover:text-neutral-200">About</a>
               <a href="/legal/terms" className="hover:text-neutral-200">Terms</a>
               <a href="/legal/privacy" className="hover:text-neutral-200">Privacy</a>
               <a href="/legal/risk-disclaimer" className="hover:text-neutral-200">Risk</a>

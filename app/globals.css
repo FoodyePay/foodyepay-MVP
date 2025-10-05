@@ -70,4 +70,25 @@ body {
   .btn-primary {
     @apply bg-emerald-600 text-white py-2 px-4 rounded hover:bg-emerald-700 disabled:opacity-50;
   }
+
+  /* Premium card style inspired by dashboard balance card */
+  .card-premium {
+    position: relative;
+    border-radius: 16px;
+    background: linear-gradient(180deg, rgba(49,46,129,0.55) 0%, rgba(24,24,27,0.92) 100%);
+    border: 1px solid rgba(99,102,241,0.25); /* indigo-500 */
+    box-shadow:
+      0 8px 28px rgba(2,6,23,0.55), /* deep outer shadow */
+      inset 0 1px 0 rgba(255,255,255,0.06); /* subtle inner highlight */
+  }
+  .card-premium::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background:
+      radial-gradient(800px 200px at 0% -10%, rgba(255,255,255,0.08), transparent 60%),
+      radial-gradient(600px 160px at 100% 0%, rgba(124,58,237,0.10), transparent 50%);
+    pointer-events: none;
+  }
 }
