@@ -29,6 +29,20 @@
 				"$tsc"
 			],
 			"group": "build"
+		},
+		{
+			"label": "Install Stripe SDK",
+			"type": "shell",
+			"command": "npm",
+			"args": [
+				"install",
+				"stripe@^16.5.0"
+			],
+			"isBackground": false,
+			"problemMatcher": [
+				"$eslint-stylish"
+			],
+			"group": "build"
 		}
 	]
 }

@@ -1,0 +1,218 @@
+openapi: 3.0.3
+info:
+  title: FoodyePay Conversational Payments API
+  version: 0.1.0
+  description: |
+    REST endpoints surfaced through the FoodyePay ChatGPT App.
+    These routes power wallet balance queries, QR generation, and
+    payment submission flows used by the MCP bridge.
+servers:
+  - url: https://api.foodyepay.com/v1
+    description: Production
+  - url: https://staging-api.foodyepay.com/v1
+    description: Staging sandbox
+  - url: http://localhost:4000/v1
+    description: Local development
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    BalanceResponse:
+      type: object
+      required:
+        - address
+        - symbol
+        - balance
+        - eth
+      properties:
+        address:
+          type: string
+          format: eth-address
+          example: 0x289B9Fc2A3F19FaF72609850dB15e1c90e8A462c
+        symbol:
+          type: string
+          description: Primary FoodyePay token symbol.
+          example: FOODY
+        balance:
+          type: string
+          description: Token balance in human-readable units.
+          example: "3456.78"
+        eth:
+          type: string
+          description: Native ETH balance on Base for gas estimation.
+          example: "0.12"
+    CreateQrRequest:
+      type: object
+      required:
+        - amount
+        - currency
+        - restaurantId
+        - orderId
+      properties:
+        amount:
+          type: number
+          format: float
+          example: 25
+        currency:
+          type: string
+          example: FOODY
+        restaurantId:
+          type: string
+          example: R-2025
+        orderId:
+          type: string
+          example: O-7788
+        memo:
+          type: string
+          example: Lunch service
+        locale:
+          type: string
+          example: en-US
+    CreateQrResponse:
+      type: object
+      required:
+        - paymentId
+        - qrData
+        - webLink
+      properties:
+        paymentId:
+          type: string
+          example: pay_1728456723
+        qrData:
+          type: string
+          description: Base64-encoded QR payload containing payment instructions.
+          example: data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAA...
+        webLink:
+          type: string
+          format: uri
+          example: https://foodyepay.com/pay/pay_1728456723
+        expiresAt:
+          type: string
+          format: date-time
+          example: 2025-10-08T16:07:59.000Z
+    SendPaymentRequest:
+      type: object
+      required:
+        - from
+        - to
+        - amount
+        - currency
+      properties:
+        from:
+          type: string
+          format: eth-address
+          example: 0xabc1234567890defabc1234567890defabc12345
+        to:
+          type: string
+          format: eth-address
+          example: 0xdef9876543210abcdef9876543210abcdef9876
+        amount:
+          type: number
+          format: float
+          example: 50
+        currency:
+          type: string
+          example: FOODY
+        memo:
+          type: string
+          example: Dinner
+        reference:
+          type: string
+          description: Optional external reference or POS ticket number.
+          example: TKT-2025-10-08-01
+    SendPaymentResponse:
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          type: string
+          example: submitted
+        txHash:
+          type: string
+          nullable: true
+          description: On-chain transaction hash when available.
+          example: 0x8d2c4a7d9a1b7c0f8f5e6d3c2b1a09080706050403020100ffeeccddeeccbbaa
+        paymentId:
+          type: string
+          example: pay_1728456723
+paths:
+  /wallets/{address}/balance:
+    get:
+      operationId: get_balance
+      summary: Get wallet balance by address
+      tags: [Wallets]
+      parameters:
+        - name: address
+          in: path
+          required: true
+          schema:
+            type: string
+            pattern: ^0x[a-fA-F0-9]{40}$
+          description: EVM wallet address on the Base network.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Balance snapshot for the requested wallet.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BalanceResponse'
+        '404':
+          description: Wallet not found or not yet provisioned.
+        '401':
+          description: Missing or invalid bearer token.
+  /payments/qr:
+    post:
+      operationId: create_qr
+      summary: Create a payment QR intent
+      tags: [Payments]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateQrRequest'
+      responses:
+        '201':
+          description: QR intent created successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateQrResponse'
+        '400':
+          description: Invalid payload (missing order or unsupported currency).
+        '401':
+          description: Missing or invalid bearer token.
+  /payments/send:
+    post:
+      operationId: send_payment
+      summary: Submit an on-chain payment or off-chain intent
+      tags: [Payments]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SendPaymentRequest'
+      responses:
+        '202':
+          description: Payment accepted for processing.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SendPaymentResponse'
+        '400':
+          description: Validation failure (insufficient balance, unknown currency).
+        '401':
+          description: Missing or invalid bearer token.
+        '409':
+          description: Duplicate payment submission detected.

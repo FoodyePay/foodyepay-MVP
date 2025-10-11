@@ -33,6 +33,7 @@ interface Restaurant {
   city: string;
   state: string;
   created_at: string;
+  stripe_account_id?: string;
 }
 
 export default function RestaurantDashboard() {
@@ -44,6 +45,7 @@ export default function RestaurantDashboard() {
   // MVP Modal states - 只保留核心功能
   const [showQRGenerator, setShowQRGenerator] = useState(false);
   const [showOrderManagement, setShowOrderManagement] = useState(false);
+  const [openingStripeDashboard, setOpeningStripeDashboard] = useState(false);
   
   // Portfolio display state - 美观简洁的展示控制
   const [showPortfolio, setShowPortfolio] = useState(false);
@@ -94,6 +96,29 @@ export default function RestaurantDashboard() {
   if (!restaurant) {
     return null;
   }
+
+  const handleOpenStripeDashboard = async () => {
+    if (!restaurant?.stripe_account_id) {
+      alert('Stripe account not found. Please complete onboarding first.');
+      return;
+    }
+    try {
+      setOpeningStripeDashboard(true);
+      const res = await fetch('/api/connect/express-login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ accountId: restaurant.stripe_account_id }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to create login link');
+      window.location.href = data.url;
+    } catch (e: any) {
+      console.error(e);
+      alert(e.message || 'Could not open Stripe Dashboard.');
+    } finally {
+      setOpeningStripeDashboard(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-black text-white">
@@ -238,6 +263,26 @@ export default function RestaurantDashboard() {
                     <div>
                       <h3 className="font-semibold text-white group-hover:text-yellow-100">Payment Management</h3>
                       <p className="text-sm text-yellow-200">View and process payment transactions</p>
+                    </div>
+                  </div>
+                </button>
+
+                {/* Manage payouts and settings (Stripe Express Dashboard) */}
+                <button
+                  onClick={handleOpenStripeDashboard}
+                  disabled={openingStripeDashboard || !restaurant?.stripe_account_id}
+                  title={!restaurant?.stripe_account_id ? 'Stripe account not linked yet. Complete onboarding first.' : ''}
+                  className={`p-6 rounded-lg transition-all duration-200 text-left group border border-zinc-700 ${
+                    openingStripeDashboard || !restaurant?.stripe_account_id
+                      ? 'bg-zinc-800 text-zinc-400 cursor-not-allowed'
+                      : 'bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700'
+                  }`}
+                >
+                  <div className="flex items-center space-x-3">
+                    <span className="text-2xl">🏦</span>
+                    <div>
+                      <h3 className="font-semibold text-white group-hover:text-blue-100">Manage payouts and settings</h3>
+                      <p className="text-sm text-blue-200">Open Stripe Express Dashboard</p>
                     </div>
                   </div>
                 </button>

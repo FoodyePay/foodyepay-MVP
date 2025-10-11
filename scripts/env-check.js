@@ -5,6 +5,15 @@
  * Does NOT print secret values.
  */
 
+// Load env files so `npm run build` sees .env/.env.local values
+try {
+  const path = require('path');
+  require('dotenv').config({ path: path.resolve(process.cwd(), '.env') });
+  require('dotenv').config({ path: path.resolve(process.cwd(), '.env.local') });
+} catch (e) {
+  // dotenv is in dependencies; ignore if any issue, Next will still load env for its own runtime
+}
+
 const REQUIRED = [
   'CDP_API_KEY_ID',
   'CDP_API_PRIVATE_KEY',

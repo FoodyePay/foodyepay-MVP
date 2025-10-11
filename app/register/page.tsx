@@ -14,7 +14,6 @@ import {
 } from '@/lib/verificationCode';
 import { sendVerificationCodeEmail, sendWelcomeEmail } from '@/lib/emailService';
 import { BusinessVerification } from '@/components/BusinessVerification';
-import { PhoneVerification } from '@/components/PhoneVerification';
 
 interface Business {
   place_id: string;
@@ -43,6 +42,7 @@ export default function RegisterPage() {
   
   // Restaurant-specific fields - simplified for MVP
   const [restaurantEmail, setRestaurantEmail] = useState('');
+  const isValidEmail = (v: string) => /.+@.+\..+/.test(v);
   
   // New verification states
   const [businessVerified, setBusinessVerified] = useState(false);
@@ -51,6 +51,9 @@ export default function RegisterPage() {
   const [verifiedPhone, setVerifiedPhone] = useState('');
 
   const [sending, setSending] = useState(false);
+  const [stripeOnboardingUrl, setStripeOnboardingUrl] = useState<string | null>(null);
+  const [stripeAccountId, setStripeAccountId] = useState<string | null>(null);
+  const [stripeStatus, setStripeStatus] = useState<'pending'|'needs_more_info'|'verified'|'rejected'|null>(null);
   const [verifying, setVerifying] = useState(false);
   const [verificationSent, setVerificationSent] = useState(false);
   const [inputCode, setInputCode] = useState('');
@@ -148,6 +151,8 @@ export default function RegisterPage() {
   const handleBusinessVerificationComplete = (business: Business) => {
     setVerifiedBusiness(business);
     setBusinessVerified(true);
+    try { localStorage.setItem('selected_business', JSON.stringify(business)); } catch {}
+    try { localStorage.setItem('register_role', 'restaurant'); } catch {}
   };
 
   // Handle phone verification completion
@@ -156,11 +161,198 @@ export default function RegisterPage() {
     setPhoneVerified(true);
   };
 
+  // Start Stripe Connect Express onboarding
+  const handleStartStripeVerification = async () => {
+    try {
+      if (!verifiedBusiness) {
+        alert('Please select your restaurant first');
+        return;
+      }
+      try { if (address) localStorage.setItem('connected_wallet', address); } catch {}
+      const res = await fetch('/api/connect/start', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          restaurantName: verifiedBusiness?.name
+        })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to start verification');
+      setStripeAccountId(data.accountId);
+      try { localStorage.setItem('stripe_account_id', data.accountId); } catch {}
+      setStripeOnboardingUrl(data.onboardingUrl);
+      window.location.href = data.onboardingUrl;
+    } catch (e: any) {
+      console.error('Stripe start error', e);
+      alert(e.message || 'Failed to start Stripe verification');
+    }
+  };
+
+  // Simple US address parser from formatted string like: "103 Essex St, New York, NY 10002, USA"
+  const parseAddressParts = (formatted?: string) => {
+    if (!formatted) return { city: null, state: null, postal_code: null, country: null, street_number: null, street_name: null } as any;
+    const parts = formatted.split(',').map(s => s.trim());
+    // parts[0] = street line, parts[1] = city, parts[2] = "NY 10002", parts[3] = country
+    const street = parts[0] || '';
+    const city = parts[1] || null;
+    let state: string | null = null;
+    let postal_code: string | null = null;
+    const m = (parts[2] || '').match(/([A-Za-z]{2})\s+(\d{5}(-\d{4})?)/);
+    if (m) { state = m[1]; postal_code = m[2]; }
+    const country = parts[3] || null;
+    const streetNum = (street.match(/^\s*(\d+)/) || [])[1] || null;
+    const streetName = streetNum ? street.replace(/^\s*\d+\s*/, '') : street; // drop leading number
+    return { city, state, postal_code, country, street_number: streetNum, street_name: streetName || null };
+  };
+
+  // Check Stripe status
+  const handleRefreshStripeStatus = async () => {
+    try {
+      if (!stripeAccountId) return;
+      const res = await fetch('/api/connect/status', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ accountId: stripeAccountId })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setStripeStatus(data.verification_status);
+      }
+    } catch (e) {
+      console.error('Stripe status error', e);
+    }
+  };
+
+  // Load any cached Stripe account from return/refresh bridge
+  useEffect(() => {
+    try {
+      const savedRole = localStorage.getItem('register_role');
+      if (savedRole === 'restaurant' || savedRole === 'diner') {
+        setRole(savedRole as any);
+      }
+
+      const savedBiz = localStorage.getItem('selected_business');
+      if (savedBiz) {
+        try {
+          const parsed = JSON.parse(savedBiz) as Business;
+          setVerifiedBusiness(parsed);
+          setBusinessVerified(true);
+        } catch {}
+      }
+
+      const cached = localStorage.getItem('stripe_account_id');
+      if (cached) {
+        setStripeAccountId(cached);
+        // auto refresh status once
+        (async () => {
+          try {
+            const res = await fetch('/api/connect/status', {
+              method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ accountId: cached })
+            });
+            const data = await res.json();
+            if (res.ok) setStripeStatus(data.verification_status);
+          } catch {}
+        })();
+      }
+    } catch {}
+  }, []);
+
+  // Finalize restaurant registration without email/phone, relying on Stripe onboarding + Google data
+  const handleFinalizeRestaurantRegistration = async () => {
+    if (!address) return alert('Wallet not ready');
+    if (!verifiedBusiness) return alert('Please select your restaurant first');
+    if (!stripeAccountId) return alert('Please start Stripe onboarding');
+
+    try {
+      const payload: any = {
+        name: verifiedBusiness?.name || 'Unknown Restaurant',
+        // Store Google Maps data
+        google_place_id: verifiedBusiness?.place_id,
+        address: verifiedBusiness?.formatted_address,
+        rating: verifiedBusiness?.rating || 0,
+        user_ratings_total: verifiedBusiness?.user_ratings_total || 0,
+        wallet_address: address,
+        role: 'restaurant',
+        stripe_account_id: stripeAccountId,
+        stripe_status: stripeStatus,
+      };
+
+      const parts = parseAddressParts(verifiedBusiness?.formatted_address);
+      payload.city = parts.city;
+      payload.state = parts.state;
+      payload.postal_code = parts.postal_code;
+      payload.country = parts.country;
+  if (parts.street_number) payload.street_number = parts.street_number;
+  if (parts.street_name) payload.street_name = parts.street_name;
+  if (parts.postal_code) payload.zip_code = parts.postal_code; // legacy column support
+
+      let { data, error } = await supabase
+        .from('restaurants')
+        .insert([payload])
+        .select();
+
+      if (error) {
+        // Fallback minimal insert if schema differs or NOT NULL constraints are present
+        const minimal: any = {
+          name: payload.name,
+          address: payload.address || (verifiedBusiness?.formatted_address ?? 'Unknown Address'),
+          wallet_address: payload.wallet_address,
+          role: payload.role,
+        };
+        // include structured parts when available
+        const parts2 = parseAddressParts(verifiedBusiness?.formatted_address);
+  minimal.city = parts2.city;
+  minimal.state = parts2.state;
+  minimal.postal_code = parts2.postal_code;
+  minimal.country = parts2.country;
+  if (parts2.postal_code) minimal.zip_code = parts2.postal_code; // legacy column
+  if (parts2.street_number) minimal.street_number = parts2.street_number;
+  if (parts2.street_name) minimal.street_name = parts2.street_name;
+
+        // If error indicates a specific NOT NULL column (e.g., street_number), try to derive from formatted address
+        const errMsg = String(error.message || '');
+        const m = errMsg.match(/column\s+"?(\w+)"?.*not-null/i);
+        if (m) {
+          const col = m[1];
+          const formatted = verifiedBusiness?.formatted_address || '';
+          if (col === 'street_number') {
+            const sn = (formatted.match(/^\s*(\d+)/) || [])[1];
+            if (sn) minimal.street_number = sn;
+            const streetName = formatted.replace(/^\s*\d+\s*/, '').split(',')[0]?.trim();
+            if (streetName) minimal.street_name = streetName;
+          }
+          if (col === 'street_name') {
+            const streetName = formatted.replace(/^\s*\d+\s*/, '').split(',')[0]?.trim();
+            if (streetName) minimal.street_name = streetName;
+          }
+          if (col === 'zip_code') {
+            const mm = formatted.split(',').map(s => s.trim());
+            const m2 = (mm[2] || '').match(/([A-Za-z]{2})\s+(\d{5}(-\d{4})?)/);
+            if (m2) minimal.zip_code = m2[2];
+          }
+        }
+
+        const retry = await supabase.from('restaurants').insert([minimal]).select();
+        if (retry.error) {
+          alert(`Database error: ${retry.error.message}`);
+          return;
+        }
+        data = retry.data;
+      }
+
+      try { localStorage.setItem('foodye_wallet', address); } catch {}
+      router.push(`/register/yes/success?role=restaurant`);
+    } catch (err: any) {
+      console.error('Finalize restaurant failed', err);
+      alert('Registration error');
+    }
+  };
+
   const handleSendVerification = async () => {
     console.log('handleSendVerification called');
     console.log('Current form data:', {
       role,
-      emailLocal: role === 'restaurant' ? restaurantEmail : emailLocal,
+      emailPreview: role === 'restaurant' ? restaurantEmail : `${emailLocal}@gmail.com`,
       businessVerified,
       phoneVerified
     });
@@ -174,18 +366,23 @@ export default function RegisterPage() {
     
     // Validation for restaurant - NEW MVP requirements
     if (role === 'restaurant') {
-      if (!restaurantEmail || !businessVerified || !phoneVerified) {
+      const stripeReady = !!stripeAccountId && (stripeStatus === 'verified' || stripeStatus === 'needs_more_info');
+      if (!restaurantEmail || !isValidEmail(restaurantEmail) || !businessVerified || !phoneVerified || !stripeReady) {
         console.log('Restaurant validation failed');
         console.log('Missing requirements:', {
           restaurantEmail: !restaurantEmail,
+          restaurantEmailValid: !isValidEmail(restaurantEmail),
           businessVerified: !businessVerified,
-          phoneVerified: !phoneVerified
+          phoneVerified: !phoneVerified,
+          stripeReady: !stripeReady
         });
         
         const missingItems: string[] = [];
         if (!restaurantEmail) missingItems.push('Restaurant Email');
+        if (restaurantEmail && !isValidEmail(restaurantEmail)) missingItems.push('Valid Email Format');
         if (!businessVerified) missingItems.push('Business Verification');
         if (!phoneVerified) missingItems.push('Phone Verification');
+        if (!stripeReady) missingItems.push('Stripe Onboarding (complete or needs more info)');
         
         alert(`Please complete the following verification steps:\n\n${missingItems.join('\n')}`);
         return;
@@ -194,7 +391,7 @@ export default function RegisterPage() {
 
     console.log('Validation passed, proceeding...');
 
-    const email = role === 'restaurant' ? `${restaurantEmail}@gmail.com` : `${emailLocal}@gmail.com`;
+  const email = role === 'restaurant' ? restaurantEmail : `${emailLocal}@gmail.com`;
     const code = generateVerificationCode();
     saveVerificationCode(email, code);
 
@@ -223,7 +420,7 @@ export default function RegisterPage() {
 
     if (!address) return alert('Wallet not ready');
 
-    const email = role === 'restaurant' ? `${restaurantEmail}@gmail.com` : `${emailLocal}@gmail.com`;
+  const email = role === 'restaurant' ? restaurantEmail : `${emailLocal}@gmail.com`;
     const phone = role === 'restaurant' ? verifiedPhone : `1-${area}-${prefix}-${line}`;
     const isValid = validateVerificationCode(email, inputCode);
     if (!isValid) return alert('Invalid or expired verification code');
@@ -399,34 +596,62 @@ export default function RegisterPage() {
         {/* Restaurant Fields - NEW MVP APPROACH */}
         {role === 'restaurant' && (
           <div className="space-y-4">
-            {/* Business Verification */}
+            {/* Step 1: Business Verification */}
             <BusinessVerification 
               onVerificationComplete={handleBusinessVerificationComplete}
               isVerified={businessVerified}
               verifiedBusiness={verifiedBusiness}
             />
-            
-            {/* Phone Verification */}
-            <PhoneVerification 
-              onVerificationComplete={handlePhoneVerificationComplete}
-              isVerified={phoneVerified}
-              verifiedPhone={verifiedPhone}
-              autoFilledPhone={verifiedBusiness?.formatted_phone_number || verifiedBusiness?.international_phone_number || undefined}
-            />
 
-            {/* Restaurant Email */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-400">Restaurant Contact Email *</label>
-              <div className="flex w-full">
-                <input 
-                  placeholder="restaurant (no @)" 
-                  value={restaurantEmail} 
-                  onChange={e => setRestaurantEmail(e.target.value)} 
-                  className="input-base w-7/10 rounded-r-none" 
-                />
-                <span className="input-base bg-zinc-700 rounded-l-none flex items-center justify-center w-3/10">@gmail.com</span>
+            {/* Step 2: Stripe Onboarding (only after Step 1) */}
+            {businessVerified && (
+              <div className="space-y-3">
+                <div className="space-y-2">
+                  <div className="flex gap-2">
+                    <button
+                      onClick={handleStartStripeVerification}
+                      disabled={!businessVerified}
+                      className={`flex-1 py-2 px-4 rounded-lg font-semibold transition-colors ${
+                        !businessVerified ? 'bg-gray-600 text-gray-400' : 'bg-indigo-600 hover:bg-indigo-700 text-white'
+                      }`}
+                    >
+                      Start verification (Stripe Onboarding)
+                    </button>
+                    {stripeAccountId && (
+                      <button
+                        onClick={async () => {
+                          const res = await fetch('/api/connect/relink', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ accountId: stripeAccountId }) });
+                          const data = await res.json();
+                          if (res.ok) window.location.href = data.onboardingUrl; else alert(data.error || 'Failed to open onboarding');
+                        }}
+                        className="px-3 py-2 rounded-lg bg-zinc-700 hover:bg-zinc-600"
+                      >
+                        Return to onboarding
+                      </button>
+                    )}
+                  </div>
+                  {stripeAccountId && (
+                    <div className="text-xs text-gray-400 space-y-1">
+                      <p>Account: {stripeAccountId}</p>
+                      <div className="flex gap-2">
+                        <button onClick={handleRefreshStripeStatus} className="px-2 py-1 rounded bg-zinc-700 hover:bg-zinc-600">Refresh status</button>
+                      </div>
+                      {stripeStatus && (<p>Status: {stripeStatus}</p>)}
+                    </div>
+                  )}
+                </div>
+
+                {/* Finalize: show only when Stripe ready */}
+                {(stripeAccountId && ['verified','needs_more_info'].includes(String(stripeStatus))) && (
+                  <button
+                    onClick={handleFinalizeRestaurantRegistration}
+                    className="w-full py-2 px-4 rounded-lg font-semibold bg-emerald-600 hover:bg-emerald-700 text-white"
+                  >
+                    Finish Registration
+                  </button>
+                )}
               </div>
-            </div>
+            )}
           </div>
         )}
 
@@ -449,27 +674,21 @@ export default function RegisterPage() {
 
         {successMessage && <p className="text-green-400 text-center text-sm">{successMessage}</p>}
 
-        {/* Restaurant Verification Status */}
-        {role === 'restaurant' && (!businessVerified || !phoneVerified) && (
-          <div className="bg-yellow-900 border border-yellow-500 rounded-lg p-3 text-center">
-            <p className="text-yellow-300 text-sm">
-              Please complete business verification and phone verification first
-            </p>
-          </div>
-        )}
+        {/* Banner removed to reduce visual noise; disabled buttons convey state */}
 
         {!verificationSent ? (
-          <button 
-            onClick={handleSendVerification} 
-            className={`w-full py-2 px-4 rounded font-semibold mb-3 transition-all duration-200 ${
-              (role === 'restaurant' && (!businessVerified || !phoneVerified)) || sending || countdown > 0
-                ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
-                : 'bg-[#4F46E5] hover:bg-[#4338CA] text-white'
-            }`}
-            disabled={(role === 'restaurant' && (!businessVerified || !phoneVerified)) || sending || countdown > 0}
-          >
-            {sending ? 'Sending...' : countdown > 0 ? `Resend (${countdown}s)` : 'Send Verification Code'}
-          </button>
+          // For diners only; restaurant flow finishes via Stripe
+          (role === 'diner') ? (
+            <button 
+              onClick={handleSendVerification} 
+              className={`w-full py-2 px-4 rounded font-semibold mb-3 transition-all duration-200 ${
+                sending || countdown > 0 ? 'bg-gray-600 text-gray-400 cursor-not-allowed' : 'bg-[#4F46E5] hover:bg-[#4338CA] text-white'
+              }`}
+              disabled={sending || countdown > 0}
+            >
+              {sending ? 'Sending...' : countdown > 0 ? `Resend (${countdown}s)` : 'Send Verification Code'}
+            </button>
+          ) : null
         ) : (
           <>
             <input placeholder="Enter Code" value={inputCode} onChange={e => setInputCode(e.target.value)} className="input-base w-full" />

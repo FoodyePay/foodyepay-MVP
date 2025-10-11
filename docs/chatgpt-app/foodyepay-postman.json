@@ -1,0 +1,169 @@
+{
+  "info": {
+    "name": "FoodyePay Conversational API",
+    "description": "Sample requests for the FoodyePay ChatGPT App MCP integration.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "version": "0.1.0"
+  },
+  "item": [
+    {
+      "name": "Wallet Balance",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{foodyepay_token}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/wallets/{{wallet_address}}/balance",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "wallets",
+            "{{wallet_address}}",
+            "balance"
+          ]
+        }
+      },
+      "response": [
+        {
+          "name": "200 Example",
+          "originalRequest": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_url}}/wallets/{{wallet_address}}/balance"
+          },
+          "status": "OK",
+          "code": 200,
+          "body": "{\n  \"address\": \"0x289B9Fc2A3F19FaF72609850dB15e1c90e8A462c\",\n  \"symbol\": \"FOODY\",\n  \"balance\": \"3456.78\",\n  \"eth\": \"0.12\"\n}"
+        }
+      ]
+    },
+    {
+      "name": "Create Payment QR",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{foodyepay_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/payments/qr",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "payments",
+            "qr"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"amount\": 25,\n  \"currency\": \"FOODY\",\n  \"restaurantId\": \"R-2025\",\n  \"orderId\": \"O-7788\",\n  \"memo\": \"Lunch service\"\n}"
+        }
+      },
+      "response": [
+        {
+          "name": "201 Example",
+          "originalRequest": {
+            "method": "POST",
+            "url": "{{base_url}}/payments/qr"
+          },
+          "status": "Created",
+          "code": 201,
+          "body": "{\n  \"paymentId\": \"pay_1728456723\",\n  \"qrData\": \"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAA...\",\n  \"webLink\": \"https://foodyepay.com/pay/pay_1728456723\",\n  \"expiresAt\": \"2025-10-08T16:07:59.000Z\"\n}"
+        }
+      ]
+    },
+    {
+      "name": "Send Payment",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{foodyepay_token}}",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/payments/send",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "payments",
+            "send"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"from\": \"0xabc1234567890defabc1234567890defabc12345\",\n  \"to\": \"0xdef9876543210abcdef9876543210abcdef9876\",\n  \"amount\": 50,\n  \"currency\": \"FOODY\",\n  \"memo\": \"Dinner\"\n}"
+        }
+      },
+      "response": [
+        {
+          "name": "202 Example",
+          "originalRequest": {
+            "method": "POST",
+            "url": "{{base_url}}/payments/send"
+          },
+          "status": "Accepted",
+          "code": 202,
+          "body": "{\n  \"status\": \"submitted\",\n  \"txHash\": \"0x8d2c4a7d9a1b7c0f8f5e6d3c2b1a09080706050403020100ffeeccddeeccbbaa\",\n  \"paymentId\": \"pay_1728456723\"\n}"
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Place shared pre-request logic here if necessary"
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "pm.test('Request sent successfully', function () {\n  pm.response.to.be.success;\n});"
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "https://api.foodyepay.com/v1"
+    },
+    {
+      "key": "foodyepay_token",
+      "value": "foodye-demo-token"
+    },
+    {
+      "key": "wallet_address",
+      "value": "0x289B9Fc2A3F19FaF72609850dB15e1c90e8A462c"
+    }
+  ]
+}

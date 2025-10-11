@@ -2,6 +2,7 @@
 'use client';
 
 import { useState } from 'react';
+import InfoTooltip from './InfoTooltip';
 
 interface Business {
   place_id: string;
@@ -97,7 +98,7 @@ export function BusinessVerification({
   return (
     <div className="space-y-4">
       <div className="space-y-3">
-        <h4 className="text-sm font-medium text-gray-400">🔍 Search and Claim Your Restaurant</h4>
+        <h4 className="text-sm font-medium text-gray-400 flex items-center">🔍 Search and Claim Your Restaurant <InfoTooltip text="We use Google Maps to confirm your restaurant exists and operates at the listed address." /></h4>
         
         <div className="flex gap-2">
           <input
@@ -180,10 +181,7 @@ export function BusinessVerification({
         </div>
       )}
 
-      <div className="text-xs text-gray-500 space-y-1">
-        <p>🏪 We use Google Maps to verify that your restaurant is a real operating business entity</p>
-        <p>🔍 If you can't find your restaurant, please check the spelling or try different search terms</p>
-      </div>
+      {/* Helper text removed in favor of tooltip */}
     </div>
   );
 }

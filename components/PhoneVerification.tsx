@@ -2,6 +2,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import InfoTooltip from './InfoTooltip';
 
 interface PhoneVerificationProps {
   onVerificationComplete: (phoneNumber: string) => void;
@@ -190,7 +191,7 @@ export function PhoneVerification({
   return (
     <div className="space-y-4">
       <div className="space-y-3">
-        <h4 className="text-sm font-medium text-gray-400">📞 Verify Restaurant Phone Number</h4>
+  <h4 className="text-sm font-medium text-gray-400 flex items-center">📞 Verify Restaurant Phone Number <InfoTooltip text="We’ll place a short automated call and read a 6‑digit code to confirm ownership." /></h4>
         
         {!codeSent ? (
           <>
@@ -220,17 +221,7 @@ export function PhoneVerification({
                     Use My Number
                   </button>
                 </div>
-              </div>            <div className="space-y-2">
-              <label className="text-sm text-gray-400">Verification Method</label>
-              <div className="flex justify-center">
-                <div className="flex-1 py-3 px-4 rounded-lg bg-blue-600 text-white text-center font-medium">
-                  📞 Voice Verification
-                </div>
               </div>
-              <p className="text-xs text-gray-500 text-center">
-                You will receive a voice call with your verification code
-              </p>
-            </div>
 
             <button
               onClick={handleSendCode}
@@ -309,10 +300,7 @@ export function PhoneVerification({
         )}
       </div>
 
-      <div className="text-xs text-gray-500 space-y-1">
-        <p>📞 We will send a verification code to the provided number to confirm your ownership</p>
-        <p>🔒 This helps ensure only genuine restaurant owners can register</p>
-      </div>
+      {/* Helper text removed in favor of tooltip */}
     </div>
   );
 }
