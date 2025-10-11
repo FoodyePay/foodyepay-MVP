@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 
 export default function AboutPage() {
   const [name, setName] = useState("");
@@ -33,11 +34,13 @@ export default function AboutPage() {
   return (
     <main className="min-h-screen px-6 md:px-10 py-10 max-w-5xl mx-auto text-white">
       <div className="flex items-center justify-center mb-8">
-        <img
-          src="/FoodyePayLogo.png"
-          alt="FoodyePay Logo"
-          className="h-20 md:h-24 w-auto drop-shadow-[0_0_16px_rgba(99,102,241,0.35)]"
-        />
+        <Link href="/" aria-label="Go to homepage">
+          <img
+            src="/FoodyePayLogo.png"
+            alt="FoodyePay Logo"
+            className="h-20 md:h-24 w-auto drop-shadow-[0_0_16px_rgba(99,102,241,0.35)] hover:opacity-90 transition"
+          />
+        </Link>
       </div>
       <section className="mb-10">
         <div className="card-premium p-6 md:p-8">

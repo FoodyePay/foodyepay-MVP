@@ -4,7 +4,12 @@ export const dynamic = 'force-dynamic'
 
 export default function PrivacyPage() {
   return (
-    <main className="prose prose-invert max-w-4xl mx-auto p-6">
+    <main className="prose prose-invert prose-lg leading-relaxed max-w-4xl mx-auto p-6 md:p-8">
+      <style jsx>{`
+        main :global(p) { margin-top: 0.75rem; margin-bottom: 0.75rem; }
+        main :global(li) { margin-top: 0.4rem; margin-bottom: 0.4rem; }
+        main :global(h2) { margin-top: 1.5rem; }
+      `}</style>
       <h1>FoodyePay - Privacy Policy</h1>
       <p>Last Updated: October 5, 2025</p>
 
