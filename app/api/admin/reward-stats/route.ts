@@ -1,5 +1,6 @@
 // app/api/admin/reward-stats/route.ts
 // 管理员奖励统计 API
+export const dynamic = 'force-dynamic'
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getTokenDistributionInfo, checkMainWalletBalance } from '@/lib/foodyTokenDistribution';
