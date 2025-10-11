@@ -3,6 +3,7 @@ import '@coinbase/onchainkit/styles.css';
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { Providers } from './providers';
+import BackToTop from '@/components/BackToTop';
 
 export const metadata: Metadata = {
   title: process.env.NEXT_PUBLIC_ONCHAINKIT_PROJECT_NAME || 'FoodyePay',
@@ -49,6 +50,7 @@ export default function RootLayout({
           <div className="flex-1">
             {children}
           </div>
+          <BackToTop />
           <footer className="mt-8 border-t border-neutral-800 text-sm text-neutral-400 px-4 py-6 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
             <div className="flex flex-wrap gap-4">
               <a href="/about" className="hover:text-neutral-200">About</a>

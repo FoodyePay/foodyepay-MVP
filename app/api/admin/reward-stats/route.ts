@@ -1,6 +1,7 @@
 // app/api/admin/reward-stats/route.ts
 // 管理员奖励统计 API
 export const dynamic = 'force-dynamic'
+export const runtime = 'nodejs'
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getTokenDistributionInfo, checkMainWalletBalance } from '@/lib/foodyTokenDistribution';
@@ -9,8 +10,9 @@ import { getRewardStatistics } from '@/lib/dinerRewardService';
 export async function GET(request: NextRequest) {
   try {
     // 简单的管理员验证（生产环境中应使用更安全的方法）
+    const adminKey = process.env.ADMIN_API_KEY;
     const authHeader = request.headers.get('authorization');
-    if (!authHeader || authHeader !== `Bearer ${process.env.ADMIN_API_KEY || 'admin123'}`) {
+    if (!adminKey || !authHeader || authHeader !== `Bearer ${adminKey}`) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }

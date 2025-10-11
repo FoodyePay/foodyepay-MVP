@@ -1,6 +1,7 @@
 // app/api/check-registration-reward/route.ts
 // 检查用户是否有资格领取新注册奖励
 export const dynamic = 'force-dynamic'
+export const runtime = 'nodejs'
 
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
