@@ -55,6 +55,7 @@ export default function RootLayout({
             <div className="flex flex-wrap gap-4">
               <a href="/about" className="hover:text-neutral-200">About</a>
               <a href="/investors" className="hover:text-neutral-200">Investors</a>
+              <a href="/docs/cloud" className="hover:text-neutral-200">Docs</a>
               <a href="/legal/terms" className="hover:text-neutral-200">Terms</a>
               <a href="/legal/privacy" className="hover:text-neutral-200">Privacy</a>
               <a href="/legal/risk-disclaimer" className="hover:text-neutral-200">Risk</a>

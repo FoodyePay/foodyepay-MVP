@@ -7,7 +7,8 @@
     "build": "node scripts/env-check.js && next build",
     "start": "next start",
     "lint": "next lint",
-    "env:check": "node scripts/env-check.js"
+    "env:check": "node scripts/env-check.js",
+    "eval:score": "node scripts/eval-score.cjs docs/agents/eval/dataset-template.jsonl docs/agents/eval/sample-responses.jsonl"
   },
   "dependencies": {
     "@base-org/account": "^1.1.1",
