@@ -11,6 +11,7 @@ export async function POST(req: NextRequest) {
     }
 
     // --- Nodemailer Transporter Setup ---
+    // Using the Gmail credentials from your .env.local file
     const transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {
@@ -21,14 +22,13 @@ export async function POST(req: NextRequest) {
 
     // --- Email Content ---
     const mailOptions = {
-      from: `"FoodyePay Contact Form" <${process.env.EMAIL_USERNAME}>`,
-      to: 'info@foodyepay.com',
-      subject: `New Contact Form Message from ${name}`,
-      replyTo: email,
+      from: `"FoodyePay Website" <${process.env.EMAIL_USERNAME}>`,
+      to: 'info@foodyepay.com', // Sending to your info@foodyepay.com address
+      subject: `New Demo Request from ${name}`,
       html: `
         <div style="font-family: Arial, sans-serif; line-height: 1.6;">
-          <h2 style="color: #333;">New Message from Contact Form</h2>
-          <p>You have received a new message from the website's contact form.</p>
+          <h2 style="color: #333;">New Demo Request Received</h2>
+          <p>You have received a new demo request from the website.</p>
           <hr>
           <p><strong>Name:</strong> ${name}</p>
           <p><strong>Email:</strong> <a href="mailto:${email}">${email}</a></p>
@@ -45,10 +45,10 @@ export async function POST(req: NextRequest) {
     // --- Send Email ---
     await transporter.sendMail(mailOptions);
 
-    return NextResponse.json({ message: 'Message sent successfully!' }, { status: 200 });
+    return NextResponse.json({ message: 'Your demo request has been submitted successfully!' }, { status: 200 });
 
   } catch (error) {
-    console.error('API Contact Error:', error);
+    console.error('API Demo Request Error:', error);
     return NextResponse.json({ error: 'An internal server error occurred.' }, { status: 500 });
   }
 }

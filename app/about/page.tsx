@@ -1,154 +1,68 @@
-"use client";
+import React from 'react';
+import { Header } from '../../components/landing/Header';
+import { Footer } from '../../components/landing/Footer';
+import Link from 'next/link';
 
-import { useState } from "react";
-import Link from "next/link";
-
-export default function AboutPage() {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [message, setMessage] = useState("");
-  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
-  const [error, setError] = useState<string | null>(null);
-
-  async function onSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setStatus("loading");
-    setError(null);
-    try {
-      const res = await fetch("/api/contact", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, message }),
-      });
-      if (!res.ok) throw new Error(await res.text());
-      setStatus("success");
-      setName("");
-      setEmail("");
-      setMessage("");
-    } catch (err: any) {
-      setStatus("error");
-      setError(err?.message || "Failed to send. Please try again.");
-    }
-  }
-
+const OurStoryPage = () => {
   return (
-    <main className="min-h-screen px-6 md:px-10 py-10 max-w-5xl mx-auto text-white">
-      <div className="flex items-center justify-center mb-8">
-        <Link href="/" aria-label="Go to homepage">
-          <img
-            src="/FoodyePayLogo.png"
-            alt="FoodyePay Logo"
-            className="h-20 md:h-24 w-auto drop-shadow-[0_0_16px_rgba(99,102,241,0.35)] hover:opacity-90 transition"
-          />
-        </Link>
-      </div>
-      <section className="mb-10">
-        <div className="card-premium p-6 md:p-8">
-          <h1 className="text-3xl md:text-4xl font-bold tracking-tight">FoodyePay Technology, Inc.</h1>
-          <p className="text-zinc-400 mt-2">Company Overview</p>
-          <div className="mt-6 space-y-4 text-zinc-200 leading-relaxed">
-            <p>
-              <span className="font-semibold">FoodyePay Technology, Inc.</span>, a Delaware C-Corporation incorporated on October 2, 2025, is a B2B FinTech company building the next-generation financial infrastructure for the global dining industry.
-            </p>
-            <p>
-              Our core mission is to empower restaurants and their customers by replacing outdated, high-fee payment systems with a modern solution built on blockchain technology.
-            </p>
-            <p>
-              Our initial beachhead market is the 45,000+ Chinese restaurants in the U.S. and their vast customer base. Our long-term vision is to become the premier platform and industry standard-setter for the tokenization of culinary Real-World Assets (RWA), spearheaded by our innovative <span className="font-semibold">FoodyeMenuNFT</span> platform.
-            </p>
-            <p>
-              Our unique dual-ecosystem strategy leverages the strengths of both the Coinbase/Base ecosystem for global compliance and liquidity, and the Ant Group-supported Jovay network for enterprise-grade performance and industrial applications, creating an unparalleled competitive advantage.
-            </p>
+    <div className="bg-gray-900 text-white min-h-screen">
+      <Header />
+      <main className="py-32 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-16">
+            <Link href="/" aria-label="Go to homepage">
+                <h1 className="text-4xl sm:text-5xl font-extrabold text-white">
+                    Our Story
+                </h1>
+            </Link>
+          </div>
+          
+          <div className="space-y-12 text-lg leading-relaxed prose prose-invert lg:prose-xl mx-auto">
+            <section>
+              <h2 className="text-3xl font-bold mb-4 text-blue-400">The Spark of an Idea</h2>
+              <p>
+                FoodyePay was born from a simple observation in a bustling restaurant: a passionate owner struggling with razor-thin margins, where the standard 3% credit card fee wasn't just a cost—it was a significant barrier to profitability. The founder, a programming and AI enthusiast with a deep passion for both food and technology, saw a disconnect. In an age of instant communication, why were payments still slow, expensive, and riddled with intermediaries?
+              </p>
+              <p className="mt-4">
+                This question sparked a journey to find a payment system that was fair, transparent, and built for the modern world. The goal was clear: to give power back to the merchants, the creators, the restaurant owners who pour their hearts into their craft.
+              </p>
+            </section>
+
+            <section>
+              <h2 className="text-3xl font-bold mb-4 text-blue-400">Navigating the Technical Maze</h2>
+              <p>
+                The path was far from easy. Early prototypes explored various technologies, but traditional systems always led back to the same problems: centralized control and unavoidable fees. The breakthrough came with the rise of Layer 2 blockchains, specifically Base, with its promise of low fees and fast transaction speeds.
+              </p>
+              <p className="mt-4">
+                This was the foundation. But a foundation is not a house. The real innovation began with a deep dive into the world of decentralized finance (DeFi) and the programmability of modern automated market makers (AMMs). The team asked a bold question: "What if we could embed our entire payment and settlement logic directly into a liquidity pool?"
+              </p>
+            </section>
+
+            <section>
+              <h2 className="text-3xl font-bold mb-4 text-blue-400">The Uniswap v4 Breakthrough</h2>
+              <p>
+                The announcement of Uniswap v4 and its "hook" architecture was a watershed moment. It was the missing piece of the puzzle. Hooks provided the exact mechanism needed: a way to execute custom code at critical points in a liquidity pool's lifecycle. This was the key to building a truly on-chain, automated, and ultra-low-cost settlement system.
+              </p>
+              <p className="mt-4">
+                Months of intense research and development led to the creation of the <code className="bg-gray-800 p-1 rounded text-sm font-mono">'RwaSettlementHook'</code>. This wasn't just code; it was a new paradigm for real-world asset (RWA) payments. It allowed for atomic, on-chain settlement, splitting payments to the restaurant, calculating taxes, and distributing fees, all in a single, seamless transaction. Our acceptance into the Uniswap Hook Incubator was a powerful validation of this vision.
+              </p>
+            </section>
+
+            <section>
+              <h2 className="text-3xl font-bold mb-4 text-blue-400">The Future is Programmatic and On-Chain</h2>
+              <p>
+                Today, FoodyePay is more than just a payment processor. We are building the financial infrastructure for the next generation of commerce. Our vision extends beyond simple payments to a future of dynamic, data-driven liquidity and programmable finance for small businesses.
+              </p>
+              <p className="mt-4">
+                Our journey is one of relentless innovation, driven by the belief that technology can create a more equitable and efficient world. We started with a simple problem in a restaurant, and now we're building a global solution on the frontier of DeFi. This is just the beginning.
+              </p>
+            </section>
           </div>
         </div>
-      </section>
-
-      <section className="mb-10">
-        <div className="card-premium p-6 md:p-8">
-          <h2 className="text-2xl md:text-3xl font-semibold">Product</h2>
-          <p className="text-zinc-300 mt-3">Our product ecosystem is designed to provide restaurants and diners with an end-to-end, seamless Web3 experience.</p>
-
-          <div className="mt-6 space-y-6">
-            <div>
-              <h3 className="text-xl font-semibold">1. FoodyePay DApp: Your Web3 Dining Payment Gateway</h3>
-              <p className="text-zinc-300 mt-2">A mobile-first decentralized application that serves as the user’s portal into our ecosystem. Its core features include:</p>
-              <ul className="list-disc pl-6 text-zinc-300 mt-3 space-y-2">
-                <li>
-                  <span className="font-semibold">Seamless Onboarding & Identity:</span> Through native support for <span className="font-semibold">Coinbase Smart Wallet</span> and <span className="font-semibold">ENS (Ethereum Name Service)</span>, users can securely create and connect their wallets in seconds without managing complex seed phrases, dramatically lowering the barrier to entry.
-                </li>
-                <li>
-                  <span className="font-semibold">Transparent Transactions & Reconciliation:</span> All order records and transaction history are recorded on-chain, providing merchants with an immutable, easily auditable ledger. Our merchant dashboard automates <span className="font-semibold">reconciliation</span>, significantly simplifying financial workflows.
-                </li>
-                <li>
-                  <span className="font-semibold">Flexible Settlement & Withdrawals:</span> Settlement in <span className="font-semibold">USDC</span> offers stability and near-instant, low-cost global fund transfers, while <span className="font-semibold">Foodye Coin (FOODY)</span> powers the ecosystem’s utility and rewards programs. Merchants can <span className="font-semibold">withdraw</span> their funds at any time.
-                </li>
-              </ul>
-            </div>
-
-            <div>
-              <h3 className="text-xl font-semibold">2. FoodyeMenuNFT: The RWA Platform for the Dining Industry</h3>
-              <p className="text-zinc-300 mt-2">Our most disruptive innovation, the <span className="font-semibold">FoodyeMenuNFT</span> platform serves as the assetization layer of our ecosystem. It is a dedicated platform to tokenize a restaurant’s most valuable intellectual property—its <span className="italic">menu</span>. By minting each dish into an NFT with clear copyright, we help restaurants transform their intangible assets into licensable, tradable, and financeable Real-World Assets (RWA).</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section>
-        <div className="card-premium p-6 md:p-8">
-          <h2 className="text-2xl md:text-3xl font-semibold">Contact</h2>
-          <p className="text-zinc-400 mt-2">Your submission will be emailed to info@foodyepay.com</p>
-
-          <form onSubmit={onSubmit} className="mt-6 grid gap-4 md:grid-cols-2">
-            <div className="flex flex-col gap-2">
-              <label className="text-sm text-zinc-300">Name</label>
-              <input
-                className="input-base focus:ring-indigo-500"
-                placeholder="Your name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                required
-              />
-            </div>
-            <div className="flex flex-col gap-2">
-              <label className="text-sm text-zinc-300">Email</label>
-              <input
-                type="email"
-                className="input-base focus:ring-indigo-500"
-                placeholder="you@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-            </div>
-            <div className="flex flex-col gap-2 md:col-span-2">
-              <label className="text-sm text-zinc-300">Message</label>
-              <textarea
-                className="input-base focus:ring-indigo-500 min-h-[120px]"
-                placeholder="How can we help?"
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                required
-              />
-            </div>
-
-            <div className="md:col-span-2 flex items-center gap-3">
-              <button
-                type="submit"
-                disabled={status === "loading"}
-                className="bg-indigo-600 text-white py-2 px-4 rounded hover:bg-indigo-700 disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              >
-                {status === "loading" ? "Sending..." : "Send"}
-              </button>
-              {status === "success" && (
-                <span className="text-emerald-400">Sent! We will get back to you shortly.</span>
-              )}
-              {status === "error" && (
-                <span className="text-red-400">Failed to send: {error}</span>
-              )}
-            </div>
-          </form>
-        </div>
-      </section>
-    </main>
+      </main>
+      <Footer />
+    </div>
   );
-}
+};
+
+export default OurStoryPage;
