@@ -92,3 +92,24 @@ body {
     pointer-events: none;
   }
 }
+
+/* QR Scanner Animation */
+@keyframes scan-line-animation {
+  0% {
+    top: 5%;
+  }
+  100% {
+    top: 95%;
+  }
+}
+
+.scanner-line {
+  position: absolute;
+  left: 5%;
+  right: 5%;
+  height: 3px;
+  background: linear-gradient(to right, transparent, rgba(255, 0, 0, 0.8), transparent);
+  box-shadow: 0 0 10px rgba(255, 0, 0, 0.8);
+  border-radius: 5px;
+  animation: scan-line-animation 2.5s ease-in-out infinite alternate;
+}

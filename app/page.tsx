@@ -1,6 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import { CheckCircle, Rocket, ShieldCheck, Zap, Award, Wallet, Send, CreditCard } from 'lucide-react';
+import { CheckCircle, Rocket, ShieldCheck, Zap, Award, Wallet, Send, CreditCard, Linkedin } from 'lucide-react';
 
 // Component Imports
 import { Header } from '../components/landing/Header';
@@ -51,7 +51,33 @@ export default function LandingPage() {
           </div>
         </section>
 
-
+        {/* Google Cloud Partnership Section */}
+        <section className="py-12 bg-black">
+          <div className="max-w-4xl mx-auto px-4 text-center">
+            <div className="border border-blue-500/30 rounded-xl p-6 bg-gradient-to-r from-gray-900 to-blue-900/10 shadow-2xl">
+              <div className="flex justify-center items-center mb-4">
+                <Image src="/FoodyePayLogo.png" alt="FoodyePay" width={40} height={40} />
+                <span className="mx-2 text-gray-400 self-center">+</span>
+                <Image src="/google-cloud-web3.svg" alt="Google Cloud" width={50} height={50} />
+              </div>
+              <h3 className="text-2xl font-bold text-blue-300">
+                Our Strategic Partner in the Cloud
+              </h3>
+              <p className="mt-2 text-gray-300 max-w-2xl mx-auto">
+                We are proud to build on Google Cloud and are honored to be supported by a dedicated team, including our Google Cloud Account Manager.
+              </p>
+              <div className="mt-6 bg-gray-800/50 rounded-lg p-4 inline-flex items-center">
+                <div className="text-left">
+                  <p className="font-bold text-white">Haley Johnson</p>
+                  <p className="text-sm text-gray-400">Google Cloud Territory Manager</p>
+                </div>
+                <a href="https://www.linkedin.com/in/haley-johnson-84a404169/" target="_blank" rel="noopener noreferrer" className="ml-4 p-2 rounded-full bg-gray-700 hover:bg-blue-600 transition-colors">
+                  <Linkedin className="w-5 h-5 text-white" />
+                </a>
+              </div>
+            </div>
+          </div>
+        </section>
 
         {/* Partners Section */}
         <section className="py-16">

@@ -85,30 +85,50 @@ export default function DinerDashboard() {
   }, [address]);
 
   // 🔥 处理二维码扫描结果
-  const handleQRScan = async (qrData: string) => {
+  const handleQRScan = (qrData: string) => {
+    console.log(`QR Code Scanned. Data: "${qrData}"`);
+
+    // 1. 尝试解析为 JSON (新格式)
     try {
-      // 解析二维码数据 (新格式: JSON)
       const scannedPaymentData = JSON.parse(qrData);
-      
-      console.log('Scanned payment info:', scannedPaymentData);
-      
-      // 设置支付数据和显示确认模态框
-      setPaymentData(scannedPaymentData);
-      setShowPaymentConfirm(true);
-      setShowQRScanner(false); // 关闭扫描器
-      setPaymentSuccessful(false); // 🚨 重置支付成功状态
-      
-    } catch (error) {
-      console.error('QR code processing failed:', error);
-      
-      // 尝试解析旧格式 (向后兼容)
-      try {
-        const [restaurantId, orderId, amount] = qrData.split(':');
-        alert(`Scan successful! (Legacy Format)\nRestaurant ID: ${restaurantId}\nOrder ID: ${orderId}\nAmount: ${amount} USDC`);
-      } catch {
-        alert('Invalid QR code format, please scan again');
+      // 确保关键字段存在
+      if (scannedPaymentData.restaurantId && scannedPaymentData.orderId && scannedPaymentData.amounts) {
+        console.log('Successfully parsed as JSON payment data:', scannedPaymentData);
+        setPaymentData(scannedPaymentData);
+        setShowPaymentConfirm(true);
+        setShowQRScanner(false);
+        setPaymentSuccessful(false);
+        return; // 成功，退出函数
       }
+    } catch (e) {
+      // JSON 解析失败，继续尝试其他格式
+      console.log('Could not parse QR data as JSON. Trying other formats.');
     }
+
+    // 2. 检查是否是 URL
+    if (qrData.startsWith('http://') || qrData.startsWith('https://')) {
+      alert(`Scan Successful, but this is a Website Link, not a payment QR code.\n\nURL: ${qrData}`);
+      setShowQRScanner(false);
+      return;
+    }
+
+    // 3. 尝试解析为旧的冒号分隔格式
+    try {
+      const parts = qrData.split(':');
+      if (parts.length === 3 && parts[0] && parts[1] && parts[2]) {
+        const [restaurantId, orderId, amount] = parts;
+        alert(`Scan successful! (Legacy Format)\nRestaurant ID: ${restaurantId}\nOrder ID: ${orderId}\nAmount: ${amount} USDC`);
+        setShowQRScanner(false);
+        return;
+      }
+    } catch (e) {
+      // 分割失败，忽略
+    }
+
+    // 4. 如果所有尝试都失败，显示包含原始数据的最终错误
+    alert(`Scan Failed: The QR code's format is unrecognized.\n\nScanned Data:\n"${qrData}"`);
+    // 让用户决定是重试还是关闭
+    // setShowQRScanner(false);
   };
 
   // 🆕 处理FOODY支付确认 🔥

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { BrowserQRCodeReader } from '@zxing/browser';
+import { BrowserQRCodeReader, IScannerControls } from '@zxing/browser';
 
 interface QRScannerProps {
   onScan: (data: string) => void;
@@ -12,67 +12,83 @@ interface QRScannerProps {
 
 export function QRScanner({ onScan, onError, isOpen, onClose }: QRScannerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [codeReader] = useState(() => new BrowserQRCodeReader());
-  const [isScanning, setIsScanning] = useState(false);
-  const [currentStream, setCurrentStream] = useState<MediaStream | null>(null);
+  const controlsRef = useRef<IScannerControls | null>(null);
+  const codeReader = new BrowserQRCodeReader();
 
   useEffect(() => {
     if (isOpen && videoRef.current) {
-      startScanning();
+      startScanning(videoRef.current);
+    } else {
+      stopScanning();
     }
-    
+
     return () => {
       stopScanning();
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
 
-  const stopScanning = () => {
-    if (currentStream) {
-      currentStream.getTracks().forEach(track => track.stop());
-      setCurrentStream(null);
-    }
-    setIsScanning(false);
-  };
-
-  const startScanning = async () => {
-    if (!videoRef.current) return;
-    
+  const startScanning = async (videoEl: HTMLVideoElement) => {
     try {
-      setIsScanning(true);
-      
-      // 获取摄像头权限
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: 'environment' }
-      });
-      
-      setCurrentStream(stream);
-      videoRef.current.srcObject = stream;
-      
-      // 开始扫描
-      await codeReader.decodeFromVideoDevice(
-        undefined,
-        videoRef.current,
-        (result, error) => {
+      console.log('Attempting to start scanner...');
+      const videoInputDevices = await BrowserQRCodeReader.listVideoInputDevices();
+      console.log('Available video devices:', videoInputDevices);
+
+      if (videoInputDevices.length === 0) {
+        throw new Error('No video input devices found.');
+      }
+
+      // Use the first available device
+      const deviceId = videoInputDevices[0].deviceId;
+      console.log(`Using deviceId: ${deviceId}`);
+
+      controlsRef.current = await codeReader.decodeFromVideoDevice(
+        deviceId,
+        videoEl,
+        (result, error, controls) => {
           if (result) {
-            setIsScanning(false);
+            console.log('QR Code detected:', result.getText());
+            controls.stop();
+            controlsRef.current = null;
             onScan(result.getText());
-            stopScanning();
             onClose();
           }
           if (error && error.name !== 'NotFoundException') {
-            console.error('QR Scanner Error:', error);
+            console.error('QR scan error:', error);
+            if (onError) {
+              onError(error);
+            }
           }
         }
       );
+      console.log('Scanner started successfully.');
       
+      // Explicitly play the video element
+      if (videoEl) {
+        videoEl.play().catch(e => console.error("Video play failed:", e));
+      }
+
     } catch (err) {
       console.error('Failed to start scanning:', err);
-      setIsScanning(false);
       if (onError) {
         onError(err as Error);
       }
+      // Optionally close the modal on error or show a message
+      // onClose(); 
     }
+  };
+
+  const stopScanning = () => {
+    if (controlsRef.current) {
+      console.log('Stopping scanner...');
+      controlsRef.current.stop();
+      controlsRef.current = null;
+    }
+  };
+
+  const handleClose = () => {
+    stopScanning();
+    onClose();
   };
 
   if (!isOpen) return null;
@@ -85,42 +101,31 @@ export function QRScanner({ onScan, onError, isOpen, onClose }: QRScannerProps) 
             Scan Restaurant QR Code
           </h3>
           <button
-            onClick={() => {
-              stopScanning();
-              onClose();
-            }}
+            onClick={handleClose}
             className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
           >
             ✕
           </button>
         </div>
         
-        <div className="relative">
+        <div className="relative bg-black">
           <video
             ref={videoRef}
-            className="w-full h-64 bg-black rounded"
-            autoPlay
-            playsInline
-            muted
+            playsInline // This can help with playback on different devices
+            className="w-full h-auto"
+            style={{ transform: 'scaleX(-1)' }} // Mirror the video for a more natural "selfie" view
           />
+          {/* The visual scanning line */}
+          <div className="scanner-line"></div>
+          <div className="absolute inset-0 border-4 border-green-500 opacity-50"></div>
         </div>
-        
-        <div className="mt-4 text-center">
-          <p className="text-sm text-gray-600 dark:text-gray-400">
-            Point your camera at the restaurant&apos;s payment QR code
-          </p>
-          {isScanning && (
-            <p className="text-xs text-blue-500 mt-2">Scanning...</p>
-          )}
-        </div>
-        
-        <div className="mt-4 flex justify-center">
+        <p className="text-center text-sm text-gray-600 dark:text-gray-400 mt-4">
+          Point your camera at the restaurant&apos;s payment QR code
+        </p>
+        <div className="text-center mt-2">
           <button
-            onClick={() => {
-              stopScanning();
-              onClose();
-            }}
-            className="px-4 py-2 bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-200 rounded hover:bg-gray-400 dark:hover:bg-gray-500"
+            onClick={handleClose}
+            className="px-4 py-2 bg-gray-200 dark:bg-gray-700 rounded-md text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600"
           >
             Cancel
           </button>
