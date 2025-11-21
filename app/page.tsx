@@ -18,14 +18,17 @@ export default function LandingPage() {
           <div className="absolute inset-0 opacity-10">
              {/* You can place a background pattern or image here */}
           </div>
-          <div className="relative z-10 max-w-4xl mx-auto">
-            <h1 className="text-4xl md:text-6xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-b from-white to-gray-400">
-              Say Goodbye to 3% Fees
+          <div className="relative z-10 max-w-5xl mx-auto">
+            <h1 className="text-4xl md:text-6xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-b from-white to-gray-400 mb-6">
+              Building the AIoOS for <br className="hidden md:block" /> Real-World Commerce
             </h1>
-            <h2 className="text-4xl md:text-6xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-b from-white to-gray-400 mt-2">
-              Welcome the Future of Payments
+            
+            <h2 className="text-2xl md:text-4xl font-bold text-blue-400 tracking-wide mb-6">
+              Simple. Robust. Verifiable.
             </h2>
-            <p className="mt-6 text-lg md:text-xl text-gray-300 max-w-2xl mx-auto">
+
+            <p className="mt-8 text-lg md:text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed">
+              <span className="block mb-4 font-semibold text-white">Built by Engineers. Powered by DeFi. Made for Restaurants.</span>
               FoodyePay leverages the Base blockchain and USDC to offer your restaurant near-instant, low-cost payment settlements. Put your hard-earned profit back in your pocket.
             </p>
             
@@ -95,6 +98,105 @@ export default function LandingPage() {
           </div>
         </section>
 
+        {/* Patent Portfolio Section */}
+        <section className="py-20 bg-black border-t border-gray-900">
+          <div className="max-w-6xl mx-auto px-4">
+            <div className="text-center mb-16">
+              <h2 className="text-3xl md:text-5xl font-bold text-white mb-4">
+                Pioneering the Future
+              </h2>
+              <p className="text-xl text-blue-400 font-semibold">
+                Backed by 8 USPTO Patent Filings
+              </p>
+              <p className="mt-4 text-gray-400 max-w-2xl mx-auto">
+                We are building the intellectual property foundation for the AIoOS era. Our innovations span from autonomous agent operating systems to emotion-driven protocols.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              {/* Patent 1 */}
+              <div className="bg-gray-900/50 border border-gray-800 p-6 rounded-xl hover:border-blue-500/50 transition-colors">
+                <div className="flex justify-between items-start mb-4">
+                  <span className="text-xs font-mono text-blue-400 bg-blue-900/20 px-2 py-1 rounded">Filed: Nov 21, 2025</span>
+                  <span className="text-xs font-mono text-gray-500">App #: 63/922,127</span>
+                </div>
+                <h3 className="text-lg font-bold text-white mb-2">Multi-Agent Protocol for Emotion-Adaptive Education</h3>
+                <p className="text-gray-400 text-sm">Vibe Teaching Agent + Social Learning Host Agent + Onchain Learning Identity</p>
+              </div>
+
+              {/* Patent 2 */}
+              <div className="bg-gray-900/50 border border-gray-800 p-6 rounded-xl hover:border-blue-500/50 transition-colors">
+                <div className="flex justify-between items-start mb-4">
+                  <span className="text-xs font-mono text-blue-400 bg-blue-900/20 px-2 py-1 rounded">Filed: Nov 19, 2025</span>
+                  <span className="text-xs font-mono text-gray-500">App #: 63/920,704</span>
+                </div>
+                <h3 className="text-lg font-bold text-white mb-2">AIoOS: Artificial Intelligence Onchain Operating System</h3>
+                <p className="text-gray-400 text-sm">The world's first AI Onchain Operating System (Agent OS) for Autonomous Agent Identity & Lifecycle Management</p>
+              </div>
+
+              {/* Patent 3 */}
+              <div className="bg-gray-900/50 border border-gray-800 p-6 rounded-xl hover:border-blue-500/50 transition-colors">
+                <div className="flex justify-between items-start mb-4">
+                  <span className="text-xs font-mono text-blue-400 bg-blue-900/20 px-2 py-1 rounded">Filed: Nov 18, 2025</span>
+                  <span className="text-xs font-mono text-gray-500">App #: 63/920,301</span>
+                </div>
+                <h3 className="text-lg font-bold text-white mb-2">Emotion Command Verification Protocol (ECVP)</h3>
+                <p className="text-gray-400 text-sm">An "Emotion Verification Kernel" for secure Agent-to-Blockchain execution</p>
+              </div>
+
+              {/* Patent 4 */}
+              <div className="bg-gray-900/50 border border-gray-800 p-6 rounded-xl hover:border-blue-500/50 transition-colors">
+                <div className="flex justify-between items-start mb-4">
+                  <span className="text-xs font-mono text-blue-400 bg-blue-900/20 px-2 py-1 rounded">Filed: Nov 18, 2025</span>
+                  <span className="text-xs font-mono text-gray-500">App #: 63/920,291</span>
+                </div>
+                <h3 className="text-lg font-bold text-white mb-2">Emotion-Driven Autonomous Savings & Inheritance</h3>
+                <p className="text-gray-400 text-sm">AI Autonomous Savings + AI Digital Inheritance Protocol</p>
+              </div>
+
+              {/* Patent 5 */}
+              <div className="bg-gray-900/50 border border-gray-800 p-6 rounded-xl hover:border-blue-500/50 transition-colors">
+                <div className="flex justify-between items-start mb-4">
+                  <span className="text-xs font-mono text-blue-400 bg-blue-900/20 px-2 py-1 rounded">Filed: Nov 18, 2025</span>
+                  <span className="text-xs font-mono text-gray-500">App #: 63/920,279</span>
+                </div>
+                <h3 className="text-lg font-bold text-white mb-2">Emotion-Driven Digital Pet Protocol</h3>
+                <p className="text-gray-400 text-sm">Onchain Emotional Pet + State & Behavior Learning System</p>
+              </div>
+
+              {/* Patent 6 */}
+              <div className="bg-gray-900/50 border border-gray-800 p-6 rounded-xl hover:border-blue-500/50 transition-colors">
+                <div className="flex justify-between items-start mb-4">
+                  <span className="text-xs font-mono text-blue-400 bg-blue-900/20 px-2 py-1 rounded">Filed: Nov 16, 2025</span>
+                  <span className="text-xs font-mono text-gray-500">App #: 63/918,620</span>
+                </div>
+                <h3 className="text-lg font-bold text-white mb-2">Like-as-a-Reward Social Micropayment System</h3>
+                <p className="text-gray-400 text-sm">"Like = Micropayment" + Asset Allocation Mechanism</p>
+              </div>
+
+              {/* Patent 7 */}
+              <div className="bg-gray-900/50 border border-gray-800 p-6 rounded-xl hover:border-blue-500/50 transition-colors">
+                <div className="flex justify-between items-start mb-4">
+                  <span className="text-xs font-mono text-blue-400 bg-blue-900/20 px-2 py-1 rounded">Filed: Nov 16, 2025</span>
+                  <span className="text-xs font-mono text-gray-500">App #: 63/918,595</span>
+                </div>
+                <h3 className="text-lg font-bold text-white mb-2">Emotion-Aware Dynamic NFT Menu System</h3>
+                <p className="text-gray-400 text-sm">NFT Generative Menu + AI Emotional Price Adjustment</p>
+              </div>
+
+              {/* Patent 8 */}
+              <div className="bg-gray-900/50 border border-gray-800 p-6 rounded-xl hover:border-blue-500/50 transition-colors">
+                <div className="flex justify-between items-start mb-4">
+                  <span className="text-xs font-mono text-blue-400 bg-blue-900/20 px-2 py-1 rounded">Filed: Nov 10, 2025</span>
+                  <span className="text-xs font-mono text-gray-500">App #: 63/915,002</span>
+                </div>
+                <h3 className="text-lg font-bold text-white mb-2">Universal Web3 Simulation System (SimYourApp)</h3>
+                <p className="text-gray-400 text-sm">Universal Web3 Application Simulator</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* How It Works Section */}
         <section className="py-20 px-4 bg-gray-900/50">
           <div className="max-w-5xl mx-auto text-center">
@@ -121,30 +223,6 @@ export default function LandingPage() {
                   <h3 className="text-xl font-bold">3. Fiat in the Bank</h3>
                 </div>
                 <p className="mt-4 text-gray-400">Stripe automatically transfers the settled funds to your bank account. Say goodbye to T+1.</p>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* The Dual-Helix Hooks Vision */}
-        <section className="py-20 px-4">
-          <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-3xl md:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-blue-400">
-              This is the Future: The Dual-Helix Hooks
-            </h2>
-            <p className="mt-4 text-lg text-gray-300">
-              We're not just building payments. We're building a self-sustaining, decentralized economy powered by real-world business activity.
-            </p>
-            <div className="mt-10 grid md:grid-cols-2 gap-8 text-left">
-              <div className="p-6 border border-purple-700 rounded-xl bg-purple-900/20">
-                <h3 className="text-xl font-bold text-purple-300">RwaSettlementHook</h3>
-                <p className="mt-2 text-sm text-purple-400">Application Layer: Atomic Payment Settlement</p>
-                <p className="mt-4 text-gray-300">Transforms Uniswap into a global payment network, bridging Web3 and Web2 finance for instant, automated fiat settlement.</p>
-              </div>
-              <div className="p-6 border border-blue-700 rounded-xl bg-blue-900/20">
-                <h3 className="text-xl font-bold text-blue-300">DRTL-Hook</h3>
-                <p className="mt-2 text-sm text-blue-400">Economic Layer: Dynamic Liquidity Engine</p>
-                <p className="mt-4 text-gray-300">Leverages real transaction data to intelligently provide liquidity, stabilize price, and channel profits back into ecosystem growth.</p>
               </div>
             </div>
           </div>

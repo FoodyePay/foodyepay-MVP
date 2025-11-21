@@ -19,23 +19,40 @@ const OurStoryPage = () => {
           
           <div className="space-y-12 text-lg leading-relaxed prose prose-invert lg:prose-xl mx-auto">
             <section>
-              <h2 className="text-3xl font-bold mb-4 text-blue-400">The Spark of an Idea</h2>
+              <h2 className="text-3xl font-bold mb-4 text-blue-400">A Builder's Journey</h2>
               <p>
-                FoodyePay was born from a simple observation in a bustling restaurant: a passionate owner struggling with razor-thin margins, where the standard 3% credit card fee wasn't just a cost—it was a significant barrier to profitability. The founder, a programming and AI enthusiast with a deep passion for both food and technology, saw a disconnect. In an age of instant communication, why were payments still slow, expensive, and riddled with intermediaries?
-              </p>
-              <p className="mt-4">
-                This question sparked a journey to find a payment system that was fair, transparent, and built for the modern world. The goal was clear: to give power back to the merchants, the creators, the restaurant owners who pour their hearts into their craft.
+                I’m a builder who executes relentlessly. I didn’t come from a typical Silicon Valley track — I started in the U.S. Navy, working on electronic systems aboard a warship where reliability and safety are non-negotiable. Later I worked at NYC DOT managing mission-critical infrastructure. Those environments shaped how I build today: simple, robust, verifiable systems that never fail silently.
               </p>
             </section>
 
             <section>
-              <h2 className="text-3xl font-bold mb-4 text-blue-400">Navigating the Technical Maze</h2>
+              <h2 className="text-3xl font-bold mb-4 text-blue-400">The Spark: It Started with a Cake</h2>
               <p>
-                The path was far from easy. Early prototypes explored various technologies, but traditional systems always led back to the same problems: centralized control and unavoidable fees. The breakthrough came with the rise of Layer 2 blockchains, specifically Base, with its promise of low fees and fast transaction speeds.
+                In 2024, everything started with a cake. I ordered a cake from a friend’s bakery in Flushing, and during checkout he joked: “Do you have Bitcoin? I can accept it.”
               </p>
               <p className="mt-4">
-                This was the foundation. But a foundation is not a house. The real innovation began with a deep dive into the world of decentralized finance (DeFi) and the programmability of modern automated market makers (AMMs). The team asked a bold question: "What if we could embed our entire payment and settlement logic directly into a liquidity pool?"
+                That single sentence unlocked the entire insight behind FoodyePay.
               </p>
+            </section>
+
+            <section>
+              <h2 className="text-3xl font-bold mb-4 text-blue-400">The Realization & Execution</h2>
+              <p>I realized that while the desire was there, the infrastructure was missing:</p>
+              <ul className="list-disc pl-6 space-y-2 mt-4 text-gray-300">
+                <li>Restaurants lack compliant Web3 onboarding</li>
+                <li>Diners lack easy KYC/on-ramp into crypto</li>
+                <li>Menus don’t exist natively onchain</li>
+                <li>Web3 payments don’t fit real-world workflows</li>
+                <li>And AI has no standard for verifiable, onchain economic actions</li>
+              </ul>
+              <p className="mt-6">
+                From that tiny spark, I built everything myself:
+              </p>
+              <ul className="list-disc pl-6 space-y-2 mt-4 text-gray-300">
+                <li>Designed FoodyeCoin + FoodyePay from scratch</li>
+                <li>Solved diner KYC via Coinbase Smart Wallet</li>
+                <li>Solved restaurant KYC via Stripe Connect</li>
+              </ul>
             </section>
 
             <section>
@@ -56,6 +73,39 @@ const OurStoryPage = () => {
               <p className="mt-4">
                 Our journey is one of relentless innovation, driven by the belief that technology can create a more equitable and efficient world. We started with a simple problem in a restaurant, and now we're building a global solution on the frontier of DeFi. This is just the beginning.
               </p>
+            </section>
+
+            {/* Team Section Added for Google Cloud Startup Program Requirement */}
+            <section className="pt-12 border-t border-gray-800 mt-12">
+              <h2 className="text-3xl font-bold mb-10 text-blue-400 text-center">Meet the Team</h2>
+              <div className="flex flex-wrap justify-center gap-8">
+                
+                {/* Team Member: Ken Liao */}
+                <div className="bg-gray-800 rounded-xl p-6 text-center w-full max-w-xs border border-gray-700 hover:border-blue-500 transition-colors shadow-lg">
+                  <a 
+                    href="https://www.linkedin.com/in/ken-liao-50b88983/" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="block w-32 h-32 mx-auto mb-4 bg-gray-900 rounded-full overflow-hidden border-2 border-blue-500 relative hover:opacity-80 transition-opacity"
+                  >
+                     <img src="/ken-liao.png" alt="Ken Liao" className="w-full h-full object-cover" />
+                  </a>
+                  <h3 className="text-2xl font-bold text-white mb-1">Ken Liao</h3>
+                  <p className="text-blue-300 font-medium mb-3">Founder & Lead Developer</p>
+                  <p className="text-gray-400 text-sm mb-6 leading-relaxed">
+                    Passionate about AI, blockchain, and revolutionizing restaurant payments through decentralized finance.
+                  </p>
+                  <a 
+                    href="https://www.linkedin.com/in/ken-liao-50b88983/" 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    className="inline-flex items-center justify-center px-6 py-2 bg-[#0077b5] hover:bg-[#006396] text-white rounded-full text-sm font-bold transition-colors"
+                  >
+                    LinkedIn Profile
+                  </a>
+                </div>
+
+              </div>
             </section>
           </div>
         </div>
