@@ -1,6 +1,6 @@
 import { Header } from '../../components/landing/Header';
 import { Footer } from '../../components/landing/Footer';
-import { CheckCircle, Cpu, Database, Layers, Zap } from 'lucide-react';
+import { CheckCircle, Cpu, Database, Layers, Zap, FileText } from 'lucide-react';
 
 export default function TechnologyPage() {
   return (
@@ -15,13 +15,14 @@ export default function TechnologyPage() {
           <p className="mt-6 text-lg md:text-xl text-gray-300">
             We've built a robust, decentralized infrastructure to redefine payment processing for real-world businesses, starting with restaurants. Our system is designed for security, speed, and scalability.
           </p>
-          <div className="mt-8">
+          <div className="mt-10">
             <a 
               href="/FoodyePay_Whitepaper.pdf" 
               target="_blank" 
               rel="noopener noreferrer"
-              className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-black bg-white hover:bg-gray-200 transition-colors"
+              className="group inline-flex items-center px-8 py-4 text-lg font-bold rounded-full text-white bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 transition-all transform hover:scale-105 shadow-lg hover:shadow-purple-500/25"
             >
+              <FileText className="w-5 h-5 mr-2 group-hover:rotate-12 transition-transform" />
               Read the Whitepaper
             </a>
           </div>
