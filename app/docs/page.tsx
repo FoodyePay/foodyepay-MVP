@@ -21,7 +21,7 @@ export default function DocsPage() {
           <div className="grid md:grid-cols-3 gap-8 text-center">
             
             {/* Whitepaper */}
-            <Link href="https://foodyepay.s3.us-east-2.amazonaws.com/FoodyEPay_A_Decentralized_Restaurant_Payment_System.pdf" legacyBehavior>
+            <Link href="/FoodyePay_Whitepaper.pdf" legacyBehavior>
               <a target="_blank" rel="noopener noreferrer" className="p-8 border border-gray-800 rounded-xl bg-gray-900 hover:bg-gray-800/50 transition-colors">
                 <Book className="w-12 h-12 mx-auto text-purple-400 mb-4" />
                 <h3 className="text-xl font-bold">Whitepaper</h3>
