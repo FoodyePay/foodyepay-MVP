@@ -15,6 +15,16 @@ export default function TechnologyPage() {
           <p className="mt-6 text-lg md:text-xl text-gray-300">
             We've built a robust, decentralized infrastructure to redefine payment processing for real-world businesses, starting with restaurants. Our system is designed for security, speed, and scalability.
           </p>
+          <div className="mt-8">
+            <a 
+              href="/FoodyePay_Whitepaper.pdf" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-black bg-white hover:bg-gray-200 transition-colors"
+            >
+              Read the Whitepaper
+            </a>
+          </div>
         </section>
 
         {/* Dual-Helix Hooks Vision */}
