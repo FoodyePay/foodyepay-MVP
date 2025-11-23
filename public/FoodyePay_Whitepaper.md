@@ -23,7 +23,7 @@ FoodyePay is architecting the standard for the Autonomous Agent Economy. As ente
 FoodyePay addresses this by deploying the **Foodye AI Multi-Agent Protocol (FAMP)**, a patent-backed infrastructure that transforms AI agents from experimental tools into deterministic, governed, and verifiable digital assets.
 
 ### Key Differentiators for Coinbase Consideration:
-*   **Proprietary IP:** Backed by 8 USPTO provisional patents filed within the last 30 days, covering Onchain operating systems, verified execution, and emotional context modeling.
+*   **Proprietary IP:** Backed by 12 USPTO provisional patents filed within the last 30 days, covering Onchain operating systems, verified execution, and emotional context modeling.
 *   **Compliance-First Architecture:** Unlike standard AI wrappers, FAMP integrates an **Onchain Rule & Policy Engine (ORPE)**, enabling enterprise-grade governance (KYC/AML equivalent for agents).
 *   **Deep Web3 Integration:** FoodyeCoin serves as the necessary circulatory utility token for agent identity, execution gas, and cross-agent settlement.
 

@@ -106,7 +106,7 @@ export default function LandingPage() {
                 Pioneering the Future
               </h2>
               <p className="text-xl text-blue-400 font-semibold">
-                Backed by 8 USPTO Patent Filings
+                Backed by 12 USPTO Patent Filings
               </p>
               <p className="mt-4 text-gray-400 max-w-2xl mx-auto">
                 We are building the intellectual property foundation for the AIoOS era. Our innovations span from autonomous agent operating systems to emotion-driven protocols.

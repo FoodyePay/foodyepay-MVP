@@ -54,7 +54,7 @@ export default function WhitepaperPage() {
               <div className="bg-gray-800/50 p-6 rounded-lg border-l-4 border-purple-500 my-8">
                 <h4 className="text-lg font-bold text-white mb-3">Key Differentiators for Coinbase Consideration:</h4>
                 <ul className="list-disc pl-5 space-y-2 text-gray-300">
-                  <li><strong className="text-white">Proprietary IP:</strong> Backed by 8 USPTO provisional patents filed within the last 30 days, covering Onchain operating systems, verified execution, and emotional context modeling.</li>
+                  <li><strong className="text-white">Proprietary IP:</strong> Backed by 12 USPTO provisional patents filed within the last 30 days, covering Onchain operating systems, verified execution, and emotional context modeling.</li>
                   <li><strong className="text-white">Compliance-First Architecture:</strong> Unlike standard AI wrappers, FAMP integrates an Onchain Rule & Policy Engine (ORPE), enabling enterprise-grade governance (KYC/AML equivalent for agents).</li>
                   <li><strong className="text-white">Deep Web3 Integration:</strong> FoodyeCoin serves as the necessary circulatory utility token for agent identity, execution gas, and cross-agent settlement.</li>
                 </ul>
