@@ -17,9 +17,7 @@ export default function TechnologyPage() {
           </p>
           <div className="mt-10">
             <a 
-              href="/FoodyePay_Whitepaper.pdf" 
-              target="_blank" 
-              rel="noopener noreferrer"
+              href="/whitepaper" 
               className="group inline-flex items-center px-8 py-4 text-lg font-bold rounded-full text-white bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 transition-all transform hover:scale-105 shadow-lg hover:shadow-purple-500/25"
             >
               <FileText className="w-5 h-5 mr-2 group-hover:rotate-12 transition-transform" />
