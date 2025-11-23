@@ -117,64 +117,34 @@ export default function LandingPage() {
               {/* Patent 1 */}
               <div className="bg-gray-900/50 border border-gray-800 p-6 rounded-xl hover:border-blue-500/50 transition-colors">
                 <div className="flex justify-between items-start mb-4">
-                  <span className="text-xs font-mono text-blue-400 bg-blue-900/20 px-2 py-1 rounded">Filed: Nov 21, 2025</span>
-                  <span className="text-xs font-mono text-gray-500">App #: 63/922,127</span>
+                  <span className="text-xs font-mono text-blue-400 bg-blue-900/20 px-2 py-1 rounded">Filed: Nov 22, 2025</span>
+                  <span className="text-xs font-mono text-gray-500">App #: 63/923,207</span>
                 </div>
-                <h3 className="text-lg font-bold text-white mb-2">Multi-Agent Protocol for Emotion-Adaptive Education</h3>
-                <p className="text-gray-400 text-sm">Vibe Teaching Agent + Social Learning Host Agent + Onchain Learning Identity</p>
+                <h3 className="text-lg font-bold text-white mb-2">Food Consumption Analytics and Predictive Derivatives</h3>
+                <p className="text-gray-400 text-sm">Predictive Derivatives for Socio-Political, Cultural, and Event-Based Markets in Decentralized Systems</p>
               </div>
 
               {/* Patent 2 */}
               <div className="bg-gray-900/50 border border-gray-800 p-6 rounded-xl hover:border-blue-500/50 transition-colors">
                 <div className="flex justify-between items-start mb-4">
-                  <span className="text-xs font-mono text-blue-400 bg-blue-900/20 px-2 py-1 rounded">Filed: Nov 19, 2025</span>
-                  <span className="text-xs font-mono text-gray-500">App #: 63/920,704</span>
+                  <span className="text-xs font-mono text-blue-400 bg-blue-900/20 px-2 py-1 rounded">Filed: Nov 22, 2025</span>
+                  <span className="text-xs font-mono text-gray-500">App #: 63/923,201</span>
                 </div>
-                <h3 className="text-lg font-bold text-white mb-2">AIoOS: Artificial Intelligence Onchain Operating System</h3>
-                <p className="text-gray-400 text-sm">The world's first AI Onchain Operating System (Agent OS) for Autonomous Agent Identity & Lifecycle Management</p>
+                <h3 className="text-lg font-bold text-white mb-2">Autonomous Multi-Agent Green Prediction and Hedging Protocol</h3>
+                <p className="text-gray-400 text-sm">For Sustainable Perishable Commodity Supply Chains in Decentralized Commerce</p>
               </div>
 
               {/* Patent 3 */}
               <div className="bg-gray-900/50 border border-gray-800 p-6 rounded-xl hover:border-blue-500/50 transition-colors">
                 <div className="flex justify-between items-start mb-4">
-                  <span className="text-xs font-mono text-blue-400 bg-blue-900/20 px-2 py-1 rounded">Filed: Nov 18, 2025</span>
-                  <span className="text-xs font-mono text-gray-500">App #: 63/920,301</span>
+                  <span className="text-xs font-mono text-blue-400 bg-blue-900/20 px-2 py-1 rounded">Filed: Nov 22, 2025</span>
+                  <span className="text-xs font-mono text-gray-500">App #: 63/923,190</span>
                 </div>
-                <h3 className="text-lg font-bold text-white mb-2">Emotion Command Verification Protocol (ECVP)</h3>
-                <p className="text-gray-400 text-sm">An "Emotion Verification Kernel" for secure Agent-to-Blockchain execution</p>
+                <h3 className="text-lg font-bold text-white mb-2">Autonomous Multi-Agent Prediction and Hedging Protocol</h3>
+                <p className="text-gray-400 text-sm">For Perishable Commodity Supply Chains in Decentralized Commerce</p>
               </div>
 
               {/* Patent 4 */}
-              <div className="bg-gray-900/50 border border-gray-800 p-6 rounded-xl hover:border-blue-500/50 transition-colors">
-                <div className="flex justify-between items-start mb-4">
-                  <span className="text-xs font-mono text-blue-400 bg-blue-900/20 px-2 py-1 rounded">Filed: Nov 18, 2025</span>
-                  <span className="text-xs font-mono text-gray-500">App #: 63/920,291</span>
-                </div>
-                <h3 className="text-lg font-bold text-white mb-2">Emotion-Driven Autonomous Savings & Inheritance</h3>
-                <p className="text-gray-400 text-sm">AI Autonomous Savings + AI Digital Inheritance Protocol</p>
-              </div>
-
-              {/* Patent 5 */}
-              <div className="bg-gray-900/50 border border-gray-800 p-6 rounded-xl hover:border-blue-500/50 transition-colors">
-                <div className="flex justify-between items-start mb-4">
-                  <span className="text-xs font-mono text-blue-400 bg-blue-900/20 px-2 py-1 rounded">Filed: Nov 18, 2025</span>
-                  <span className="text-xs font-mono text-gray-500">App #: 63/920,279</span>
-                </div>
-                <h3 className="text-lg font-bold text-white mb-2">Emotion-Driven Digital Pet Protocol</h3>
-                <p className="text-gray-400 text-sm">Onchain Emotional Pet + State & Behavior Learning System</p>
-              </div>
-
-              {/* Patent 6 */}
-              <div className="bg-gray-900/50 border border-gray-800 p-6 rounded-xl hover:border-blue-500/50 transition-colors">
-                <div className="flex justify-between items-start mb-4">
-                  <span className="text-xs font-mono text-blue-400 bg-blue-900/20 px-2 py-1 rounded">Filed: Nov 16, 2025</span>
-                  <span className="text-xs font-mono text-gray-500">App #: 63/918,620</span>
-                </div>
-                <h3 className="text-lg font-bold text-white mb-2">Like-as-a-Reward Social Micropayment System</h3>
-                <p className="text-gray-400 text-sm">"Like = Micropayment" + Asset Allocation Mechanism</p>
-              </div>
-
-              {/* Patent 7 */}
               <div className="bg-gray-900/50 border border-gray-800 p-6 rounded-xl hover:border-blue-500/50 transition-colors">
                 <div className="flex justify-between items-start mb-4">
                   <span className="text-xs font-mono text-blue-400 bg-blue-900/20 px-2 py-1 rounded">Filed: Nov 16, 2025</span>
@@ -184,14 +154,24 @@ export default function LandingPage() {
                 <p className="text-gray-400 text-sm">NFT Generative Menu + AI Emotional Price Adjustment</p>
               </div>
 
-              {/* Patent 8 */}
+              {/* Patent 5 */}
               <div className="bg-gray-900/50 border border-gray-800 p-6 rounded-xl hover:border-blue-500/50 transition-colors">
                 <div className="flex justify-between items-start mb-4">
-                  <span className="text-xs font-mono text-blue-400 bg-blue-900/20 px-2 py-1 rounded">Filed: Nov 10, 2025</span>
-                  <span className="text-xs font-mono text-gray-500">App #: 63/915,002</span>
+                  <span className="text-xs font-mono text-blue-400 bg-blue-900/20 px-2 py-1 rounded">Filed: Nov 19, 2025</span>
+                  <span className="text-xs font-mono text-gray-500">App #: 63/920,704</span>
                 </div>
-                <h3 className="text-lg font-bold text-white mb-2">Universal Web3 Simulation System (SimYourApp)</h3>
-                <p className="text-gray-400 text-sm">Universal Web3 Application Simulator</p>
+                <h3 className="text-lg font-bold text-white mb-2">AIoOS: Artificial Intelligence Onchain Operating System</h3>
+                <p className="text-gray-400 text-sm">The world's first AI Onchain Operating System (Agent OS) for Autonomous Agent Identity & Lifecycle Management</p>
+              </div>
+
+              {/* Patent 6 */}
+              <div className="bg-gray-900/50 border border-gray-800 p-6 rounded-xl hover:border-blue-500/50 transition-colors">
+                <div className="flex justify-between items-start mb-4">
+                  <span className="text-xs font-mono text-blue-400 bg-blue-900/20 px-2 py-1 rounded">Filed: Nov 18, 2025</span>
+                  <span className="text-xs font-mono text-gray-500">App #: 63/920,301</span>
+                </div>
+                <h3 className="text-lg font-bold text-white mb-2">Emotion Command Verification Protocol (ECVP)</h3>
+                <p className="text-gray-400 text-sm">An "Emotion Verification Kernel" for secure Agent-to-Blockchain execution</p>
               </div>
             </div>
           </div>
