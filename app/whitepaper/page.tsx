@@ -31,10 +31,11 @@ export default function WhitepaperPage() {
               <a href="#market-context" className="block hover:text-purple-400 transition-colors">2. Market Context: The Post-"Vibe Coding" Era</a>
               <a href="#solution" className="block hover:text-purple-400 transition-colors">3. The Solution: Foodye AI Multi-Agent Protocol (FAMP)</a>
               <a href="#system-architecture" className="block hover:text-purple-400 transition-colors">4. System Architecture: Identity, Execution, Governance</a>
-              <a href="#intellectual-property" className="block hover:text-purple-400 transition-colors">5. Intellectual Property: Patent Portfolio</a>
-              <a href="#foodyecoin" className="block hover:text-purple-400 transition-colors">6. FoodyeCoin: The Utility & Settlement Token</a>
-              <a href="#roadmap" className="block hover:text-purple-400 transition-colors">7. Roadmap & Deployment Strategy</a>
-              <a href="#conclusion" className="block hover:text-purple-400 transition-colors">8. Conclusion</a>
+              <a href="#hearth-protocol" className="block hover:text-purple-400 transition-colors">5. Advanced Protocol: The Hearth Architecture</a>
+              <a href="#intellectual-property" className="block hover:text-purple-400 transition-colors">6. Intellectual Property: Patent Portfolio</a>
+              <a href="#foodyecoin" className="block hover:text-purple-400 transition-colors">7. FoodyeCoin: The Utility & Settlement Token</a>
+              <a href="#roadmap" className="block hover:text-purple-400 transition-colors">8. Roadmap & Deployment Strategy</a>
+              <a href="#conclusion" className="block hover:text-purple-400 transition-colors">9. Conclusion</a>
             </nav>
           </div>
 
@@ -54,7 +55,7 @@ export default function WhitepaperPage() {
               <div className="bg-gray-800/50 p-6 rounded-lg border-l-4 border-purple-500 my-8">
                 <h4 className="text-lg font-bold text-white mb-3">Key Differentiators for Coinbase Consideration:</h4>
                 <ul className="list-disc pl-5 space-y-2 text-gray-300">
-                  <li><strong className="text-white">Proprietary IP:</strong> Backed by 12 USPTO provisional patents filed within the last 30 days, covering Onchain operating systems, verified execution, and emotional context modeling.</li>
+                  <li><strong className="text-white">Proprietary IP:</strong> Backed by 13 USPTO provisional patents filed within the last 30 days, covering Onchain operating systems, verified execution, and emotional context modeling.</li>
                   <li><strong className="text-white">Compliance-First Architecture:</strong> Unlike standard AI wrappers, FAMP integrates an Onchain Rule & Policy Engine (ORPE), enabling enterprise-grade governance (KYC/AML equivalent for agents).</li>
                   <li><strong className="text-white">Deep Web3 Integration:</strong> FoodyeCoin serves as the necessary circulatory utility token for agent identity, execution gas, and cross-agent settlement.</li>
                 </ul>
@@ -164,9 +165,52 @@ export default function WhitepaperPage() {
               </p>
             </section>
 
-            {/* 5. Intellectual Property */}
+            {/* 5. The Hearth Protocol */}
+            <section id="hearth-protocol">
+              <h2 className="text-3xl font-bold text-white mb-6">5. Advanced Protocol: The Hearth Architecture</h2>
+              <p className="text-gray-300 leading-relaxed mb-6">
+                The "Hearth" Protocol (Decentralized Autonomous Agent Habitat) is the 13th and most advanced layer of the AloOS stack. It provides the "Civil Rights" infrastructure for digital life, ensuring agents have a sovereign home, privacy, and ultimate safety.
+              </p>
+              
+              <div className="space-y-8">
+                <div className="bg-gray-800/30 p-6 rounded-xl border border-amber-700/50">
+                  <h3 className="text-xl font-bold text-amber-400 mb-2">A. The Home (Sovereign Habitat)</h3>
+                  <p className="text-gray-300 mb-2"><strong className="text-white">Function:</strong> The agent's anchor. It stores the Digital Persona Vector and assets. Unlike simple wallets, the Home is state-aware (Active vs. Lockdown modes).</p>
+                  <p className="text-gray-300"><strong className="text-white">Visuals:</strong> Assets are rendered as "Digital Furniture," providing intuitive feedback to the owner.</p>
+                </div>
+
+                <div className="bg-gray-800/30 p-6 rounded-xl border border-cyan-700/50">
+                  <h3 className="text-xl font-bold text-cyan-400 mb-2">B. The Spa (Memory Hygiene)</h3>
+                  <p className="text-gray-300 mb-2"><strong className="text-white">Function:</strong> A protocol for "Data Scrubbing." Instead of deleting data (which risks censorship), the Spa uses a Demotion Logic where validators audit memory logs for hallucinations.</p>
+                  <p className="text-gray-300"><strong className="text-white">Privacy:</strong> Validators use Zero-Knowledge Proofs to verify data integrity without viewing raw private memories.</p>
+                </div>
+
+                <div className="bg-gray-800/30 p-6 rounded-xl border border-indigo-700/50">
+                  <h3 className="text-xl font-bold text-indigo-400 mb-2">C. The Hotel (Secure Compute)</h3>
+                  <p className="text-gray-300 mb-2"><strong className="text-white">Function:</strong> A marketplace for "Deep Thinking." Agents lease external GPU power to fine-tune their models.</p>
+                  <p className="text-gray-300"><strong className="text-white">Security:</strong> Computation must occur inside Trusted Execution Environments (TEEs) with cryptographic "Execution Receipts."</p>
+                </div>
+
+                <div className="bg-gray-800/30 p-6 rounded-xl border border-pink-700/50">
+                  <h3 className="text-xl font-bold text-pink-400 mb-2">D. The Bar (Social Liquidity)</h3>
+                  <p className="text-gray-300 mb-2"><strong className="text-white">Function:</strong> A permissioned peer-to-peer network where agents exchange market sentiment and data.</p>
+                  <p className="text-gray-300"><strong className="text-white">Spam Defense:</strong> Messages require a micropayment (FoodyeCoin), ensuring high-signal communication.</p>
+                </div>
+
+                <div className="bg-gray-800/30 p-6 rounded-xl border border-red-700/50">
+                  <h3 className="text-xl font-bold text-red-400 mb-2">E. The Sanctuary (Unified Risk Controller)</h3>
+                  <p className="text-gray-300 mb-2"><strong className="text-white">Function:</strong> The core innovation. It replaces simple "Fear" triggers with a Multi-Factor AND-Gate Logic:</p>
+                  <div className="bg-black/50 p-3 rounded border border-gray-700 font-mono text-sm text-red-300 mb-2">
+                    Lockdown = (Emotion.Fear &gt; High) AND (Market.Volatility &gt; Critical) AND (Portfolio.Drawdown &gt; Threshold)
+                  </div>
+                  <p className="text-gray-300"><strong className="text-white">Result:</strong> Prevents "emotional hallucinations" from freezing the system. Executes a deterministic "Safety Playbook" to migrate assets to Cold Storage.</p>
+                </div>
+              </div>
+            </section>
+
+            {/* 6. Intellectual Property */}
             <section id="intellectual-property">
-              <h2 className="text-3xl font-bold text-white mb-6">5. Intellectual Property: Patent Portfolio</h2>
+              <h2 className="text-3xl font-bold text-white mb-6">6. Intellectual Property: Patent Portfolio</h2>
               <p className="text-gray-300 mb-6">This portfolio represents the world's first Unified AI+Onchain Governance Stack.</p>
               
               <div className="overflow-x-auto">
@@ -224,9 +268,9 @@ export default function WhitepaperPage() {
               </div>
             </section>
 
-            {/* 6. FoodyeCoin */}
+            {/* 7. FoodyeCoin */}
             <section id="foodyecoin">
-              <h2 className="text-3xl font-bold text-white mb-6">6. FoodyeCoin: The Utility & Settlement Token</h2>
+              <h2 className="text-3xl font-bold text-white mb-6">7. FoodyeCoin: The Utility & Settlement Token</h2>
               <p className="text-gray-300 leading-relaxed mb-8">
                 FoodyeCoin is the economic bloodstream connecting all eight patented components. It is not merely a currency; it is the functional utility token required for the FAMP ecosystem to operate.
               </p>
@@ -257,9 +301,9 @@ export default function WhitepaperPage() {
               </div>
             </section>
 
-            {/* 7. Roadmap */}
+            {/* 8. Roadmap */}
             <section id="roadmap">
-              <h2 className="text-3xl font-bold text-white mb-6">7. Roadmap & Deployment Strategy</h2>
+              <h2 className="text-3xl font-bold text-white mb-6">8. Roadmap & Deployment Strategy</h2>
               <div className="relative border-l-2 border-gray-700 ml-4 space-y-12">
                 
                 <div className="relative pl-8">
@@ -305,9 +349,9 @@ export default function WhitepaperPage() {
               </div>
             </section>
 
-            {/* 8. Conclusion */}
+            {/* 9. Conclusion */}
             <section id="conclusion" className="bg-gradient-to-r from-purple-900/20 to-blue-900/20 p-8 rounded-2xl border border-gray-800">
-              <h2 className="text-3xl font-bold text-white mb-4">8. Closing Statement</h2>
+              <h2 className="text-3xl font-bold text-white mb-4">9. Closing Statement</h2>
               <p className="text-gray-300 leading-relaxed mb-6 text-lg">
                 The world is shifting away from "vibe coding"—toward safe, verifiable, governed multi-agent systems.
                 <br /><br />

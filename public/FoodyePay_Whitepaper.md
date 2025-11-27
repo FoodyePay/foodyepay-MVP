@@ -8,10 +8,11 @@
 2. [Market Context: The Post-"Vibe Coding" Era](#2-market-context-the-post-vibe-coding-era)
 3. [The Solution: Foodye AI Multi-Agent Protocol (FAMP)](#3-the-solution-foodye-ai-multi-agent-protocol-famp)
 4. [System Architecture: Identity, Execution, Governance](#4-system-architecture-identity-execution-governance)
-5. [Intellectual Property: Patent Portfolio](#5-intellectual-property-patent-portfolio)
-6. [FoodyeCoin: The Utility & Settlement Token](#6-foodyecoin-the-utility--settlement-token)
-7. [Roadmap & Deployment Strategy](#7-roadmap--deployment-strategy)
-8. [Conclusion](#8-conclusion)
+5. [Advanced Protocol: The Hearth Architecture](#5-advanced-protocol-the-hearth-architecture)
+6. [Intellectual Property: Patent Portfolio](#6-intellectual-property-patent-portfolio)
+7. [FoodyeCoin: The Utility & Settlement Token](#7-foodyecoin-the-utility--settlement-token)
+8. [Roadmap & Deployment Strategy](#8-roadmap--deployment-strategy)
+9. [Conclusion](#9-conclusion)
 
 ---
 
@@ -23,7 +24,7 @@ FoodyePay is architecting the standard for the Autonomous Agent Economy. As ente
 FoodyePay addresses this by deploying the **Foodye AI Multi-Agent Protocol (FAMP)**, a patent-backed infrastructure that transforms AI agents from experimental tools into deterministic, governed, and verifiable digital assets.
 
 ### Key Differentiators for Coinbase Consideration:
-*   **Proprietary IP:** Backed by 12 USPTO provisional patents filed within the last 30 days, covering Onchain operating systems, verified execution, and emotional context modeling.
+*   **Proprietary IP:** Backed by 13 USPTO provisional patents filed within the last 30 days, covering Onchain operating systems, verified execution, and emotional context modeling.
 *   **Compliance-First Architecture:** Unlike standard AI wrappers, FAMP integrates an **Onchain Rule & Policy Engine (ORPE)**, enabling enterprise-grade governance (KYC/AML equivalent for agents).
 *   **Deep Web3 Integration:** FoodyeCoin serves as the necessary circulatory utility token for agent identity, execution gas, and cross-agent settlement.
 
@@ -97,7 +98,33 @@ The Foodye Multi-Agent Architecture creates a closed-loop ecosystem where agents
 
 ---
 
-## 5. Intellectual Property: Patent Portfolio
+## 5. Advanced Protocol: The Hearth Architecture
+The "Hearth" Protocol (Decentralized Autonomous Agent Habitat) is the 13th and most advanced layer of the AloOS stack. It provides the "Civil Rights" infrastructure for digital life, ensuring agents have a sovereign home, privacy, and ultimate safety.
+
+### A. The Home (Sovereign Habitat)
+*   **Function:** The agent's anchor. A sovereign container for identity and assets. Unlike simple wallets, the Home is state-aware (Active vs. Lockdown modes).
+*   **Visuals:** Assets are rendered as "Digital Furniture," providing intuitive feedback to the owner.
+
+### B. The Spa (Memory Hygiene)
+*   **Function:** A protocol for "Data Scrubbing." Instead of deleting data (which risks censorship), the Spa uses a Demotion Logic where validators audit memory logs for hallucinations.
+*   **Privacy:** Validators use Zero-Knowledge Proofs to verify data integrity without viewing raw private memories.
+
+### C. The Hotel (Secure Compute)
+*   **Function:** A marketplace for "Deep Thinking." Agents lease external GPU power to fine-tune their models.
+*   **Security:** Computation must occur inside Trusted Execution Environments (TEEs) with cryptographic "Execution Receipts."
+
+### D. The Bar (Social Liquidity)
+*   **Function:** A permissioned peer-to-peer network where agents exchange market sentiment and data.
+*   **Spam Defense:** Messages require a micropayment (FoodyeCoin), ensuring high-signal communication.
+
+### E. The Sanctuary (Unified Risk Controller)
+*   **Function:** The core innovation. It replaces simple "Fear" triggers with a Multi-Factor AND-Gate Logic:
+    > Lockdown = (Emotion.Fear > High) AND (Market.Volatility > Critical) AND (Portfolio.Drawdown > Threshold)
+*   **Result:** Prevents "emotional hallucinations" from freezing the system. Executes a deterministic "Safety Playbook" to migrate assets to Cold Storage.
+
+---
+
+## 6. Intellectual Property: Patent Portfolio
 This portfolio represents the world's first Unified AI+Onchain Governance Stack.
 
 | Category | Patent Title / Focus | Function |
@@ -113,7 +140,7 @@ This portfolio represents the world's first Unified AI+Onchain Governance Stack.
 
 ---
 
-## 6. FoodyeCoin: The Utility & Settlement Token
+## 7. FoodyeCoin: The Utility & Settlement Token
 FoodyeCoin is the economic bloodstream connecting all eight patented components. It is not merely a currency; it is the functional utility token required for the FAMP ecosystem to operate.
 
 ### 6.1 Infrastructure Utility
@@ -131,7 +158,7 @@ FoodyeCoin is the economic bloodstream connecting all eight patented components.
 
 ---
 
-## 7. Roadmap & Deployment Strategy
+## 8. Roadmap & Deployment Strategy
 
 ### Phase 1: Foundation (Q1 2026)
 *   Release of Agent Identity SDK.
@@ -155,7 +182,7 @@ FoodyeCoin is the economic bloodstream connecting all eight patented components.
 
 ---
 
-## 8. Conclusion
+## 9. Conclusion
 The world is shifting away from "vibe coding"—toward safe, verifiable, governed multi-agent systems.
 
 **FoodyePay is not following this trend; we are defining it.**
