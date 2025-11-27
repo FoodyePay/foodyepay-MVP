@@ -35,68 +35,76 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* Uniswap Incubator Announcement */}
-        <section className="py-12 bg-gray-900/50">
-          <div className="max-w-4xl mx-auto px-4 text-center">
-            <div className="border border-purple-500/30 rounded-xl p-6 bg-gradient-to-r from-purple-900/20 to-blue-900/20 shadow-2xl">
-              <div className="flex justify-center items-center mb-4">
-                <Image src="/FoodyePayLogo.png" alt="FoodyePay" width={40} height={40} />
-                <span className="mx-2 text-gray-400 self-center">+</span>
-                <Image src="/Uniswap_icon_pink.svg" alt="Uniswap" width={40} height={40} />
-              </div>
-              <h3 className="text-2xl font-bold text-purple-300">
-                Officially Selected for Uniswap Hook Incubator
-              </h3>
-              <p className="mt-2 text-gray-300">
-                FoodyePay's core "Dual-Helix" technology, featuring the <code>RwaSettlementHook</code>, has been selected by Uniswap Labs for the UHI8 cohort to contribute to the future of the DeFi community.
+        {/* Strategic Milestones Section */}
+        <section className="py-20 bg-gray-900/50 border-y border-gray-800">
+          <div className="max-w-7xl mx-auto px-4">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
+                Recognized by Industry Leaders
+              </h2>
+              <p className="text-gray-400 max-w-2xl mx-auto">
+                We are proud to be supported by the biggest names in Web3 and Cloud infrastructure.
               </p>
             </div>
-          </div>
-        </section>
 
-        {/* Google Cloud Partnership Section */}
-        <section className="py-12 bg-black">
-          <div className="max-w-4xl mx-auto px-4 text-center">
-            <div className="border border-blue-500/30 rounded-xl p-6 bg-gradient-to-r from-gray-900 to-blue-900/10 shadow-2xl">
-              <div className="flex justify-center items-center mb-4">
-                <Image src="/FoodyePayLogo.png" alt="FoodyePay" width={40} height={40} />
-                <span className="mx-2 text-gray-400 self-center">+</span>
-                <Image src="/google-cloud-web3.svg" alt="Google Cloud" width={50} height={50} />
-              </div>
-              <h3 className="text-2xl font-bold text-blue-300">
-                Our Strategic Partner in the Cloud
-              </h3>
-              <p className="mt-2 text-gray-300 max-w-2xl mx-auto">
-                We are proud to build on Google Cloud and are honored to be supported by a dedicated team, including our Google Cloud Account Manager.
-              </p>
-              <div className="mt-6 bg-gray-800/50 rounded-lg p-4 inline-flex items-center">
-                <div className="text-left">
-                  <p className="font-bold text-white">Haley Johnson</p>
-                  <p className="text-sm text-gray-400">Google Cloud Territory Manager</p>
+            <div className="grid md:grid-cols-3 gap-8">
+              
+              {/* Coinbase Blue Carpet */}
+              <div className="bg-gradient-to-b from-blue-900/20 to-black border border-blue-800/50 p-8 rounded-2xl hover:border-blue-500 transition-all group">
+                <div className="h-12 mb-6 flex items-center">
+                   <Image src="/Coinbase_Wordmark_White.svg" alt="Coinbase" width={140} height={30} />
                 </div>
-                <a href="https://www.linkedin.com/in/haley-johnson-84a404169/" target="_blank" rel="noopener noreferrer" className="ml-4 p-2 rounded-full bg-gray-700 hover:bg-blue-600 transition-colors">
-                  <Linkedin className="w-5 h-5 text-white" />
-                </a>
+                <h3 className="text-xl font-bold text-white mb-3 group-hover:text-blue-400 transition-colors">
+                  Coinbase Blue Carpet
+                </h3>
+                <p className="text-gray-400 text-sm leading-relaxed mb-4">
+                  Invited to the exclusive <strong>Blue Carpet</strong> program, granting FoodyePay premium access to asset page customization, developer platform credits, and direct collaboration with the Coinbase Listings Team.
+                </p>
+                <div className="inline-flex items-center text-blue-400 text-xs font-bold uppercase tracking-wider">
+                  <Award className="w-4 h-4 mr-2" />
+                  Premium Partner Status
+                </div>
               </div>
+
+              {/* Uniswap Incubator */}
+              <div className="bg-gradient-to-b from-pink-900/20 to-black border border-pink-800/50 p-8 rounded-2xl hover:border-pink-500 transition-all group">
+                <div className="h-12 mb-6 flex items-center">
+                   <Image src="/UniswapLabs_Horizontal_White.svg" alt="Uniswap" width={140} height={30} />
+                </div>
+                <h3 className="text-xl font-bold text-white mb-3 group-hover:text-pink-400 transition-colors">
+                  Uniswap Hook Incubator
+                </h3>
+                <p className="text-gray-400 text-sm leading-relaxed mb-4">
+                  Officially selected for the <strong>UHI8 Cohort</strong>. Our "Dual-Helix" RwaSettlementHook is recognized as a key innovation for the future of DeFi market structure.
+                </p>
+                <div className="inline-flex items-center text-pink-400 text-xs font-bold uppercase tracking-wider">
+                  <Rocket className="w-4 h-4 mr-2" />
+                  Official Incubator Project
+                </div>
+              </div>
+
+              {/* Google Cloud */}
+              <div className="bg-gradient-to-b from-gray-800/20 to-black border border-gray-700 p-8 rounded-2xl hover:border-gray-500 transition-all group">
+                <div className="h-12 mb-6 flex items-center">
+                   <Image src="/google-cloud-web3.svg" alt="Google Cloud" width={110} height={28} />
+                </div>
+                <h3 className="text-xl font-bold text-white mb-3 group-hover:text-gray-300 transition-colors">
+                  Google for Startups
+                </h3>
+                <p className="text-gray-400 text-sm leading-relaxed mb-4">
+                  Approved for the <strong>Google for Startups Cloud Program</strong> and <strong>Partner Advantage</strong>. Scaling our AIoOS infrastructure on the world's most robust cloud network.
+                </p>
+                <div className="inline-flex items-center text-gray-400 text-xs font-bold uppercase tracking-wider">
+                  <ShieldCheck className="w-4 h-4 mr-2" />
+                  Verified Cloud Partner
+                </div>
+              </div>
+
             </div>
           </div>
         </section>
 
-        {/* Partners Section */}
-        <section className="py-16">
-          <div className="max-w-6xl mx-auto px-4">
-            <h3 className="text-center text-gray-400 text-sm font-semibold uppercase tracking-wider">
-              Powered by industry leaders
-            </h3>
-            <div className="mt-8 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-y-8 gap-x-4 justify-items-center items-center">
-              <Image src="/google-cloud-web3.svg" alt="Google Cloud" width={50} height={50} className="opacity-70 hover:opacity-100 transition-opacity" />
-              <Image src="/Base_square_white.svg" alt="Base" width={30} height={30} className="opacity-70 hover:opacity-100 transition-opacity" />
-              <Image src="/UniswapLabs_Horizontal_White.svg" alt="Uniswap" width={150} height={40} className="opacity-70 hover:opacity-100 transition-opacity" />
-              <Image src="/stripe-wordmark-white.svg" alt="Stripe" width={120} height={40} className="opacity-70 hover:opacity-100 transition-opacity" />
-              <Image src="/Coinbase_Wordmark_White.svg" alt="Coinbase" width={150} height={40} className="opacity-70 hover:opacity-100 transition-opacity" />
-            </div>
-          </div>
-        </section>
+
 
         {/* Patent Portfolio Section */}
         <section className="py-20 bg-black border-t border-gray-900">
@@ -106,7 +114,7 @@ export default function LandingPage() {
                 Pioneering the Future
               </h2>
               <p className="text-xl text-blue-400 font-semibold">
-                Backed by 12 USPTO Patent Filings
+                Backed by 13 USPTO Patent Filings
               </p>
               <p className="mt-4 text-gray-400 max-w-2xl mx-auto">
                 We are building the intellectual property foundation for the AIoOS era. Our innovations span from autonomous agent operating systems to emotion-driven protocols.
@@ -309,6 +317,21 @@ export default function LandingPage() {
                 height={785}
                 className="rounded-xl shadow-2xl ring-1 ring-white/10"
               />
+            </div>
+          </div>
+        </section>
+        {/* Partners Section */}
+        <section className="py-16">
+          <div className="max-w-6xl mx-auto px-4">
+            <h3 className="text-center text-gray-400 text-sm font-semibold uppercase tracking-wider">
+              Powered by industry leaders
+            </h3>
+            <div className="mt-8 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-y-8 gap-x-4 justify-items-center items-center">
+              <Image src="/google-cloud-web3.svg" alt="Google Cloud" width={50} height={50} className="opacity-70 hover:opacity-100 transition-opacity" />
+              <Image src="/Base_square_white.svg" alt="Base" width={30} height={30} className="opacity-70 hover:opacity-100 transition-opacity" />
+              <Image src="/UniswapLabs_Horizontal_White.svg" alt="Uniswap" width={150} height={40} className="opacity-70 hover:opacity-100 transition-opacity" />
+              <Image src="/stripe-wordmark-white.svg" alt="Stripe" width={120} height={40} className="opacity-70 hover:opacity-100 transition-opacity" />
+              <Image src="/Coinbase_Wordmark_White.svg" alt="Coinbase" width={150} height={40} className="opacity-70 hover:opacity-100 transition-opacity" />
             </div>
           </div>
         </section>

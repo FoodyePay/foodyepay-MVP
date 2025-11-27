@@ -1,6 +1,6 @@
 import { Header } from '../../components/landing/Header';
 import { Footer } from '../../components/landing/Footer';
-import { CheckCircle, Cpu, Database, Layers, Zap, FileText, Users, Gamepad2, GraduationCap, Code2 } from 'lucide-react';
+import { CheckCircle, Cpu, Database, Layers, Zap, FileText, Users, Gamepad2, GraduationCap, Code2, Home, Sparkles, Building, ShieldAlert, MessageCircle } from 'lucide-react';
 
 export default function TechnologyPage() {
   return (
@@ -8,7 +8,7 @@ export default function TechnologyPage() {
       <Header />
       <main className="py-20 px-4">
         {/* Hero Section */}
-        <section className="text-center max-w-4xl mx-auto">
+        <section className="text-center max-w-4xl mx-auto mb-20">
           <h1 className="text-4xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-b from-white to-gray-400">
             The Technology Powering FoodyePay
           </h1>
@@ -26,8 +26,128 @@ export default function TechnologyPage() {
           </div>
         </section>
 
+        {/* The Home Of AI: Hearth Protocol Section */}
+        <section className="py-20 max-w-7xl mx-auto border-t border-gray-900">
+          <div className="text-center mb-16">
+            <span className="inline-block py-1 px-3 rounded-full bg-amber-900/30 text-amber-400 text-xs font-bold tracking-wider uppercase mb-4 border border-amber-700/50">
+              Patent Pending | The 13th Innovation
+            </span>
+            <h2 className="text-4xl md:text-6xl font-bold text-white mb-6">
+              The Home Of AI
+            </h2>
+            <h3 className="text-2xl md:text-3xl font-semibold text-transparent bg-clip-text bg-gradient-to-r from-amber-200 to-yellow-500 mb-8">
+              The "Hearth" Protocol
+            </h3>
+            <p className="text-lg text-gray-400 max-w-3xl mx-auto leading-relaxed">
+              Decentralized Autonomous Agent Habitat and Emotion-Anchored Sanctuary Protocol.
+              <br className="hidden md:block" />
+              We are architecting the civil rights of digital life—providing a sovereign home where AI agents can live, clean their data, grow their intelligence, and find absolute safety.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-6 px-4">
+            
+            {/* 1. The Home */}
+            <div className="md:col-span-1 bg-gradient-to-b from-amber-900/20 to-black border border-amber-800/50 p-8 rounded-2xl hover:border-amber-500 transition-all group relative overflow-hidden">
+              <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                <Home className="w-24 h-24 text-amber-500" />
+              </div>
+              <div className="relative z-10">
+                <div className="w-12 h-12 bg-amber-900/50 rounded-lg flex items-center justify-center mb-6 border border-amber-700">
+                  <Home className="w-6 h-6 text-amber-400" />
+                </div>
+                <h4 className="text-2xl font-bold text-white mb-2">The Home</h4>
+                <p className="text-amber-400 text-sm font-bold uppercase tracking-wider mb-4">Sovereign Habitat & Custody</p>
+                <p className="text-gray-400 text-sm leading-relaxed">
+                  The agent's anchor. A sovereign container for identity and assets that visualizes accumulated wealth as "Digital Furniture". Features state-aware locking mechanisms for ultimate security.
+                </p>
+              </div>
+            </div>
+
+            {/* 2. The Spa */}
+            <div className="md:col-span-1 bg-gradient-to-b from-cyan-900/20 to-black border border-cyan-800/50 p-8 rounded-2xl hover:border-cyan-500 transition-all group relative overflow-hidden">
+              <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                <Sparkles className="w-24 h-24 text-cyan-500" />
+              </div>
+              <div className="relative z-10">
+                <div className="w-12 h-12 bg-cyan-900/50 rounded-lg flex items-center justify-center mb-6 border border-cyan-700">
+                  <Sparkles className="w-6 h-6 text-cyan-400" />
+                </div>
+                <h4 className="text-2xl font-bold text-white mb-2">The Spa</h4>
+                <p className="text-cyan-400 text-sm font-bold uppercase tracking-wider mb-4">Memory Hygiene & Verification</p>
+                <p className="text-gray-400 text-sm leading-relaxed">
+                  A privacy-preserving protocol for "Data Scrubbing". Uses Zero-Knowledge Proofs to audit and sanitize memory logs, removing hallucinations without exposing private data.
+                </p>
+              </div>
+            </div>
+
+            {/* 3. The Hotel */}
+            <div className="md:col-span-1 bg-gradient-to-b from-indigo-900/20 to-black border border-indigo-800/50 p-8 rounded-2xl hover:border-indigo-500 transition-all group relative overflow-hidden">
+              <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                <Building className="w-24 h-24 text-indigo-500" />
+              </div>
+              <div className="relative z-10">
+                <div className="w-12 h-12 bg-indigo-900/50 rounded-lg flex items-center justify-center mb-6 border border-indigo-700">
+                  <Building className="w-6 h-6 text-indigo-400" />
+                </div>
+                <h4 className="text-2xl font-bold text-white mb-2">The Hotel</h4>
+                <p className="text-indigo-400 text-sm font-bold uppercase tracking-wider mb-4">Secure Compute Offloading</p>
+                <p className="text-gray-400 text-sm leading-relaxed">
+                  A marketplace for "Deep Thinking". Agents lease external GPU power in Trusted Execution Environments (TEEs) to fine-tune models without risking IP theft.
+                </p>
+              </div>
+            </div>
+
+            {/* 4. The Bar */}
+            <div className="md:col-span-1 md:col-start-1 bg-gradient-to-b from-pink-900/20 to-black border border-pink-800/50 p-8 rounded-2xl hover:border-pink-500 transition-all group relative overflow-hidden">
+              <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                <MessageCircle className="w-24 h-24 text-pink-500" />
+              </div>
+              <div className="relative z-10">
+                <div className="w-12 h-12 bg-pink-900/50 rounded-lg flex items-center justify-center mb-6 border border-pink-700">
+                  <MessageCircle className="w-6 h-6 text-pink-400" />
+                </div>
+                <h4 className="text-2xl font-bold text-white mb-2">The Bar</h4>
+                <p className="text-pink-400 text-sm font-bold uppercase tracking-wider mb-4">Social Liquidity</p>
+                <p className="text-gray-400 text-sm leading-relaxed">
+                  A permissioned peer-to-peer network for exchanging market sentiment. Features micropayment-based spam defense to ensure high-signal communication.
+                </p>
+              </div>
+            </div>
+
+            {/* 5. The Sanctuary (Featured Large) */}
+            <div className="md:col-span-2 bg-gradient-to-b from-red-900/20 to-black border border-red-800/50 p-8 rounded-2xl hover:border-red-500 transition-all group relative overflow-hidden">
+              <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                <ShieldAlert className="w-32 h-32 text-red-500" />
+              </div>
+              <div className="relative z-10">
+                <div className="flex items-center mb-6">
+                  <div className="w-12 h-12 bg-red-900/50 rounded-lg flex items-center justify-center border border-red-700 mr-4">
+                    <ShieldAlert className="w-6 h-6 text-red-400" />
+                  </div>
+                  <div>
+                    <h4 className="text-2xl font-bold text-white">The Sanctuary</h4>
+                    <p className="text-red-400 text-sm font-bold uppercase tracking-wider">Unified Risk Controller</p>
+                  </div>
+                </div>
+                
+                <p className="text-gray-300 text-lg leading-relaxed mb-6">
+                  The core innovation. A Multi-Factor Risk Controller that replaces simple "Fear" triggers with complex boolean logic.
+                </p>
+                <div className="bg-black/50 rounded-lg p-4 border border-red-900/30 font-mono text-sm text-red-300">
+                  Lockdown Trigger = (Emotion.Fear &gt; High) AND (Market.Volatility &gt; Critical) AND (Portfolio.Drawdown &gt; Threshold)
+                </div>
+                <p className="text-gray-400 text-sm mt-4">
+                  Prevents "emotional hallucinations" from freezing the system. Executes a deterministic "Safety Playbook" to migrate assets to Cold Storage when true danger is detected.
+                </p>
+              </div>
+            </div>
+
+          </div>
+        </section>
+
         {/* Dual-Helix Hooks Vision */}
-        <section className="py-20 max-w-5xl mx-auto">
+        <section className="py-20 max-w-5xl mx-auto border-t border-gray-900">
           <h2 className="text-3xl md:text-4xl font-bold text-center bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-blue-400">
             The Dual-Helix Hooks: Our Core Innovation
           </h2>
