@@ -21,7 +21,7 @@
 
 FoodyePay is architecting the standard for the Autonomous Agent Economy. As enterprise adoption of AI accelerates, the industry is hitting a critical bottleneck: current AI systems rely on probabilistic "vibe coding"—improvisational prompt engineering that lacks predictability, safety, and accountability.
 
-FoodyePay addresses this by deploying the **Foodye AI Multi-Agent Protocol (FAMP)**, a patent-backed infrastructure that transforms AI agents from experimental tools into deterministic, governed, and verifiable digital assets.
+FoodyePay addresses this by deploying a dual-layer architecture: **AloOS (The Infrastructure)** and **FoodyePay (The DApp)**. AloOS provides the patent-backed operating system for agent identity and governance, while FoodyePay serves as the flagship financial application built on top of this infrastructure.
 
 ### Key Differentiators for Coinbase Consideration:
 *   **Proprietary IP:** Backed by 13 USPTO provisional patents filed within the last 30 days, covering Onchain operating systems, verified execution, and emotional context modeling.
@@ -154,13 +154,19 @@ FoodyeCoin is the economic bloodstream connecting all eight patented components.
 ### 6.3 Incentives & Governance
 *   **Micro-Economies:** Fuels the "Like-as-a-Reward" social tipping system and engagement markets.
 *   **Inheritance Protocol:** Used to pay multi-agent verifier fees within the Digital Inheritance governance workflow.
-*   **Education & Gaming:** Distributes rewards for stable educational outcomes and powers the economy of AI-driven digital assets (Pets).
+*   **Deflationary Gas:** A portion of every transaction fee within the AloOS ecosystem is permanently burned, reducing total supply as network usage grows.
 
 ---
 
 ## 8. Roadmap & Deployment Strategy
 
+### Phase 0: Genesis (Q4 2025)
+*   Patent Portfolio Filing (13 Patents).
+*   Coinbase Blue Carpet Acceptance.
+*   Google Cloud for Startups Grant.
+
 ### Phase 1: Foundation (Q1 2026)
+*   Uniswap Hook Incubator Cohort Launch.
 *   Release of Agent Identity SDK.
 *   Launch of FoodyePay v1.
 *   Deployment of Onchain Execution Verifier (Alpha).

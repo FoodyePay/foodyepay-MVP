@@ -50,7 +50,7 @@ export default function WhitepaperPage() {
                 FoodyePay is architecting the standard for the Autonomous Agent Economy. As enterprise adoption of AI accelerates, the industry is hitting a critical bottleneck: current AI systems rely on probabilistic "vibe coding"—improvisational prompt engineering that lacks predictability, safety, and accountability.
               </p>
               <p className="text-gray-300 leading-relaxed mb-6">
-                FoodyePay addresses this by deploying the Foodye AI Multi-Agent Protocol (FAMP), a patent-backed infrastructure that transforms AI agents from experimental tools into deterministic, governed, and verifiable digital assets.
+                FoodyePay addresses this by deploying a dual-layer architecture: <strong className="text-white">AloOS (The Infrastructure)</strong> and <strong className="text-white">FoodyePay (The DApp)</strong>. AloOS provides the patent-backed operating system for agent identity and governance, while FoodyePay serves as the flagship financial application built on top of this infrastructure.
               </p>
               <div className="bg-gray-800/50 p-6 rounded-lg border-l-4 border-purple-500 my-8">
                 <h4 className="text-lg font-bold text-white mb-3">Key Differentiators for Coinbase Consideration:</h4>
@@ -295,7 +295,7 @@ export default function WhitepaperPage() {
                   <ul className="space-y-3 text-sm text-gray-300">
                     <li><strong className="text-white">Micro-Economies:</strong> Fuels the "Like-as-a-Reward" social tipping system and engagement markets.</li>
                     <li><strong className="text-white">Inheritance Protocol:</strong> Used to pay multi-agent verifier fees within the Digital Inheritance governance workflow.</li>
-                    <li><strong className="text-white">Education & Gaming:</strong> Distributes rewards for stable educational outcomes and powers the economy of AI-driven digital assets (Pets).</li>
+                    <li><strong className="text-white">Deflationary Gas:</strong> A portion of every transaction fee within the AloOS ecosystem is permanently burned, reducing total supply as network usage grows.</li>
                   </ul>
                 </div>
               </div>
@@ -307,9 +307,20 @@ export default function WhitepaperPage() {
               <div className="relative border-l-2 border-gray-700 ml-4 space-y-12">
                 
                 <div className="relative pl-8">
+                  <div className="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-white"></div>
+                  <h3 className="text-xl font-bold text-white mb-2">Phase 0: Genesis (Q4 2025)</h3>
+                  <ul className="list-disc pl-5 text-gray-300 space-y-1">
+                    <li>Patent Portfolio Filing (13 Patents).</li>
+                    <li>Coinbase Blue Carpet Acceptance.</li>
+                    <li>Google Cloud for Startups Grant.</li>
+                  </ul>
+                </div>
+
+                <div className="relative pl-8">
                   <div className="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-purple-500"></div>
                   <h3 className="text-xl font-bold text-white mb-2">Phase 1: Foundation (Q1 2026)</h3>
                   <ul className="list-disc pl-5 text-gray-300 space-y-1">
+                    <li>Uniswap Hook Incubator Cohort Launch.</li>
                     <li>Release of Agent Identity SDK.</li>
                     <li>Launch of FoodyePay v1.</li>
                     <li>Deployment of Onchain Execution Verifier (Alpha).</li>
