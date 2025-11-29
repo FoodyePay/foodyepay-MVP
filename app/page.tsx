@@ -20,7 +20,7 @@ export default function LandingPage() {
           </div>
           <div className="relative z-10 max-w-5xl mx-auto">
             <h1 className="text-4xl md:text-6xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-b from-white to-gray-400 mb-6">
-              Building the AIoOS for <br className="hidden md:block" /> Real-World Commerce
+              Building the AloOS for <br className="hidden md:block" /> Real-World Commerce
             </h1>
             
             <h2 className="text-2xl md:text-4xl font-bold text-blue-400 tracking-wide mb-6">
@@ -28,8 +28,11 @@ export default function LandingPage() {
             </h2>
 
             <p className="mt-8 text-lg md:text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed">
-              <span className="block mb-4 font-semibold text-white">Built by Engineers. Powered by DeFi. Made for Restaurants.</span>
-              FoodyePay leverages the Base blockchain and USDC to offer your restaurant near-instant, low-cost payment settlements. Put your hard-earned profit back in your pocket.
+              FoodyePay is building AloOS — the world’s first AI Onchain Operating System for autonomous multi-agent settlement, prediction, and commerce.
+              <br /><br />
+              <span className="text-gray-400 text-base italic">
+                Blockchain is used solely as a verifiable execution layer. Our core technology is AI agents, agent orchestration, and predictive intelligence.
+              </span>
             </p>
             
           </div>
