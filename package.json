@@ -11,9 +11,13 @@
     "eval:score": "node scripts/eval-score.cjs docs/agents/eval/dataset-template.jsonl docs/agents/eval/sample-responses.jsonl"
   },
   "dependencies": {
+    "@aws-sdk/client-bedrock-runtime": "^3.990.0",
     "@base-org/account": "^1.1.1",
     "@coinbase/cdp-sdk": "^1.38.0",
     "@coinbase/onchainkit": "latest",
+    "@google-cloud/speech": "^7.2.1",
+    "@google-cloud/text-to-speech": "^6.4.0",
+    "@google-cloud/vertexai": "^1.10.0",
     "@googlemaps/google-maps-services-js": "^3.4.2",
     "@heroicons/react": "^2.2.0",
     "@openzeppelin/contracts": "^5.4.0",
@@ -33,6 +37,7 @@
     "qrcode": "^1.5.4",
     "react": "^18",
     "react-dom": "^18",
+    "string-similarity": "^4.0.4",
     "stripe": "^16.5.0",
     "tweetnacl": "^1.0.3",
     "twilio": "^5.8.0",

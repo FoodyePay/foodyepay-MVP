@@ -21,6 +21,10 @@ import { supabase } from '@/lib/supabase';
 import { QRGenerator } from '@/components/QRGenerator';
 import { OrderManagement } from '@/components/OrderManagement';
 import { FoodyBalance } from '@/components/FoodyBalance';
+import AVOSConfigPanel from '@/components/avos/AVOSConfigPanel';
+import AVOSLiveWidget from '@/components/avos/AVOSLiveWidget';
+import AVOSCallHistory from '@/components/avos/AVOSCallHistory';
+import AVOSAnalytics from '@/components/avos/AVOSAnalytics';
 
 interface Restaurant {
   id: string;
@@ -46,9 +50,13 @@ export default function RestaurantDashboard() {
   const [showQRGenerator, setShowQRGenerator] = useState(false);
   const [showOrderManagement, setShowOrderManagement] = useState(false);
   const [openingStripeDashboard, setOpeningStripeDashboard] = useState(false);
-  
+
   // Portfolio display state - 美观简洁的展示控制
   const [showPortfolio, setShowPortfolio] = useState(false);
+
+  // AVOS tab state
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'avos'>('dashboard');
+  const [avosSubTab, setAvosSubTab] = useState<'live' | 'history' | 'analytics' | 'settings'>('live');
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -222,77 +230,185 @@ export default function RestaurantDashboard() {
         </div>
       </header>
 
+      {/* Tab Navigation */}
+      <nav className="bg-zinc-900 border-b border-zinc-800">
+        <div className="max-w-7xl mx-auto flex">
+          <button
+            onClick={() => setActiveTab('dashboard')}
+            className={`px-6 py-3 text-sm font-medium transition-colors duration-200 border-b-2 ${
+              activeTab === 'dashboard'
+                ? 'border-purple-500 text-purple-400'
+                : 'border-transparent text-gray-400 hover:text-gray-200'
+            }`}
+          >
+            Dashboard
+          </button>
+          <button
+            onClick={() => setActiveTab('avos')}
+            className={`px-6 py-3 text-sm font-medium transition-colors duration-200 border-b-2 flex items-center gap-2 ${
+              activeTab === 'avos'
+                ? 'border-orange-500 text-orange-400'
+                : 'border-transparent text-gray-400 hover:text-gray-200'
+            }`}
+          >
+            <span>AVOS</span>
+            <span className="text-[10px] bg-orange-500/20 text-orange-400 px-1.5 py-0.5 rounded-full font-bold">AI</span>
+          </button>
+        </div>
+      </nav>
+
       {/* Main Content */}
       <main className="max-w-7xl mx-auto p-6">
-        
-        {/* FOODY 余额显示 */}
-        <div className="w-full max-w-md mx-auto mb-8">
-          <FoodyBalance />
-        </div>
-        
-        <div className="grid grid-cols-1 gap-6">
-          
-          {/* Quick Actions - MVP 核心功能 */}
-          <div className="w-full">
-            <div className="bg-zinc-900 rounded-xl p-6">
-              <h2 className="text-xl font-semibold text-purple-400 mb-6">Quick Actions</h2>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                
-                {/* Generate QR Code */}
-                <button 
-                  onClick={() => setShowQRGenerator(true)}
-                  className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 p-6 rounded-lg transition-all duration-200 text-left group"
-                >
-                  <div className="flex items-center space-x-3">
-                    <span className="text-2xl">📱</span>
-                    <div>
-                      <h3 className="font-semibold text-white group-hover:text-purple-100">Generate QR Code</h3>
-                      <p className="text-sm text-purple-200">Create payment QR codes for orders</p>
-                    </div>
-                  </div>
-                </button>
 
-                {/* Payment Management */}
-                <button 
-                  onClick={() => setShowOrderManagement(true)}
-                  className="bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700 p-6 rounded-lg transition-all duration-200 text-left group"
-                >
-                  <div className="flex items-center space-x-3">
-                    <span className="text-2xl">💳</span>
-                    <div>
-                      <h3 className="font-semibold text-white group-hover:text-yellow-100">Payment Management</h3>
-                      <p className="text-sm text-yellow-200">View and process payment transactions</p>
-                    </div>
-                  </div>
-                </button>
+        {/* ===== DASHBOARD TAB ===== */}
+        {activeTab === 'dashboard' && (
+          <>
+            {/* FOODY 余额显示 */}
+            <div className="w-full max-w-md mx-auto mb-8">
+              <FoodyBalance />
+            </div>
 
-                {/* Manage payouts and settings (Stripe Express Dashboard) */}
-                <button
-                  onClick={handleOpenStripeDashboard}
-                  disabled={openingStripeDashboard || !restaurant?.stripe_account_id}
-                  title={!restaurant?.stripe_account_id ? 'Stripe account not linked yet. Complete onboarding first.' : ''}
-                  className={`p-6 rounded-lg transition-all duration-200 text-left group border border-zinc-700 ${
-                    openingStripeDashboard || !restaurant?.stripe_account_id
-                      ? 'bg-zinc-800 text-zinc-400 cursor-not-allowed'
-                      : 'bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700'
-                  }`}
-                >
-                  <div className="flex items-center space-x-3">
-                    <span className="text-2xl">🏦</span>
-                    <div>
-                      <h3 className="font-semibold text-white group-hover:text-blue-100">Manage payouts and settings</h3>
-                      <p className="text-sm text-blue-200">Open Stripe Express Dashboard</p>
-                    </div>
-                  </div>
-                </button>
+            <div className="grid grid-cols-1 gap-6">
 
+              {/* Quick Actions - MVP 核心功能 */}
+              <div className="w-full">
+                <div className="bg-zinc-900 rounded-xl p-6">
+                  <h2 className="text-xl font-semibold text-purple-400 mb-6">Quick Actions</h2>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                    {/* Generate QR Code */}
+                    <button
+                      onClick={() => setShowQRGenerator(true)}
+                      className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 p-6 rounded-lg transition-all duration-200 text-left group"
+                    >
+                      <div className="flex items-center space-x-3">
+                        <span className="text-2xl">📱</span>
+                        <div>
+                          <h3 className="font-semibold text-white group-hover:text-purple-100">Generate QR Code</h3>
+                          <p className="text-sm text-purple-200">Create payment QR codes for orders</p>
+                        </div>
+                      </div>
+                    </button>
+
+                    {/* Payment Management */}
+                    <button
+                      onClick={() => setShowOrderManagement(true)}
+                      className="bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700 p-6 rounded-lg transition-all duration-200 text-left group"
+                    >
+                      <div className="flex items-center space-x-3">
+                        <span className="text-2xl">💳</span>
+                        <div>
+                          <h3 className="font-semibold text-white group-hover:text-yellow-100">Payment Management</h3>
+                          <p className="text-sm text-yellow-200">View and process payment transactions</p>
+                        </div>
+                      </div>
+                    </button>
+
+                    {/* Manage payouts and settings (Stripe Express Dashboard) */}
+                    <button
+                      onClick={handleOpenStripeDashboard}
+                      disabled={openingStripeDashboard || !restaurant?.stripe_account_id}
+                      title={!restaurant?.stripe_account_id ? 'Stripe account not linked yet. Complete onboarding first.' : ''}
+                      className={`p-6 rounded-lg transition-all duration-200 text-left group border border-zinc-700 ${
+                        openingStripeDashboard || !restaurant?.stripe_account_id
+                          ? 'bg-zinc-800 text-zinc-400 cursor-not-allowed'
+                          : 'bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700'
+                      }`}
+                    >
+                      <div className="flex items-center space-x-3">
+                        <span className="text-2xl">🏦</span>
+                        <div>
+                          <h3 className="font-semibold text-white group-hover:text-blue-100">Manage payouts and settings</h3>
+                          <p className="text-sm text-blue-200">Open Stripe Express Dashboard</p>
+                        </div>
+                      </div>
+                    </button>
+
+                    {/* AVOS Quick Launch */}
+                    <button
+                      onClick={() => setActiveTab('avos')}
+                      className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 p-6 rounded-lg transition-all duration-200 text-left group"
+                    >
+                      <div className="flex items-center space-x-3">
+                        <span className="text-2xl">🤖</span>
+                        <div>
+                          <h3 className="font-semibold text-white group-hover:text-orange-100">AVOS Voice Ordering</h3>
+                          <p className="text-sm text-orange-200">AI phone ordering system — Patent Pending</p>
+                        </div>
+                      </div>
+                    </button>
+
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-        </div>
+          </>
+        )}
 
-        {/* MVP: 极简化设计，不显示统计数据等冗余内容 */}
+        {/* ===== AVOS TAB ===== */}
+        {activeTab === 'avos' && (
+          <div className="space-y-6">
+
+            {/* AVOS Header */}
+            <div className="bg-gradient-to-r from-orange-500/10 to-red-500/10 border border-orange-500/20 rounded-xl p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-2xl font-bold text-orange-400 flex items-center gap-3">
+                    AVOS
+                    <span className="text-xs bg-orange-500/20 text-orange-300 px-2 py-1 rounded-full">AI Voice Ordering System</span>
+                    <span className="text-xs bg-zinc-700 text-zinc-300 px-2 py-1 rounded-full">Patent Pending</span>
+                  </h2>
+                  <p className="text-gray-400 mt-1">
+                    AI-powered phone ordering with multilingual support (EN / 中文 / 粵語 / ES)
+                  </p>
+                </div>
+                <div className="flex items-center gap-2 text-xs text-gray-500">
+                  <span className="inline-block w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                  Powered by Google Gemini &amp; Amazon Nova
+                </div>
+              </div>
+            </div>
+
+            {/* AVOS Sub-Navigation */}
+            <div className="flex gap-2">
+              {([
+                { key: 'live' as const, label: 'Live Monitor', icon: '📞' },
+                { key: 'history' as const, label: 'Call History', icon: '📋' },
+                { key: 'analytics' as const, label: 'Analytics', icon: '📊' },
+                { key: 'settings' as const, label: 'Settings', icon: '⚙️' },
+              ]).map((tab) => (
+                <button
+                  key={tab.key}
+                  onClick={() => setAvosSubTab(tab.key)}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex items-center gap-2 ${
+                    avosSubTab === tab.key
+                      ? 'bg-orange-500/20 text-orange-400 border border-orange-500/30'
+                      : 'bg-zinc-900 text-gray-400 border border-zinc-800 hover:text-gray-200'
+                  }`}
+                >
+                  <span>{tab.icon}</span>
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+
+            {/* AVOS Sub-Tab Content */}
+            {avosSubTab === 'live' && (
+              <AVOSLiveWidget restaurantId={restaurant.id} />
+            )}
+            {avosSubTab === 'history' && (
+              <AVOSCallHistory restaurantId={restaurant.id} />
+            )}
+            {avosSubTab === 'analytics' && (
+              <AVOSAnalytics restaurantId={restaurant.id} />
+            )}
+            {avosSubTab === 'settings' && (
+              <AVOSConfigPanel restaurantId={restaurant.id} />
+            )}
+
+          </div>
+        )}
 
       </main>
 
